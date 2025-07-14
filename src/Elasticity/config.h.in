@@ -1,0 +1,15 @@
+#pragma once
+#include <sofa/config.h>
+
+#ifdef SOFA_BUILD_ELASTICITY
+#  define SOFA_TARGET @PROJECT_NAME@
+#  define ELASTICITY_API SOFA_EXPORT_DYNAMIC_LIBRARY
+#else
+#  define ELASTICITY_API SOFA_IMPORT_DYNAMIC_LIBRARY
+#endif
+
+namespace elasticity
+{
+    constexpr const char* MODULE_NAME = "@PROJECT_NAME@";
+    constexpr const char* MODULE_VERSION = "@PROJECT_VERSION@";
+}
