@@ -26,11 +26,14 @@ private:
     static constexpr sofa::Size NumberOfNodesInElement = sofa::geometry::Tetrahedron::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
 
+    /// The number of independent elements in a symmetric 2nd-order tensor
+    static constexpr sofa::Size NumberOfIndependentElements = spatial_dimensions * (spatial_dimensions + 1) / 2;
+
     /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
-    using ElasticityTensor = sofa::type::Mat<6, 6, Real>;
+    using ElasticityTensor = sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real>;
 
     /// the type of B in e = B d, if e is the strain, and d is the displacement
-    using StrainDisplacement = sofa::type::Mat<6, NumberOfDofsInElement, Real>;
+    using StrainDisplacement = sofa::type::Mat<NumberOfIndependentElements, NumberOfDofsInElement, Real>;
 
     /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
