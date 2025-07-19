@@ -6,12 +6,22 @@
 namespace elasticity
 {
 
-template <class DataTypes>
+template <class DataTypes, class ElementType>
 class LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(LinearSmallStrainFEMForceField, DataTypes),
+    SOFA_CLASS(SOFA_TEMPLATE2(LinearSmallStrainFEMForceField, DataTypes, ElementType),
                SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
+
+    static const std::string GetCustomClassName()
+    {
+        return std::string(sofa::geometry::elementTypeToString(ElementType::Element_type)) + "LinearSmallStrainFEMForceField";
+    }
+
+    static const std::string GetCustomTemplateName()
+    {
+        return DataTypes::Name();
+    }
 
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
@@ -23,7 +33,7 @@ private:
     using Real = sofa::Real_t<DataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfNodesInElement = sofa::geometry::Tetrahedron::NumberOfNodes;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
 
     /// The number of independent elements in a symmetric 2nd-order tensor
@@ -58,7 +68,7 @@ public:
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
 
-    /// The topology will give access to the tetrahedra
+    /// The topology will give access to the elements
     sofa::SingleLink<LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
                      sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
 
@@ -66,8 +76,8 @@ public:
     sofa::Data<Real> d_youngModulus;
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
-    static std::array<ShapeFunction, NumberOfNodesInElement> computeShapeFunctions(const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates);
-    static StrainDisplacement computeStrainDisplacement(const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates);
+    static std::array<ShapeFunction, NumberOfNodesInElement> computeShapeFunctions(const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates);
+    static StrainDisplacement computeStrainDisplacement(const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates);
 
 protected:
 
@@ -80,7 +90,7 @@ protected:
 
     /**
      * Ensure a link to a valid topology. Without a topology, this force field cannot have access
-     * to the list of tetrahedra.
+     * to the list of elements.
      */
     void validateTopology();
 
@@ -93,8 +103,8 @@ protected:
      * Assemble in a unique vector the displacement of all the nodes in an element
      */
     ElementDisplacement computeElementDisplacement(
-        const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates,
-        const std::array<Coord, NumberOfNodesInElement>& restTetraNodesCoordinates);
+        const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
+        const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 };
 
 }  // namespace elasticity

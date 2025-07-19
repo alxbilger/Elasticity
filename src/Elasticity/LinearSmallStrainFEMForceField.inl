@@ -6,9 +6,9 @@
 namespace elasticity
 {
 
-template <class DataTypes>
-LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
-    : l_topology(initLink("topology", "Link to a topology containing tetrahedra"))
+template <class DataTypes, class ElementType>
+LinearSmallStrainFEMForceField<DataTypes, ElementType>::LinearSmallStrainFEMForceField()
+    : l_topology(initLink("topology", "Link to a topology containing elements"))
     , d_poissonRatio(
           initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
     , d_youngModulus(
@@ -19,8 +19,8 @@ LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
     d_youngModulus.setGroup(groupName);
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::init()
+template <class DataTypes, class ElementType>
+    void LinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 {
     Inherit1::init();
 
@@ -40,8 +40,8 @@ void LinearSmallStrainFEMForceField<DataTypes>::init()
     }
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::validateTopology()
+template <class DataTypes, class ElementType>
+void LinearSmallStrainFEMForceField<DataTypes, ElementType>::validateTopology()
 {
     if (l_topology.empty())
     {
@@ -62,23 +62,23 @@ void LinearSmallStrainFEMForceField<DataTypes>::validateTopology()
     }
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::precomputeElementStiffness()
+template <class DataTypes, class ElementType>
+void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
 {
     const ElasticityTensor C = computeElasticityTensor();
 
     m_elementStiffness.clear();
 
-    const auto& tetrahedra = l_topology->getTetrahedra();
-    m_elementStiffness.reserve(tetrahedra.size());
+    const auto& elements = l_topology->getTetrahedra();
+    m_elementStiffness.reserve(elements.size());
 
     auto restPositionAccessor = this->mstate->readRestPositions();
-    for (const auto& tetrahedron : tetrahedra)
+    for (const auto& element : elements)
     {
-        const auto [t0, t1, t2, t3] = tetrahedron.array();
+        const auto [t0, t1, t2, t3] = element.array();
         const auto volume =
-            sofa::geometry::Tetrahedron::volume(restPositionAccessor[t0], restPositionAccessor[t1],
-                                                restPositionAccessor[t2], restPositionAccessor[t3]);
+            ElementType::volume(restPositionAccessor[t0], restPositionAccessor[t1],
+                                restPositionAccessor[t2], restPositionAccessor[t3]);
 
         const auto B =
             computeStrainDisplacement({restPositionAccessor[t0], restPositionAccessor[t1],
@@ -89,8 +89,8 @@ void LinearSmallStrainFEMForceField<DataTypes>::precomputeElementStiffness()
     }
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::addForce(
+template <class DataTypes, class ElementType>
+void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     const sofa::core::MechanicalParams* mparams,
     DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v)
 {
@@ -101,14 +101,14 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    const auto& tetrahedra = l_topology->getTetrahedra();
+    const auto& elements = l_topology->getTetrahedra();
 
     Deriv nodeForce(sofa::type::NOINIT);
 
     auto elementStiffnessIt = m_elementStiffness.begin();
-    for (const auto& tetrahedron : tetrahedra)
+    for (const auto& element : elements)
     {
-        const auto [t0, t1, t2, t3] = tetrahedron.array();
+        const auto [t0, t1, t2, t3] = element.array();
 
         const ElementDisplacement displacement = computeElementDisplacement(
             { positionAccessor[t0], positionAccessor[t1], positionAccessor[t2], positionAccessor[t3]},
@@ -120,13 +120,13 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             elementForce.getsub(i*spatial_dimensions, nodeForce);
-            forceAccessor[tetrahedron[i]] += -nodeForce;
+            forceAccessor[element[i]] += -nodeForce;
         }
     }
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::addDForce(
+template <class DataTypes, class ElementType>
+void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
@@ -136,19 +136,19 @@ void LinearSmallStrainFEMForceField<DataTypes>::addDForce(
     const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
         mparams, this->rayleighStiffness.getValue());
 
-    const auto& tetrahedra = l_topology->getTetrahedra();
+    const auto& elements = l_topology->getTetrahedra();
 
     Deriv nodedForce(sofa::type::NOINIT);
 
     auto elementStiffnessIt = m_elementStiffness.begin();
-    for (const auto& tetrahedron : tetrahedra)
+    for (const auto& element : elements)
     {
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx;
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             for (sofa::Size j = 0; j < spatial_dimensions; ++j)
             {
-                element_dx[i * spatial_dimensions + j] = dxAccessor[tetrahedron[i]][j];
+                element_dx[i * spatial_dimensions + j] = dxAccessor[element[i]][j];
             }
         }
 
@@ -158,13 +158,13 @@ void LinearSmallStrainFEMForceField<DataTypes>::addDForce(
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             dForce.getsub(i*spatial_dimensions, nodedForce);
-            dfAccessor[tetrahedron[i]] += -nodedForce;
+            dfAccessor[element[i]] += -nodedForce;
         }
     }
 }
 
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
+template <class DataTypes, class ElementType>
+void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
@@ -172,9 +172,9 @@ void LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
                        .withRespectToPositionsIn(this->mstate);
 
-    const auto& tetrahedra = l_topology->getTetrahedra();
+    const auto& elements = l_topology->getTetrahedra();
     auto elementStiffnessIt = m_elementStiffness.begin();
-    for (const auto& tetrahedron : tetrahedra)
+    for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
 
@@ -183,21 +183,21 @@ void LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(tetrahedron[n1] * spatial_dimensions, tetrahedron[n2] * spatial_dimensions) += -localMatrix;
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += -localMatrix;
             }
         }
     }
 }
 
-template <class DataTypes>
-SReal LinearSmallStrainFEMForceField<DataTypes>::getPotentialEnergy(
+template <class DataTypes, class ElementType>
+SReal LinearSmallStrainFEMForceField<DataTypes, ElementType>::getPotentialEnergy(
     const sofa::core::MechanicalParams*, const DataVecCoord& x) const
 {
     return 0;
 }
 
-template <class DataTypes>
-auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
+template <class DataTypes, class ElementType>
+auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor(
     Real youngModulus, Real poissonRatio)
 -> ElasticityTensor
 {
@@ -234,8 +234,8 @@ auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
     return lambda * volumetricTensor + 2 * mu * deviatoricTensor;
 }
 
-template <class DataTypes>
-auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor() -> ElasticityTensor
+template <class DataTypes, class ElementType>
+auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor() -> ElasticityTensor
 {
     const auto E = d_youngModulus.getValue();
     const auto nu = d_poissonRatio.getValue();
@@ -243,9 +243,9 @@ auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor() -> Ela
     return computeElasticityTensor(E, nu);
 }
 
-template <class DataTypes>
-auto LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
-    const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates)
+template <class DataTypes, class ElementType>
+auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeShapeFunctions(
+    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates)
 -> std::array<ShapeFunction, NumberOfNodesInElement>
 {
     sofa::type::Mat<NumberOfNodesInElement, NumberOfNodesInElement, Real> X;
@@ -254,7 +254,7 @@ auto LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
         X[i][0] = 1;
         for (sofa::Size j = 0; j < spatial_dimensions; ++j)
         {
-            X[i][j+1] = tetraNodesCoordinates[i][j];
+            X[i][j+1] = elementNodesCoordinates[i][j];
         }
     }
 
@@ -269,11 +269,11 @@ auto LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
     return shapeFunctions;
 }
 
-template <class DataTypes>
-auto LinearSmallStrainFEMForceField<DataTypes>::computeStrainDisplacement(
-    const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates) -> StrainDisplacement
+template <class DataTypes, class ElementType>
+auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeStrainDisplacement(
+    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates) -> StrainDisplacement
 {
-    const std::array<ShapeFunction, NumberOfNodesInElement> shapeFunctions = computeShapeFunctions(tetraNodesCoordinates);
+    const std::array<ShapeFunction, NumberOfNodesInElement> shapeFunctions = computeShapeFunctions(elementNodesCoordinates);
 
     StrainDisplacement B;
     for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
@@ -295,17 +295,17 @@ auto LinearSmallStrainFEMForceField<DataTypes>::computeStrainDisplacement(
     return B;
 }
 
-template <class DataTypes>
-auto LinearSmallStrainFEMForceField<DataTypes>::computeElementDisplacement(
-    const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates,
-    const std::array<Coord, NumberOfNodesInElement>& restTetraNodesCoordinates) -> ElementDisplacement
+template <class DataTypes, class ElementType>
+auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementDisplacement(
+    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
+    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates) -> ElementDisplacement
 {
     ElementDisplacement displacement;
     for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
     {
         for (sofa::Size j = 0; j < spatial_dimensions; ++j)
         {
-            displacement[i*spatial_dimensions + j] = tetraNodesCoordinates[i][j] - restTetraNodesCoordinates[i][j];
+            displacement[i*spatial_dimensions + j] = elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
         }
     }
     return displacement;
