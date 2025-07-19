@@ -201,15 +201,37 @@ auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
     Real youngModulus, Real poissonRatio)
 -> ElasticityTensor
 {
-    ElasticityTensor C;
+    static constexpr auto volumetricTensor = []()
+    {
+        sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> I_vol;
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                I_vol[i][j] = 1;
+            }
+        }
+        return I_vol;
+    }();
 
-    const Real k = youngModulus / ((1 + poissonRatio) * (1 - 2 * poissonRatio));
+    static constexpr auto deviatoricTensor = []()
+    {
+        sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> I_dev;
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            I_dev[i][i] = 1;
+        }
+        for (sofa::Size i = spatial_dimensions; i < NumberOfIndependentElements; ++i)
+        {
+            I_dev[i][i] = 0.5;
+        }
+        return I_dev;
+    }();
 
-    C(0, 0) = C(1, 1) = C(2, 2) = k * (1 - poissonRatio);
-    C(3, 3) = C(4, 4) = C(5, 5) = k * (1 - 2 * poissonRatio) / 2;
-    C(0, 1) = C(0, 2) = C(1, 0) = C(1, 2) = C(2, 0) = C(2, 1) = k * poissonRatio;
+    const auto mu = youngModulus / (2 * (1 + poissonRatio));
+    const auto lambda = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - (spatial_dimensions - 1) * poissonRatio));
 
-    return C;
+    return lambda * volumetricTensor + 2 * mu * deviatoricTensor;
 }
 
 template <class DataTypes>

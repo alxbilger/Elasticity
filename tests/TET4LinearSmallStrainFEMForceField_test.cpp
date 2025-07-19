@@ -104,7 +104,7 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
     {
         for (std::size_t j = 0; j < 3; ++j)
         {
-            EXPECT_FLOATINGPOINT_EQ(C(i, j), static_cast<SReal>(i == j));
+            EXPECT_DOUBLE_EQ(C(i, j), static_cast<SReal>(i == j)) << "i = " << i << " j = " << j;
         }
     }
 
