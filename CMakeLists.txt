@@ -8,14 +8,14 @@ set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
 
-    src/Elasticity/TET4LinearSmallStrainFEMForceField.h
-    src/Elasticity/TET4LinearSmallStrainFEMForceField.inl
+    src/Elasticity/LinearSmallStrainFEMForceField.h
+    src/Elasticity/LinearSmallStrainFEMForceField.inl
 )
 
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/TET4LinearSmallStrainFEMForceField.cpp
+    src/Elasticity/LinearSmallStrainFEMForceField.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

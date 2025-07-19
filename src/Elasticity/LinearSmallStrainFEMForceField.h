@@ -7,10 +7,10 @@ namespace elasticity
 {
 
 template <class DataTypes>
-class TET4LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
+class LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(TET4LinearSmallStrainFEMForceField, DataTypes),
+    SOFA_CLASS(SOFA_TEMPLATE(LinearSmallStrainFEMForceField, DataTypes),
                SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
 private:
@@ -42,9 +42,9 @@ private:
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
 
     /// container for the values of the constants in a shape function
-    using ShapeFunction = sofa::type::Vec<NumberOfNodesInElement, Real>;
+    using ShapeFunction = sofa::type::Vec<spatial_dimensions+1, Real>;
 
-    TET4LinearSmallStrainFEMForceField();
+    LinearSmallStrainFEMForceField();
 
 public:
     void init() override;
@@ -59,7 +59,7 @@ public:
                              const DataVecCoord& x) const override;
 
     /// The topology will give access to the tetrahedra
-    sofa::SingleLink<TET4LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
+    sofa::SingleLink<LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
                      sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
 
     sofa::Data<Real> d_poissonRatio;

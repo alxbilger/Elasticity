@@ -1,4 +1,4 @@
-#include <Elasticity/TET4LinearSmallStrainFEMForceField.h>
+#include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 
@@ -10,9 +10,9 @@ namespace elasticity
 {
 
 template<class DataTypes>
-struct TET4LinearSmallStrainFEMForceField_stepTest : public sofa::ForceField_test<TET4LinearSmallStrainFEMForceField<DataTypes>>
+struct TET4LinearSmallStrainFEMForceField_stepTest : public sofa::ForceField_test<LinearSmallStrainFEMForceField<DataTypes>>
 {
-    using ForceField = TET4LinearSmallStrainFEMForceField<DataTypes>;
+    using ForceField = LinearSmallStrainFEMForceField<DataTypes>;
     using Inherited = sofa::ForceField_test<ForceField>;
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
@@ -86,14 +86,14 @@ TYPED_TEST(TET4LinearSmallStrainFEMForceField_stepTest, extension )
     this->errorMax *= 1e6;
     this->deltaRange = std::make_pair( 1, this->errorMax * 10 );
     this->debug = true;
-    this->flags &= ~sofa::ForceField_test<TET4LinearSmallStrainFEMForceField<TypeParam>>::TEST_POTENTIAL_ENERGY;
+    this->flags &= ~sofa::ForceField_test<LinearSmallStrainFEMForceField<TypeParam>>::TEST_POTENTIAL_ENERGY;
 
     this->runTest();
 }
 
 TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
 {
-    using Force = TET4LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
+    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
 
     constexpr auto youngModulus = 1_sreal;
     constexpr auto poissonRatio = 0_sreal;
@@ -128,7 +128,7 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
 
 TEST(TET4LinearSmallStrainFEMForceField, computeShapeFunctions)
 {
-    using Force = TET4LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
+    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
         {0, 0, 0},
@@ -170,7 +170,7 @@ TEST(TET4LinearSmallStrainFEMForceField, computeShapeFunctions)
 
 TEST(TET4LinearSmallStrainFEMForceField, computeStrainDisplacement)
 {
-    using Force = TET4LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
+    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
         {0, 0, 0},

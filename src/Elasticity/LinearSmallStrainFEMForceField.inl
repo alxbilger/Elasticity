@@ -1,5 +1,5 @@
 #pragma once
-#include <Elasticity/TET4LinearSmallStrainFEMForceField.h>
+#include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
@@ -7,7 +7,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-TET4LinearSmallStrainFEMForceField<DataTypes>::TET4LinearSmallStrainFEMForceField()
+LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
     : l_topology(initLink("topology", "Link to a topology containing tetrahedra"))
     , d_poissonRatio(
           initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
@@ -20,7 +20,7 @@ TET4LinearSmallStrainFEMForceField<DataTypes>::TET4LinearSmallStrainFEMForceFiel
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::init()
+void LinearSmallStrainFEMForceField<DataTypes>::init()
 {
     Inherit1::init();
 
@@ -41,7 +41,7 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::init()
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::validateTopology()
+void LinearSmallStrainFEMForceField<DataTypes>::validateTopology()
 {
     if (l_topology.empty())
     {
@@ -63,7 +63,7 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::validateTopology()
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::precomputeElementStiffness()
+void LinearSmallStrainFEMForceField<DataTypes>::precomputeElementStiffness()
 {
     const ElasticityTensor C = computeElasticityTensor();
 
@@ -90,7 +90,7 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::precomputeElementStiffness()
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::addForce(
+void LinearSmallStrainFEMForceField<DataTypes>::addForce(
     const sofa::core::MechanicalParams* mparams,
     DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v)
 {
@@ -126,7 +126,7 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::addForce(
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::addDForce(
+void LinearSmallStrainFEMForceField<DataTypes>::addDForce(
     const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
@@ -164,7 +164,7 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::addDForce(
 }
 
 template <class DataTypes>
-void TET4LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
+void LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
@@ -190,14 +190,14 @@ void TET4LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
 }
 
 template <class DataTypes>
-SReal TET4LinearSmallStrainFEMForceField<DataTypes>::getPotentialEnergy(
+SReal LinearSmallStrainFEMForceField<DataTypes>::getPotentialEnergy(
     const sofa::core::MechanicalParams*, const DataVecCoord& x) const
 {
     return 0;
 }
 
 template <class DataTypes>
-auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
+auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
     Real youngModulus, Real poissonRatio)
 -> ElasticityTensor
 {
@@ -235,7 +235,7 @@ auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor(
 }
 
 template <class DataTypes>
-auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor() -> ElasticityTensor
+auto LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor() -> ElasticityTensor
 {
     const auto E = d_youngModulus.getValue();
     const auto nu = d_poissonRatio.getValue();
@@ -244,7 +244,7 @@ auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElasticityTensor() ->
 }
 
 template <class DataTypes>
-auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
+auto LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
     const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates)
 -> std::array<ShapeFunction, NumberOfNodesInElement>
 {
@@ -270,7 +270,7 @@ auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeShapeFunctions(
 }
 
 template <class DataTypes>
-auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeStrainDisplacement(
+auto LinearSmallStrainFEMForceField<DataTypes>::computeStrainDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates) -> StrainDisplacement
 {
     const std::array<ShapeFunction, NumberOfNodesInElement> shapeFunctions = computeShapeFunctions(tetraNodesCoordinates);
@@ -296,7 +296,7 @@ auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeStrainDisplacement(
 }
 
 template <class DataTypes>
-auto TET4LinearSmallStrainFEMForceField<DataTypes>::computeElementDisplacement(
+auto LinearSmallStrainFEMForceField<DataTypes>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates,
     const std::array<Coord, NumberOfNodesInElement>& restTetraNodesCoordinates) -> ElementDisplacement
 {
