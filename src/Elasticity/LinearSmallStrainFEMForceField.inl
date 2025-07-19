@@ -6,6 +6,44 @@
 namespace elasticity
 {
 
+namespace details
+{
+
+template<class ElementType>
+sofa::type::vector<sofa::topology::Element<ElementType>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology);
+
+template<>
+inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Edge>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+{
+    return topology.getEdges();
+}
+
+template<>
+inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Triangle>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+{
+    return topology.getTriangles();
+}
+
+template<>
+inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Quad>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+{
+    return topology.getQuads();
+}
+
+template<>
+inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Tetrahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+{
+    return topology.getTetrahedra();
+}
+
+template<>
+inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Hexahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+{
+    return topology.getHexahedra();
+}
+
+}
+
 template <class DataTypes, class ElementType>
 LinearSmallStrainFEMForceField<DataTypes, ElementType>::LinearSmallStrainFEMForceField()
     : l_topology(initLink("topology", "Link to a topology containing elements"))
@@ -69,7 +107,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     m_elementStiffness.clear();
 
-    const auto& elements = l_topology->getTetrahedra();
+    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
     m_elementStiffness.reserve(elements.size());
 
     auto restPositionAccessor = this->mstate->readRestPositions();
@@ -101,7 +139,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    const auto& elements = l_topology->getTetrahedra();
+    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
 
     Deriv nodeForce(sofa::type::NOINIT);
 
@@ -136,7 +174,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
         mparams, this->rayleighStiffness.getValue());
 
-    const auto& elements = l_topology->getTetrahedra();
+    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
 
     Deriv nodedForce(sofa::type::NOINIT);
 
@@ -172,7 +210,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatri
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
                        .withRespectToPositionsIn(this->mstate);
 
-    const auto& elements = l_topology->getTetrahedra();
+    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
