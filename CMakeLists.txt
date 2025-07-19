@@ -7,6 +7,7 @@ find_package(Sofa.Core REQUIRED)
 set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
+    src/Elasticity/Elements.h
 
     src/Elasticity/LinearSmallStrainFEMForceField.h
     src/Elasticity/LinearSmallStrainFEMForceField.inl

@@ -2,97 +2,10 @@
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
-#include <tuple>
+#include <Elasticity/Elements.h>
 
 namespace elasticity
 {
-
-namespace details
-{
-
-template<class ElementType>
-sofa::type::vector<sofa::topology::Element<ElementType>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology);
-
-template <class ElementType, class Coord>
-struct Volume;
-
-
-template<>
-inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Edge>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
-{
-    return topology.getEdges();
-}
-
-template <class Coord>
-struct Volume<sofa::geometry::Edge, Coord>
-{
-    static SReal compute(const std::array<Coord, sofa::geometry::Edge::NumberOfNodes>& nodesCoordinates)
-    {
-        return sofa::geometry::Edge::length(nodesCoordinates[0], nodesCoordinates[1]);
-    }
-};
-
-template<>
-inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Triangle>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
-{
-    return topology.getTriangles();
-}
-
-template <class Coord>
-struct Volume<sofa::geometry::Triangle, Coord>
-{
-    static SReal compute(const std::array<Coord, sofa::geometry::Triangle::NumberOfNodes>& nodesCoordinates)
-    {
-        return sofa::geometry::Triangle::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2]);
-    }
-};
-
-template<>
-inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Quad>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
-{
-    return topology.getQuads();
-}
-
-template <class Coord>
-struct Volume<sofa::geometry::Quad, Coord>
-{
-    static SReal compute(const std::array<Coord, sofa::geometry::Quad::NumberOfNodes>& nodesCoordinates)
-    {
-        return sofa::geometry::Quad::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
-    }
-};
-
-template<>
-inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Tetrahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
-{
-    return topology.getTetrahedra();
-}
-
-template <class Coord>
-struct Volume<sofa::geometry::Tetrahedron, Coord>
-{
-    static SReal compute(const std::array<Coord, sofa::geometry::Tetrahedron::NumberOfNodes>& nodesCoordinates)
-    {
-        return sofa::geometry::Tetrahedron::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
-    }
-};
-
-template<>
-inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Hexahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
-{
-    return topology.getHexahedra();
-}
-
-template <class Coord>
-struct Volume<sofa::geometry::Hexahedron, Coord>
-{
-    static SReal compute(const std::array<Coord, sofa::geometry::Hexahedron::NumberOfNodes>& nodesCoordinates)
-    {
-        return sofa::geometry::Hexahedron::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3], nodesCoordinates[4], nodesCoordinates[5], nodesCoordinates[6], nodesCoordinates[7]);
-    }
-};
-
-}
 
 template <class DataTypes, class ElementType>
 LinearSmallStrainFEMForceField<DataTypes, ElementType>::LinearSmallStrainFEMForceField()
@@ -157,7 +70,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     m_elementStiffness.clear();
 
-    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
+    const auto& elements = getElementSequence<ElementType>(*l_topology);
     m_elementStiffness.reserve(elements.size());
 
     auto restPositionAccessor = this->mstate->readRestPositions();
@@ -169,7 +82,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
             restElementNodesCoordinates[i] = restPositionAccessor[element[i]];
         }
 
-        const Real volume = details::Volume<ElementType, Coord>::compute(restElementNodesCoordinates);
+        const Real volume = Volume<ElementType, Coord>::compute(restElementNodesCoordinates);
 
         const auto B = computeStrainDisplacement(restElementNodesCoordinates);
 
@@ -190,7 +103,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
+    const auto& elements = getElementSequence<ElementType>(*l_topology);
 
     Deriv nodeForce(sofa::type::NOINIT);
 
@@ -228,7 +141,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
         mparams, this->rayleighStiffness.getValue());
 
-    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
+    const auto& elements = getElementSequence<ElementType>(*l_topology);
 
     Deriv nodedForce(sofa::type::NOINIT);
 
@@ -264,7 +177,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatri
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
                        .withRespectToPositionsIn(this->mstate);
 
-    const auto& elements = details::getElementSequence<ElementType>(*l_topology);
+    const auto& elements = getElementSequence<ElementType>(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
