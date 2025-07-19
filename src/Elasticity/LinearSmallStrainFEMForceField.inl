@@ -2,6 +2,7 @@
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <tuple>
 
 namespace elasticity
 {
@@ -12,11 +13,24 @@ namespace details
 template<class ElementType>
 sofa::type::vector<sofa::topology::Element<ElementType>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology);
 
+template <class ElementType, class Coord>
+struct Volume;
+
+
 template<>
 inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Edge>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
 {
     return topology.getEdges();
 }
+
+template <class Coord>
+struct Volume<sofa::geometry::Edge, Coord>
+{
+    static SReal compute(const std::array<Coord, sofa::geometry::Edge::NumberOfNodes>& nodesCoordinates)
+    {
+        return sofa::geometry::Edge::length(nodesCoordinates[0], nodesCoordinates[1]);
+    }
+};
 
 template<>
 inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Triangle>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
@@ -24,11 +38,29 @@ inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Triangle>> get
     return topology.getTriangles();
 }
 
+template <class Coord>
+struct Volume<sofa::geometry::Triangle, Coord>
+{
+    static SReal compute(const std::array<Coord, sofa::geometry::Triangle::NumberOfNodes>& nodesCoordinates)
+    {
+        return sofa::geometry::Triangle::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2]);
+    }
+};
+
 template<>
 inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Quad>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
 {
     return topology.getQuads();
 }
+
+template <class Coord>
+struct Volume<sofa::geometry::Quad, Coord>
+{
+    static SReal compute(const std::array<Coord, sofa::geometry::Quad::NumberOfNodes>& nodesCoordinates)
+    {
+        return sofa::geometry::Quad::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
+    }
+};
 
 template<>
 inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Tetrahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
@@ -36,11 +68,29 @@ inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Tetrahedron>> 
     return topology.getTetrahedra();
 }
 
+template <class Coord>
+struct Volume<sofa::geometry::Tetrahedron, Coord>
+{
+    static SReal compute(const std::array<Coord, sofa::geometry::Tetrahedron::NumberOfNodes>& nodesCoordinates)
+    {
+        return sofa::geometry::Tetrahedron::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
+    }
+};
+
 template<>
 inline sofa::type::vector<sofa::topology::Element<sofa::geometry::Hexahedron>> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
 {
     return topology.getHexahedra();
 }
+
+template <class Coord>
+struct Volume<sofa::geometry::Hexahedron, Coord>
+{
+    static SReal compute(const std::array<Coord, sofa::geometry::Hexahedron::NumberOfNodes>& nodesCoordinates)
+    {
+        return sofa::geometry::Hexahedron::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3], nodesCoordinates[4], nodesCoordinates[5], nodesCoordinates[6], nodesCoordinates[7]);
+    }
+};
 
 }
 
@@ -113,14 +163,15 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
     auto restPositionAccessor = this->mstate->readRestPositions();
     for (const auto& element : elements)
     {
-        const auto [t0, t1, t2, t3] = element.array();
-        const auto volume =
-            ElementType::volume(restPositionAccessor[t0], restPositionAccessor[t1],
-                                restPositionAccessor[t2], restPositionAccessor[t3]);
+        std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates;
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            restElementNodesCoordinates[i] = restPositionAccessor[element[i]];
+        }
 
-        const auto B =
-            computeStrainDisplacement({restPositionAccessor[t0], restPositionAccessor[t1],
-                                       restPositionAccessor[t2], restPositionAccessor[t3]});
+        const Real volume = details::Volume<ElementType, Coord>::compute(restElementNodesCoordinates);
+
+        const auto B = computeStrainDisplacement(restElementNodesCoordinates);
 
         const auto K = volume * B.transposed() * C * B;
         m_elementStiffness.push_back(K);
@@ -146,11 +197,14 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
-        const auto [t0, t1, t2, t3] = element.array();
+        std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates, restElementNodesCoordinates;
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            elementNodesCoordinates[i] = positionAccessor[element[i]];
+            restElementNodesCoordinates[i] = restPositionAccessor[element[i]];
+        }
 
-        const ElementDisplacement displacement = computeElementDisplacement(
-            { positionAccessor[t0], positionAccessor[t1], positionAccessor[t2], positionAccessor[t3]},
-            { restPositionAccessor[t0], restPositionAccessor[t1], restPositionAccessor[t2], restPositionAccessor[t3]});
+        const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
         const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
@@ -336,14 +390,16 @@ auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeStrainDispla
 template <class DataTypes, class ElementType>
 auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates) -> ElementDisplacement
+    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
+    -> ElementDisplacement
 {
     ElementDisplacement displacement;
     for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
     {
         for (sofa::Size j = 0; j < spatial_dimensions; ++j)
         {
-            displacement[i*spatial_dimensions + j] = elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
+            displacement[i * spatial_dimensions + j] =
+                elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
         }
     }
     return displacement;
