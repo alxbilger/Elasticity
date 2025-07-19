@@ -5,6 +5,7 @@
         <RequiredPlugin name="Elasticity"/>
         <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
         <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
         <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->
         <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [MeshMatrixMass] -->
         <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [EulerImplicitSolver] -->
@@ -16,17 +17,16 @@
         <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglSceneFrame] -->
     </Node>
 
-    <DefaultAnimationLoop/>
+    <DefaultAnimationLoop parallelODESolving="true"/>
     <VisualStyle displayFlags="showBehaviorModels showForceFields" />
 
-    <VisualGrid size="20"/>
-    <LineAxis size="20"/>
+    <VisualGrid size="40"/>
+    <LineAxis size="40"/>
     <OglSceneFrame/>
 
-    <Node name="beam">
+    <Node name="tetras">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
-<!--        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>-->
-        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
         <RegularGridTopology name="grid" min="-5 -5 0" max="5 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
@@ -42,6 +42,46 @@
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
+
+    <Node name="tetras_matrixFree">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>
+
+        <RegularGridTopology name="grid" min="10 -5 0" max="20 5 40" n="5 5 20"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+
+        <Node name="tetra">
+            <TetrahedronSetTopologyContainer name="Tetra_topo"/>
+            <TetrahedronSetTopologyModifier name="Modifier" />
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" />
+            <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
+
+            <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
+            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
+
+    <Node name="triangles3D">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="-20 -5 0" max="-10 5 0" n="5 5 1"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+        <Node name="triangles">
+            <TriangleSetTopologyContainer name="Triangle_topo" src="@../grid"/>
+            <TriangleSetTopologyModifier name="Modifier" />
+            <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="1"/>
+
+            <MeshMatrixMass totalMass="1500" topology="@Triangle_topo"/>
+            <TriangleLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Triangle_topo"/>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 </Node>
