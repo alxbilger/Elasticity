@@ -16,8 +16,8 @@ public:
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
-    using VecCoord = sofa::DataVecCoord_t<DataTypes>;
-    using VecDeriv = sofa::DataVecDeriv_t<DataTypes>;
+    using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using VecDeriv = sofa::VecDeriv_t<DataTypes>;
     using Coord = sofa::Coord_t<DataTypes>;
     using Deriv = sofa::Deriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
@@ -26,10 +26,20 @@ private:
     static constexpr sofa::Size NumberOfNodesInElement = sofa::geometry::Tetrahedron::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
 
+    /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
     using ElasticityTensor = sofa::type::Mat<6, 6, Real>;
+
+    /// the type of B in e = B d, if e is the strain, and d is the displacement
     using StrainDisplacement = sofa::type::Mat<6, NumberOfDofsInElement, Real>;
+
+    /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
+
+    /// the type of the element stiffness matrix
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
+
+    /// container for the values of the constants in a shape function
+    using ShapeFunction = sofa::type::Vec<NumberOfNodesInElement, Real>;
 
     TET4LinearSmallStrainFEMForceField();
 
@@ -40,19 +50,25 @@ public:
 
     void addDForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx) override;
 
+    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
+
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
 
+    /// The topology will give access to the tetrahedra
     sofa::SingleLink<TET4LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
                      sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
 
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
 
+    static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
+    static std::array<ShapeFunction, NumberOfNodesInElement> computeShapeFunctions(const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates);
+    static StrainDisplacement computeStrainDisplacement(const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates);
+
 protected:
 
     ElasticityTensor computeElasticityTensor();
-    StrainDisplacement computeStrainDisplacement(const std::array<Coord, NumberOfNodesInElement>& tetraNodesCoordinates);
 
     /**
      * List of precomputed element stiffness matrices
