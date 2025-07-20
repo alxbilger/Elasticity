@@ -2,7 +2,7 @@
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
-#include <Elasticity/Elements.h>
+#include <Elasticity/FiniteElement.h>
 
 namespace elasticity
 {
@@ -70,7 +70,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     m_elementStiffness.clear();
 
-    const auto& elements = getElementSequence<ElementType>(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
     m_elementStiffness.reserve(elements.size());
 
     auto restPositionAccessor = this->mstate->readRestPositions();
@@ -82,7 +82,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
             restElementNodesCoordinates[i] = restPositionAccessor[element[i]];
         }
 
-        const Real volume = Volume<ElementType, Coord>::compute(restElementNodesCoordinates);
+        const Real volume = FiniteElement::volume(restElementNodesCoordinates);
 
         const auto B = computeStrainDisplacement(restElementNodesCoordinates);
 
@@ -103,7 +103,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    const auto& elements = getElementSequence<ElementType>(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
     Deriv nodeForce(sofa::type::NOINIT);
 
@@ -141,7 +141,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
         mparams, this->rayleighStiffness.getValue());
 
-    const auto& elements = getElementSequence<ElementType>(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
     Deriv nodedForce(sofa::type::NOINIT);
 
@@ -177,7 +177,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatri
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
                        .withRespectToPositionsIn(this->mstate);
 
-    const auto& elements = getElementSequence<ElementType>(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {

@@ -1,10 +1,10 @@
 #include <Elasticity/LinearSmallStrainFEMForceField.inl>
 
-#include <Elasticity/Elements[Edge].h>
-#include <Elasticity/Elements[Triangle].h>
-#include <Elasticity/Elements[Quad].h>
-#include <Elasticity/Elements[Tetrahedron].h>
-#include <Elasticity/Elements[Hexahedron].h>
+#include <Elasticity/FiniteElement[Edge].h>
+#include <Elasticity/FiniteElement[Triangle].h>
+#include <Elasticity/FiniteElement[Quad].h>
+#include <Elasticity/FiniteElement[Tetrahedron].h>
+#include <Elasticity/FiniteElement[Hexahedron].h>
 
 namespace elasticity
 {

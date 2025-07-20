@@ -7,7 +7,12 @@ find_package(Sofa.Core REQUIRED)
 set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
-    src/Elasticity/Elements.h
+    src/Elasticity/FiniteElement.h
+    src/Elasticity/FiniteElement[Edge].h
+    src/Elasticity/FiniteElement[Hexahedron].h
+    src/Elasticity/FiniteElement[Quad].h
+    src/Elasticity/FiniteElement[Tetrahedron].h
+    src/Elasticity/FiniteElement[Triangle].h
 
     src/Elasticity/LinearSmallStrainFEMForceField.h
     src/Elasticity/LinearSmallStrainFEMForceField.inl
