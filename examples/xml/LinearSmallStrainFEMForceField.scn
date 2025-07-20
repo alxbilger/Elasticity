@@ -34,7 +34,7 @@
         <Node name="tetra">
             <TetrahedronSetTopologyContainer name="Tetra_topo"/>
             <TetrahedronSetTopologyModifier name="Modifier" />
-            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" />
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="true"/>
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
@@ -55,7 +55,7 @@
         <Node name="tetra">
             <TetrahedronSetTopologyContainer name="Tetra_topo"/>
             <TetrahedronSetTopologyModifier name="Modifier" />
-            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" />
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="true"/>
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
@@ -63,6 +63,26 @@
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
+
+    <Node name="hexas">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="25 -5 0" max="35 5 40" n="5 5 20"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+
+        <Node name="tetra">
+            <HexahedronSetTopologyContainer name="Hexa_topo" src="@../grid"/>
+            <HexahedronSetTopologyModifier name="Modifier" />
+            <HexahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawHexahedra="true"/>
+
+            <MeshMatrixMass totalMass="1500" topology="@Hexa_topo"/>
+            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Hexa_topo"/>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="24 -6 -1 36 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
@@ -82,6 +102,25 @@
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
+
+    <Node name="quads3D">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="-20 10 0" max="-10 20 0" n="5 5 1"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+        <Node name="quads">
+            <QuadSetTopologyContainer name="Quad_topo" src="@../grid"/>
+            <QuadSetTopologyModifier name="Modifier" />
+            <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="1"/>
+
+            <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
+            <QuadLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Quad_topo"/>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 </Node>
