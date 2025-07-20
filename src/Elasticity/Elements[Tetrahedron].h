@@ -20,9 +20,27 @@ struct Volume<sofa::geometry::Tetrahedron, Coord>
 };
 
 template<>
-inline sofa::Size getDimension<sofa::geometry::Tetrahedron>()
+constexpr sofa::Size getDimension<sofa::geometry::Tetrahedron>()
 {
     return 3;
 }
+
+template <class DataTypes>
+struct ReferenceElement<sofa::geometry::Tetrahedron, DataTypes>
+{
+    using Coord = sofa::Coord_t<DataTypes>;
+    using ElementType = sofa::geometry::Tetrahedron;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+
+    constexpr static std::array<Coord, NumberOfNodesInElement> nodes = []()
+    {
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        DataTypes::set(nodes[0], 0, 0, 0);
+        DataTypes::set(nodes[1], 1, 0, 0);
+        DataTypes::set(nodes[2], 0, 1, 0);
+        DataTypes::set(nodes[3], 0, 0, 1);
+        return nodes;
+    }();
+};
 
 }

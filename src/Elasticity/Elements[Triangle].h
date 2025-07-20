@@ -20,9 +20,26 @@ struct Volume<sofa::geometry::Triangle, Coord>
 };
 
 template<>
-inline sofa::Size getDimension<sofa::geometry::Triangle>()
+constexpr sofa::Size getDimension<sofa::geometry::Triangle>()
 {
     return 2;
 }
+
+template <class DataTypes>
+struct ReferenceElement<sofa::geometry::Triangle, DataTypes>
+{
+    using Coord = sofa::Coord_t<DataTypes>;
+    using ElementType = sofa::geometry::Triangle;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+
+    constexpr static std::array<Coord, NumberOfNodesInElement> nodes = []()
+    {
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        DataTypes::set(nodes[0], 0, 0, 0);
+        DataTypes::set(nodes[1], 1, 0, 0);
+        DataTypes::set(nodes[2], 0, 1, 0);
+        return nodes;
+    }();
+};
 
 }

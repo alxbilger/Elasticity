@@ -20,9 +20,30 @@ struct Volume<sofa::geometry::Hexahedron, Coord>
 };
 
 template<>
-inline sofa::Size getDimension<sofa::geometry::Hexahedron>()
+constexpr sofa::Size getDimension<sofa::geometry::Hexahedron>()
 {
     return 3;
 }
 
+template <class DataTypes>
+struct ReferenceElement<sofa::geometry::Hexahedron, DataTypes>
+{
+    using Coord = sofa::Coord_t<DataTypes>;
+    using ElementType = sofa::geometry::Hexahedron;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+
+    constexpr static std::array<Coord, NumberOfNodesInElement> nodes = []()
+    {
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        DataTypes::set(nodes[0], -1, -1, -1);
+        DataTypes::set(nodes[1], 1, -1, -1);
+        DataTypes::set(nodes[2], 1, 1, -1);
+        DataTypes::set(nodes[3], -1, 1, -1);
+        DataTypes::set(nodes[4], -1, -1, 1);
+        DataTypes::set(nodes[5], 1, -1, 1);
+        DataTypes::set(nodes[6], 1, 1, 1);
+        DataTypes::set(nodes[7], -1, 1, 1);
+        return nodes;
+    }();
+};
 }

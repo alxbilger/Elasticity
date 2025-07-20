@@ -20,9 +20,25 @@ struct Volume<sofa::geometry::Edge, Coord>
 };
 
 template<>
-inline sofa::Size getDimension<sofa::geometry::Edge>()
+constexpr sofa::Size getDimension<sofa::geometry::Edge>()
 {
     return 1;
 }
+
+template <class DataTypes>
+struct ReferenceElement<sofa::geometry::Edge, DataTypes>
+{
+    using Coord = sofa::Coord_t<DataTypes>;
+    using ElementType = sofa::geometry::Edge;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+
+    constexpr static std::array<Coord, NumberOfNodesInElement> nodes = []()
+    {
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        DataTypes::set(nodes[0], -1, 0, 0);
+        DataTypes::set(nodes[1], 1, 0, 0);
+        return nodes;
+    }();
+};
 
 }

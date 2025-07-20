@@ -11,6 +11,9 @@ template <class ElementType, class Coord>
 struct Volume;
 
 template<class ElementType>
-sofa::Size getDimension();
+constexpr sofa::Size getDimension();
+
+template <class ElementType, class DataTypes>
+struct ReferenceElement;
 
 }

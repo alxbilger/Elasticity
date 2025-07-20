@@ -2,6 +2,7 @@
 #include <Elasticity/config.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+#include <Elasticity/Elements.h>
 
 namespace elasticity
 {
@@ -35,6 +36,7 @@ private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
+    static constexpr sofa::Size ElementDimension = elasticity::getDimension<ElementType>();
 
     /// The number of independent elements in a symmetric 2nd-order tensor
     static constexpr sofa::Size NumberOfIndependentElements = spatial_dimensions * (spatial_dimensions + 1) / 2;
@@ -52,7 +54,7 @@ private:
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
 
     /// container for the values of the constants in a shape function
-    using ShapeFunction = sofa::type::Vec<spatial_dimensions+1, Real>;
+    using ShapeFunction = sofa::type::Vec<ElementDimension+1, Real>;
 
     LinearSmallStrainFEMForceField();
 
