@@ -14,6 +14,8 @@ public:
     SOFA_CLASS(SOFA_TEMPLATE(BaseLinearSmallStrainFEMForceField, DataTypes),
                SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
+    ~BaseLinearSmallStrainFEMForceField() override = default;
+
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
@@ -29,16 +31,15 @@ public:
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
 
-private:
+protected:
+
+    BaseLinearSmallStrainFEMForceField();
+
     /**
      * Ensure a link to a valid topology. Without a topology, this force field cannot have access
      * to the list of elements.
      */
     void validateTopology();
-
-protected:
-
-    BaseLinearSmallStrainFEMForceField();
 
     /**
      * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.

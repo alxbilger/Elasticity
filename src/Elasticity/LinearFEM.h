@@ -6,8 +6,24 @@
 namespace elasticity
 {
 
+template <class DataTypes>
+class BaseLinearFEM
+{
+    using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using VecDeriv = sofa::VecDeriv_t<DataTypes>;
+    using Real = sofa::Real_t<DataTypes>;
+
+public:
+    ~BaseLinearFEM() = default;
+
+    virtual void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) const = 0;
+    virtual void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const = 0;
+    virtual void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const = 0;
+    virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) = 0;
+};
+
 template <class DataTypes, class ElementType>
-class LinearFEM
+class LinearFEM final : public BaseLinearFEM<DataTypes>
 {
     using VecCoord = sofa::VecCoord_t<DataTypes>;
     using VecDeriv = sofa::VecDeriv_t<DataTypes>;
@@ -39,13 +55,15 @@ class LinearFEM
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
 
 public:
-    void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition);
-    void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor);
-    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx);
+    explicit LinearFEM(sofa::core::topology::BaseMeshTopology* topology = nullptr);
+
+    void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) const override;
+    void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const override;
+    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const override;
 
     void setTopology(sofa::core::topology::BaseMeshTopology* topology);
 
-    void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio);
+    virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio);
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 
@@ -63,12 +81,18 @@ protected:
     /**
      * Assemble in a unique vector the displacement of all the nodes in an element
      */
-    ElementDisplacement computeElementDisplacement(
+    static ElementDisplacement computeElementDisplacement(
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)
+#include <Elasticity/FiniteElement[Edge].h>
+#include <Elasticity/FiniteElement[Hexahedron].h>
+#include <Elasticity/FiniteElement[Quad].h>
+#include <Elasticity/FiniteElement[Tetrahedron].h>
+#include <Elasticity/FiniteElement[Triangle].h>
+
 extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
 extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
 extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;

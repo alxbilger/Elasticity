@@ -7,8 +7,14 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
+LinearFEM<DataTypes, ElementType>::LinearFEM(sofa::core::topology::BaseMeshTopology* topology)
+    : m_topology(topology)
+{
+}
+
+template <class DataTypes, class ElementType>
 void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
-                                                 const VecCoord& restPosition)
+                                                 const VecCoord& restPosition) const
 {
     if (m_topology == nullptr) return;
 
@@ -43,7 +49,7 @@ void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord
 }
 
 template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor)
+void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
 {
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
@@ -74,7 +80,7 @@ void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& 
 
 template <class DataTypes, class ElementType>
 void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
-    sofa::core::behavior::StiffnessMatrix::Derivative& dfdx)
+    sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
 

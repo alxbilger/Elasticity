@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<Node name="root" dt="0.1" gravity="0 -9.81 0">
+
+    <Node name="plugins">
+        <RequiredPlugin name="Elasticity"/>
+        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
+        <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Iterative"/> <!-- Needed to use components [CGLinearSolver] -->
+        <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [MeshMatrixMass] -->
+        <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [EulerImplicitSolver] -->
+        <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Dynamic"/> <!-- Needed to use components [TetrahedronSetGeometryAlgorithms,TetrahedronSetTopologyContainer,TetrahedronSetTopologyModifier] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Grid"/> <!-- Needed to use components [RegularGridTopology] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Mapping"/> <!-- Needed to use components [Hexa2TetraTopologicalMapping] -->
+        <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [LineAxis,VisualGrid,VisualStyle] -->
+        <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglSceneFrame] -->
+    </Node>
+
+    <DefaultAnimationLoop parallelODESolving="true"/>
+    <VisualStyle displayFlags="showBehaviorModels showForceFields" />
+
+    <VisualGrid size="40"/>
+    <LineAxis size="40"/>
+    <OglSceneFrame/>
+
+    <Node name="quads3D">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="-20 10 0" max="-10 20 0" n="5 5 1"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+        <Node name="quads">
+            <QuadSetTopologyContainer name="Quad_topo" src="@../grid"/>
+            <QuadSetTopologyModifier name="Modifier" />
+            <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="1"/>
+
+            <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
+            <QuadLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Quad_topo"/>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
+
+</Node>
