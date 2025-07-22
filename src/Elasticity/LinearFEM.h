@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Elasticity/config.h>
 #include <Elasticity/FiniteElement.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
@@ -63,7 +64,7 @@ public:
 
     void setTopology(sofa::core::topology::BaseMeshTopology* topology);
 
-    virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio);
+    void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 

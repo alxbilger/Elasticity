@@ -1,9 +1,4 @@
 #pragma once
-#include <Elasticity/BaseLinearSmallStrainFEMForceField.h>
-#include <Elasticity/FiniteElement.h>
-#include <Elasticity/LinearFEM.h>
-#include <sofa/core/topology/BaseMeshTopology.h>
-
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
 
 namespace elasticity

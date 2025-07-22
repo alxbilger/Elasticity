@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
-#include <Elasticity/BaseLinearSmallStrainFEMForceField.inl>
+#include <Elasticity/LinearSmallStrainFEMForceField.inl>
 
 #include <Elasticity/LinearFEM.inl>
 

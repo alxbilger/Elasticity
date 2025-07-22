@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Elasticity/BaseLinearSmallStrainFEMForceField.h>
+#include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Elasticity/LinearFEM.h>
@@ -9,11 +9,11 @@ namespace elasticity
 {
 
 template <class DataTypes>
-class LinearSmallStrainFEMForceField : public BaseLinearSmallStrainFEMForceField<DataTypes>
+class LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(LinearSmallStrainFEMForceField, DataTypes),
-               SOFA_TEMPLATE(BaseLinearSmallStrainFEMForceField, DataTypes));
+               SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
@@ -23,9 +23,12 @@ private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
 public:
-    using BaseLinearSmallStrainFEMForceField<DataTypes>::l_topology;
-    using BaseLinearSmallStrainFEMForceField<DataTypes>::d_poissonRatio;
-    using BaseLinearSmallStrainFEMForceField<DataTypes>::d_youngModulus;
+    /// The topology will give access to the elements
+    sofa::SingleLink<LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
+                     sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
+
+    sofa::Data<Real> d_poissonRatio;
+    sofa::Data<Real> d_youngModulus;
 
     void init() override;
 
@@ -41,7 +44,19 @@ public:
                              const DataVecCoord& x) const override;
 
 protected:
-    void precomputeElementStiffness() override;
+
+    LinearSmallStrainFEMForceField();
+
+    /**
+     * Ensure a link to a valid topology. Without a topology, this force field cannot have access
+     * to the list of elements.
+     */
+    void validateTopology();
+
+    /**
+     * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.
+     */
+    void precomputeElementStiffness();
 
     virtual void selectFEMTypes();
 
