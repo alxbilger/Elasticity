@@ -1,18 +1,17 @@
 #pragma once
 #include <Elasticity/FiniteElement.h>
-#include <Elasticity/config.h>
-#include <sofa/core/behavior/ForceField.h>
+#include <Elasticity/BaseLinearSmallStrainFEMForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-class ElementLinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
+class ElementLinearSmallStrainFEMForceField : public BaseLinearSmallStrainFEMForceField<DataTypes>
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType),
-               SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
+               SOFA_TEMPLATE(BaseLinearSmallStrainFEMForceField, DataTypes));
 
     static const std::string GetCustomClassName()
     {
@@ -55,10 +54,11 @@ private:
     /// the type of the element stiffness matrix
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
 
-    ElementLinearSmallStrainFEMForceField();
-
 public:
-    void init() override;
+
+    using BaseLinearSmallStrainFEMForceField<DataTypes>::l_topology;
+    using BaseLinearSmallStrainFEMForceField<DataTypes>::d_poissonRatio;
+    using BaseLinearSmallStrainFEMForceField<DataTypes>::d_youngModulus;
 
     void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v) override;
 
@@ -68,13 +68,6 @@ public:
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
-
-    /// The topology will give access to the elements
-    sofa::SingleLink<ElementLinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
-                     sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
-
-    sofa::Data<Real> d_poissonRatio;
-    sofa::Data<Real> d_youngModulus;
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 
@@ -90,15 +83,9 @@ protected:
     sofa::type::vector<ElementStiffness> m_elementStiffness;
 
     /**
-     * Ensure a link to a valid topology. Without a topology, this force field cannot have access
-     * to the list of elements.
-     */
-    void validateTopology();
-
-    /**
      * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.
      */
-    void precomputeElementStiffness();
+    void precomputeElementStiffness() override;
 
     /**
      * Assemble in a unique vector the displacement of all the nodes in an element

@@ -1,67 +1,11 @@
 #pragma once
 #include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
+#include <Elasticity/BaseLinearSmallStrainFEMForceField.inl>
 #include <Elasticity/MatrixTools.h>
-#include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 namespace elasticity
 {
-
-template <class DataTypes, class ElementType>
-ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
-    : l_topology(initLink("topology", "Link to a topology containing elements"))
-    , d_poissonRatio(
-          initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
-    , d_youngModulus(
-          initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
-{
-    static std::string groupName = "Mechanical parameter";
-    d_poissonRatio.setGroup(groupName);
-    d_youngModulus.setGroup(groupName);
-}
-
-template <class DataTypes, class ElementType>
-    void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
-{
-    Inherit1::init();
-
-    if (!this->isComponentStateInvalid())
-    {
-        validateTopology();
-    }
-
-    if (!this->isComponentStateInvalid())
-    {
-        precomputeElementStiffness();
-    }
-
-    if (!this->isComponentStateInvalid())
-    {
-        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
-    }
-}
-
-template <class DataTypes, class ElementType>
-void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::validateTopology()
-{
-    if (l_topology.empty())
-    {
-        msg_info() << "Link to Topology container should be set to ensure right behavior. First "
-                      "Topology found in current context will be used.";
-        l_topology.set(this->getContext()->getMeshTopologyLink());
-    }
-
-    if (l_topology == nullptr)
-    {
-        msg_error() << "No topology component found at path: " << this->l_topology.getLinkedPath()
-                    << ", nor in current context: " << this->getContext()->name
-                    << ". Object must have a BaseMeshTopology. "
-                    << "The list of available BaseMeshTopology components is: "
-                    << sofa::core::ObjectFactory::getInstance()
-                           ->listClassesDerivedFrom<sofa::core::topology::BaseMeshTopology>();
-        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
-    }
-}
 
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
@@ -76,24 +20,31 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
     auto restPositionAccessor = this->mstate->readRestPositions();
     for (const auto& element : elements)
     {
-        //matrix where the i-th column is the i-th node coordinates in the element
-        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element
-            = nodesMatrix(element, restPositionAccessor.ref());
+        // matrix where the i-th column is the i-th node coordinates in the element
+        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element =
+            nodesMatrix(element, restPositionAccessor.ref());
 
         ElementStiffness K;
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
-            //gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref = FiniteElement::gradientShapeFunctions(quadraturePoint);
+            // gradient of shape functions in the reference element evaluated at the quadrature
+            // point
+            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
+                FiniteElement::gradientShapeFunctions(quadraturePoint);
 
-            // jacobian of the mapping from the reference space to the physical space, evaluated at the quadrature point
-            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian = X_element * dN_dq_ref;
+            // jacobian of the mapping from the reference space to the physical space, evaluated at
+            // the quadrature point
+            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian =
+                X_element * dN_dq_ref;
 
             const auto detJ = elasticity::determinant(jacobian);
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv = elasticity::inverse(jacobian);
+            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
+                elasticity::inverse(jacobian);
 
-            //gradient of the shape functions in the physical element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq = dN_dq_ref * J_inv;
+            // gradient of the shape functions in the physical element evaluated at the quadrature
+            // point
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq =
+                dN_dq_ref * J_inv;
 
             const auto B = buildStrainDisplacement(dN_dq);
 

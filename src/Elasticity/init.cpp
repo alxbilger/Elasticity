@@ -6,6 +6,7 @@ namespace elasticity
 {
 
 extern void registerElementLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
+extern void registerLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
 
 void initializePlugin() 
 {
@@ -49,5 +50,6 @@ extern "C"
     ELASTICITY_API void registerObjects(sofa::core::ObjectFactory* factory)
     {
         elasticity::registerElementLinearSmallStrainFEMForceField(factory);
+        elasticity::registerLinearSmallStrainFEMForceField(factory);
     }
 }
