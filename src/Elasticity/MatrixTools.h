@@ -75,7 +75,13 @@ real determinant(const sofa::type::Mat<L, C, real>& mat)
 }
 
 template <sofa::Size L, sofa::Size C, class real>
-sofa::type::Mat<L, C, real> inverse(const sofa::type::Mat<L, C, real>& mat)
+sofa::type::Mat<C, L, real> leftPseudoInverse(const sofa::type::Mat<L, C, real>& mat)
+{
+    return mat.transposed() * (mat * mat.transposed()).inverted();
+}
+
+template <sofa::Size L, sofa::Size C, class real>
+sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
 {
     if constexpr (L == C)
     {
@@ -83,10 +89,7 @@ sofa::type::Mat<L, C, real> inverse(const sofa::type::Mat<L, C, real>& mat)
     }
     else
     {
-        //pseudo inverse
-        const sofa::type::Mat<C, C, real> JTJ = mat.transposed() * mat;
-        const sofa::type::Mat<C, C, real> JTJ_inverse = JTJ.inverted();
-        return mat * JTJ_inverse;
+        return leftPseudoInverse(mat);
     }
 }
 

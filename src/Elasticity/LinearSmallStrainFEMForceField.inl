@@ -84,16 +84,16 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
             //gradient of shape functions in the reference element evaluated at the quadrature point
-            const auto dN_dq_ref = FiniteElement::gradientShapeFunctions(quadraturePoint);
+            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref = FiniteElement::gradientShapeFunctions(quadraturePoint);
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the quadrature point
             const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian = X_element * dN_dq_ref;
 
             const auto detJ = elasticity::determinant(jacobian);
-            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_inv = elasticity::inverse(jacobian);
+            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv = elasticity::inverse(jacobian);
 
             //gradient of the shape functions in the physical element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq = (J_inv * dN_dq_ref.transposed()).transposed();
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq = dN_dq_ref * J_inv;
 
             const auto B = buildStrainDisplacement(dN_dq);
 
