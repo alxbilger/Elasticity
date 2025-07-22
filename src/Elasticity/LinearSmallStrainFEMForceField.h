@@ -78,8 +78,6 @@ public:
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 
-    // static void computeJacobianMatrix();
-
     static StrainDisplacement buildStrainDisplacement(const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions);
 
 protected:
