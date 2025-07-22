@@ -7,12 +7,8 @@ namespace elasticity
 template <class DataTypes>
 struct FiniteElement<sofa::geometry::Quad, DataTypes>
 {
-    using Coord = sofa::Coord_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
-    using ElementType = sofa::geometry::Quad;
-    using TopologyElement = sofa::topology::Element<ElementType>;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size ElementDimension = 2;
+    FINITEELEMENT_HEADER(sofa::geometry::Quad, DataTypes, 2);
+    static_assert(spatial_dimensions > 1, "Quads cannot be defined in 1D");
 
     constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
     {
@@ -32,6 +28,29 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
     static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getQuads();
+    }
+
+    static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    {
+        return {
+            {1. / 4. * (-1 + q[1]), 1. / 4. * (-1 + q[0])},
+            {1. / 4. * ( 1 - q[1]), 1. / 4. * (-1 - q[0])},
+            {1. / 4. * ( 1 + q[1]), 1. / 4. * ( 1 + q[0])},
+            {1. / 4. * (-1 - q[1]), 1. / 4. * ( 1 - q[0])}
+        };
+    }
+
+    static std::array<QuadraturePointAndWeight, 3> quadraturePoints()
+    {
+        static sofa::type::Vec<ElementDimension, Real> q0(std::sqrt(2./3.), 0.);
+        static sofa::type::Vec<ElementDimension, Real> q1(-1/std::sqrt(6.), -1./std::sqrt(2.));
+        static sofa::type::Vec<ElementDimension, Real> q2(-1/std::sqrt(6.), 1./std::sqrt(2.));
+
+        return {
+            std::make_pair(q0, 4./3.),
+            std::make_pair(q1, 4./3.),
+            std::make_pair(q2, 4./3.),
+        };
     }
 };
 

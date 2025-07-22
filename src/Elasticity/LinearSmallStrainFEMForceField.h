@@ -32,6 +32,7 @@ private:
     using Coord = sofa::Coord_t<DataTypes>;
     using Deriv = sofa::Deriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
+    using TopologyElement = sofa::topology::Element<ElementType>;
     using FiniteElement = FiniteElement<ElementType, DataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
@@ -39,7 +40,7 @@ private:
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
 
-    /// The number of independent elements in a symmetric 2nd-order tensor
+    /// The number of independent elements in a symmetric 2nd-order tensor of size (spatial_dimensions x spatial_dimensions)
     static constexpr sofa::Size NumberOfIndependentElements = spatial_dimensions * (spatial_dimensions + 1) / 2;
 
     /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
@@ -53,9 +54,6 @@ private:
 
     /// the type of the element stiffness matrix
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
-
-    /// container for the values of the constants in a shape function
-    using ShapeFunction = sofa::type::Vec<ElementDimension+1, Real>;
 
     LinearSmallStrainFEMForceField();
 
@@ -79,8 +77,10 @@ public:
     sofa::Data<Real> d_youngModulus;
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
-    static std::array<ShapeFunction, NumberOfNodesInElement> computeShapeFunctions(const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates);
-    static StrainDisplacement computeStrainDisplacement(const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates);
+
+    // static void computeJacobianMatrix();
+
+    static StrainDisplacement buildStrainDisplacement(const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions);
 
 protected:
 

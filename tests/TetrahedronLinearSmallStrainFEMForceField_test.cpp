@@ -1,11 +1,8 @@
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
+#include <Elasticity/FiniteElement[Tetrahedron].h>
 
-namespace sofa::component::topology::container::constant
-{
-class MeshTopology;
-}
 namespace elasticity
 {
 
@@ -126,77 +123,43 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
     }
 }
 
-TEST(TET4LinearSmallStrainFEMForceField, computeShapeFunctions)
+TEST(FiniteElement_Tetra, quadraturePoints)
 {
-    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
-
-    constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
-        {0, 0, 0},
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    });
-
-    const auto shapeFunctions = Force::computeShapeFunctions(tetraNodesCoordinates);
-
-    sofa::type::Mat<4, 4, SReal> shapeFunctionMatrix;
-    for (sofa::Size i = 0; i < 4; ++i)
-    {
-        for (sofa::Size j = 0; j < 4; ++j)
-        {
-            shapeFunctionMatrix(i, j) = shapeFunctions[j][i];
-        }
-    }
-
-    sofa::type::Mat<4, 4, SReal> coordinatesMatrix;
-    for (sofa::Size i = 0; i < 4; ++i)
-    {
-        coordinatesMatrix(i, 0) = 1;
-        for (sofa::Size j = 0; j < 3; ++j)
-        {
-            coordinatesMatrix(i, j + 1) = tetraNodesCoordinates[i][j];
-        }
-    }
-
-    const auto expectedIdentity = coordinatesMatrix * shapeFunctionMatrix;
-    for (sofa::Size i = 0; i < 4; ++i)
-    {
-        for (sofa::Size j = 0; j < 4; ++j)
-        {
-            EXPECT_DOUBLE_EQ(expectedIdentity(i, j), static_cast<SReal>(i == j)) <<  "i = " << i << " j = " << j;
-        }
-    }
+    using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
+    const auto q = FE::quadraturePoints();
+    EXPECT_EQ(q.size(), 1);
 }
 
-TEST(TET4LinearSmallStrainFEMForceField, computeStrainDisplacement)
+TEST(TET4LinearSmallStrainFEMForceField, jacobian)
 {
     using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
+    using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
-        {0, 0, 0},
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    });
+         {0, 0, 0},
+         {1, 0, 0},
+         {0, 1, 0},
+         {0, 0, 1}
+     });
 
-    const auto B = Force::computeStrainDisplacement(tetraNodesCoordinates);
+    const auto q = FE::quadraturePoints();
+    const auto dN_dq_ref = FE::gradientShapeFunctions(q[0].first);
 
-    const sofa::type::Mat<6, 3*4, SReal> expectedB({
-        {-1,  0,  0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        { 0, -1,  0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        { 0,  0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {0, -1, -1, 0, 0, 0, 0, 0, 1, 0, 1, 0},
-        {-1, 0, -1, 0, 0, 1, 0, 0, 0, 1, 0, 0},
-        {-1, -1, 0, 0, 1, 0, 1, 0, 0, 0 ,0, 0}
-    });
-
-    for (sofa::Size i = 0; i < 6; ++i)
+    sofa::type::Mat<3, 4, SReal> X_element;
+    for (sofa::Size i = 0; i < 3; ++i)
     {
-        for (sofa::Size j = 0; j < 3*4; ++j)
+        for (sofa::Size j = 0; j < 4; ++j)
         {
-            EXPECT_DOUBLE_EQ(B(i, j), expectedB(i, j)) <<  "i = " << i << " j = " << j;
+            X_element[i][j] = tetraNodesCoordinates[j][i];
         }
     }
+
+    const sofa::type::Mat<3, 3, SReal> jacobian = X_element * dN_dq_ref;
+
+    for (sofa::Size i = 0; i < 3; ++i)
+        for (sofa::Size j = 0; j < 3; ++j)
+           EXPECT_DOUBLE_EQ(jacobian(i, j), static_cast<SReal>(i == j)) << "i = " << i << " j = " << j;
+
 }
 
 }

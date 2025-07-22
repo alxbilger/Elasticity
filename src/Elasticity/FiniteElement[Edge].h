@@ -7,12 +7,7 @@ namespace elasticity
 template <class DataTypes>
 struct FiniteElement<sofa::geometry::Edge, DataTypes>
 {
-    using Coord = sofa::Coord_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
-    using ElementType = sofa::geometry::Edge;
-    using TopologyElement = sofa::topology::Element<ElementType>;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size ElementDimension = 2;
+    FINITEELEMENT_HEADER(sofa::geometry::Edge, DataTypes, 1);
 
     constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
     {
@@ -31,6 +26,26 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
     {
         return topology.getEdges();
     }
+
+    // static inline const std::array<ShapeFunctionType, NumberOfNodesInElement> shapeFunctions = {
+    //     [](const ReferenceCoord& coord) { return (1 - coord[0]) / 2; },
+    //     [](const ReferenceCoord& coord) { return (1 + coord[0]) / 2; }
+    // };
+
+    static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    {
+        SOFA_UNUSED(q);
+        return {{-1/2}, {1/2}};
+    }
+
+    static std::array<QuadraturePointAndWeight, 1> quadraturePoints()
+    {
+        static sofa::type::Vec<ElementDimension, Real> q0(static_cast<Real>(0));
+        return {
+            std::make_pair(q0, 2.)
+        };
+    }
+
 };
 
 }

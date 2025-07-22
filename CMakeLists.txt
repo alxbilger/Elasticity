@@ -16,6 +16,7 @@ set(HEADER_FILES
 
     src/Elasticity/LinearSmallStrainFEMForceField.h
     src/Elasticity/LinearSmallStrainFEMForceField.inl
+    src/Elasticity/MatrixTools.h
 )
 
 set(SOURCE_FILES

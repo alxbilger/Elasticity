@@ -7,12 +7,8 @@ namespace elasticity
 template <class DataTypes>
 struct FiniteElement<sofa::geometry::Triangle, DataTypes>
 {
-    using Coord = sofa::Coord_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
-    using ElementType = sofa::geometry::Triangle;
-    using TopologyElement = sofa::topology::Element<ElementType>;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size ElementDimension = 2;
+    FINITEELEMENT_HEADER(sofa::geometry::Triangle, DataTypes, 2);
+    static_assert(spatial_dimensions > 1, "Triangles cannot be defined in 1D");
 
     constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
     {
@@ -31,6 +27,23 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
     static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getTriangles();
+    }
+
+    static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    {
+        SOFA_UNUSED(q);
+        return {
+            {-1, -1},
+            {1, 0},
+            {0, 1}
+        };
+    }
+
+    static std::array<QuadraturePointAndWeight, 1> quadraturePoints()
+    {
+        return {
+            std::make_pair(sofa::type::Vec<ElementDimension, Real>(1./3., 1./3.), 1./2.)
+        };
     }
 };
 

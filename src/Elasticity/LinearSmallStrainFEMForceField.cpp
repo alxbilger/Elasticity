@@ -11,10 +11,17 @@ namespace elasticity
 
 void registerLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory)
 {
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear beams assuming small strain")
+        .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge> >()
+        .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge> >()
+        .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge> >(true));
+
     factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear triangles assuming small strain")
+        .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle> >()
         .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Triangle> >(true));
 
     factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear quads assuming small strain")
+        .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Quad> >()
         .add< LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Quad> >(true));
 
     factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear tetrahedra assuming small strain")

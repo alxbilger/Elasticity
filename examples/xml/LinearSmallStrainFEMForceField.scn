@@ -38,7 +38,7 @@
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
+            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
@@ -59,7 +59,7 @@
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
+            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
@@ -79,7 +79,7 @@
             <HexahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawHexahedra="true"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Hexa_topo"/>
-            <TetrahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Hexa_topo"/>
+            <HexahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Hexa_topo"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="24 -6 -1 36 6 0.1" drawBoxes="1" />
@@ -98,7 +98,7 @@
             <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="1"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo"/>
-            <TriangleLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Triangle_topo"/>
+            <TriangleLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Triangle_topo"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
@@ -117,10 +117,30 @@
             <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="1"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
-            <QuadLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Quad_topo"/>
+            <QuadLinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Quad_topo"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
+
+    <Node name="triangles2D">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <RegularGridTopology name="grid" min="0 15 0" max="20 20 0" n="10 5 1"/>
+        <MechanicalObject template="Vec2" name="state" showObject="true"/>
+        <Node name="triangles">
+            <TriangleSetTopologyContainer name="Triangle_topo" src="@../grid"/>
+            <TriangleSetTopologyModifier name="Modifier" />
+            <TriangleSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawTriangles="1"/>
+
+            <MeshMatrixMass totalMass="1500" topology="@Triangle_topo" template="Vec2,Vec2"/>
+            <TriangleLinearSmallStrainFEMForceField mstate="@../state" template="Vec2" name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Triangle_topo"/>
+        </Node>
+
+        <BoxROI template="Vec2" name="box_roi" box="-0.1 14.9 0  0.1 20.1 0" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec2" indices="@box_roi.indices" />
+    </Node>
+
 </Node>

@@ -1,8 +1,8 @@
 #pragma once
 #include <Elasticity/LinearSmallStrainFEMForceField.h>
+#include <Elasticity/MatrixTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
-#include <Elasticity/FiniteElement.h>
 
 namespace elasticity
 {
@@ -76,17 +76,29 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
     auto restPositionAccessor = this->mstate->readRestPositions();
     for (const auto& element : elements)
     {
-        std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates;
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        //matrix where the i-th column is the i-th node coordinates in the element
+        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element
+            = nodesMatrix(element, restPositionAccessor.ref());
+
+        ElementStiffness K;
+        for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
-            restElementNodesCoordinates[i] = restPositionAccessor[element[i]];
+            //gradient of shape functions in the reference element evaluated at the quadrature point
+            const auto dN_dq_ref = FiniteElement::gradientShapeFunctions(quadraturePoint);
+
+            // jacobian of the mapping from the reference space to the physical space, evaluated at the quadrature point
+            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian = X_element * dN_dq_ref;
+
+            const auto detJ = elasticity::determinant(jacobian);
+            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_inv = elasticity::inverse(jacobian);
+
+            //gradient of the shape functions in the physical element evaluated at the quadrature point
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq = (J_inv * dN_dq_ref.transposed()).transposed();
+
+            const auto B = buildStrainDisplacement(dN_dq);
+
+            K += (weight * detJ) * B.transposed() * C * B;
         }
-
-        const Real volume = FiniteElement::volume(restElementNodesCoordinates);
-
-        const auto B = computeStrainDisplacement(restElementNodesCoordinates);
-
-        const auto K = volume * B.transposed() * C * B;
         m_elementStiffness.push_back(K);
     }
 }
@@ -249,52 +261,28 @@ auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTe
 }
 
 template <class DataTypes, class ElementType>
-auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeShapeFunctions(
-    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates)
--> std::array<ShapeFunction, NumberOfNodesInElement>
+typename LinearSmallStrainFEMForceField<DataTypes, ElementType>::StrainDisplacement
+LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStrainDisplacement(
+    const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions)
 {
-    sofa::type::Mat<NumberOfNodesInElement, NumberOfNodesInElement, Real> X;
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-    {
-        X[i][0] = 1;
-        for (sofa::Size j = 0; j < spatial_dimensions; ++j)
-        {
-            X[i][j+1] = elementNodesCoordinates[i][j];
-        }
-    }
-
-    const auto invX = X.inverted();
-
-    std::array<ShapeFunction, NumberOfNodesInElement> shapeFunctions;
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-    {
-        shapeFunctions[i] = invX.col(i);
-    }
-
-    return shapeFunctions;
-}
-
-template <class DataTypes, class ElementType>
-auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeStrainDisplacement(
-    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates) -> StrainDisplacement
-{
-    const std::array<ShapeFunction, NumberOfNodesInElement> shapeFunctions = computeShapeFunctions(elementNodesCoordinates);
-
     StrainDisplacement B;
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+    for (sofa::Size ne = 0; ne < NumberOfNodesInElement; ++ne)
     {
-        B[0][i*spatial_dimensions] = shapeFunctions[i][1];
-        B[1][i*spatial_dimensions + 1] = shapeFunctions[i][2];
-        B[2][i*spatial_dimensions + 2] = shapeFunctions[i][3];
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            B[i][ne * spatial_dimensions + i] = gradientShapeFunctions[ne][i];
+        }
 
-        B[3][i*spatial_dimensions + 1] = shapeFunctions[i][3];
-        B[3][i*spatial_dimensions + 2] = shapeFunctions[i][2];
-
-        B[4][i*spatial_dimensions + 0] = shapeFunctions[i][3];
-        B[4][i*spatial_dimensions + 2] = shapeFunctions[i][1];
-
-        B[5][i*spatial_dimensions + 0] = shapeFunctions[i][2];
-        B[5][i*spatial_dimensions + 1] = shapeFunctions[i][1];
+        auto row = spatial_dimensions;
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for (sofa::Size j = i + 1; j < spatial_dimensions; ++j)
+            {
+                B[row][ne * spatial_dimensions + i] = gradientShapeFunctions[ne][j];
+                B[row][ne * spatial_dimensions + j] = gradientShapeFunctions[ne][i];
+                ++row;
+            }
+        }
     }
 
     return B;
