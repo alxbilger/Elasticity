@@ -1,7 +1,9 @@
 #pragma once
-#include <Elasticity/FiniteElement.h>
 #include <Elasticity/BaseLinearSmallStrainFEMForceField.h>
+#include <Elasticity/FiniteElement.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
+
+#include <Elasticity/LinearFEM.h>
 
 namespace elasticity
 {
@@ -69,13 +71,11 @@ public:
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
 
-    static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 
-    static StrainDisplacement buildStrainDisplacement(const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions);
 
 protected:
 
-    ElasticityTensor computeElasticityTensor();
+    LinearFEM<DataTypes, ElementType> m_finiteElement;
 
     /**
      * List of precomputed element stiffness matrices
@@ -87,12 +87,6 @@ protected:
      */
     void precomputeElementStiffness() override;
 
-    /**
-     * Assemble in a unique vector the displacement of all the nodes in an element
-     */
-    ElementDisplacement computeElementDisplacement(
-        const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-        const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 };
 
 }  // namespace elasticity
