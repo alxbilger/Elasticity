@@ -90,7 +90,7 @@ TYPED_TEST(TET4LinearSmallStrainFEMForceField_stepTest, extension )
 
 TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
 {
-    using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
+    using Force = LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
 
     constexpr auto youngModulus = 1_sreal;
     constexpr auto poissonRatio = 0_sreal;
