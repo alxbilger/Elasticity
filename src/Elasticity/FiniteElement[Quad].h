@@ -10,11 +10,6 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Quad, DataTypes, 2);
     static_assert(spatial_dimensions > 1, "Quads cannot be defined in 1D");
 
-    constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        return ElementType::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
-    }
-
     constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
     {
         std::array<Coord, NumberOfNodesInElement> nodes;

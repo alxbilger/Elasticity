@@ -10,11 +10,6 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Tetrahedron, DataTypes, 3);
     static_assert(spatial_dimensions == 3, "Tetrahedrons are only defined in 3D");
 
-    constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        return ElementType::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3]);
-    }
-
     constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
     {
         std::array<Coord, NumberOfNodesInElement> nodes;

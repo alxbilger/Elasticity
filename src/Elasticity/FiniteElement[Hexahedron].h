@@ -10,11 +10,6 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Hexahedron, DataTypes, 3);
     static_assert(spatial_dimensions == 3, "Hexahedrons are only defined in 3D");
 
-    constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        return ElementType::volume(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2], nodesCoordinates[3], nodesCoordinates[4], nodesCoordinates[5], nodesCoordinates[6], nodesCoordinates[7]);
-    }
-
     constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
     {
         std::array<Coord, NumberOfNodesInElement> nodes;

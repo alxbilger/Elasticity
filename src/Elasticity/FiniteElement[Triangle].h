@@ -10,11 +10,6 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Triangle, DataTypes, 2);
     static_assert(spatial_dimensions > 1, "Triangles cannot be defined in 1D");
 
-    constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        return ElementType::area(nodesCoordinates[0], nodesCoordinates[1], nodesCoordinates[2]);
-    }
-
     constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
     {
         std::array<Coord, NumberOfNodesInElement> nodes;

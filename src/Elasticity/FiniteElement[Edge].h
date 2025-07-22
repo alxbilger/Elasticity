@@ -9,11 +9,6 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
 {
     FINITEELEMENT_HEADER(sofa::geometry::Edge, DataTypes, 1);
 
-    constexpr static Real volume(const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates)
-    {
-        return ElementType::length(nodesCoordinates[0], nodesCoordinates[1]);
-    }
-
     constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
     {
         std::array<Coord, NumberOfNodesInElement> nodes;
@@ -26,11 +21,6 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
     {
         return topology.getEdges();
     }
-
-    // static inline const std::array<ShapeFunctionType, NumberOfNodesInElement> shapeFunctions = {
-    //     [](const ReferenceCoord& coord) { return (1 - coord[0]) / 2; },
-    //     [](const ReferenceCoord& coord) { return (1 + coord[0]) / 2; }
-    // };
 
     static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
     {
