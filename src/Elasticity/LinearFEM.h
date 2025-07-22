@@ -62,8 +62,6 @@ public:
     void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const override;
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const override;
 
-    void setTopology(sofa::core::topology::BaseMeshTopology* topology);
-
     void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
 
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);

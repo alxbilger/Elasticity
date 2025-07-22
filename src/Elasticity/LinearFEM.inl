@@ -102,13 +102,6 @@ void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
 }
 
 template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::setTopology(
-    sofa::core::topology::BaseMeshTopology* topology)
-{
-    m_topology = topology;
-}
-
-template <class DataTypes, class ElementType>
 void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio)
 {
     const ElasticityTensor C = computeElasticityTensor(youngModulus, poissonRatio);
