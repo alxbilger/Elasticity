@@ -8,10 +8,10 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-class LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
+class ElementLinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE2(LinearSmallStrainFEMForceField, DataTypes, ElementType),
+    SOFA_CLASS(SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType),
                SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
     static const std::string GetCustomClassName()
@@ -55,7 +55,7 @@ private:
     /// the type of the element stiffness matrix
     using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
 
-    LinearSmallStrainFEMForceField();
+    ElementLinearSmallStrainFEMForceField();
 
 public:
     void init() override;
@@ -70,7 +70,7 @@ public:
                              const DataVecCoord& x) const override;
 
     /// The topology will give access to the elements
-    sofa::SingleLink<LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
+    sofa::SingleLink<ElementLinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
                      sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
 
     sofa::Data<Real> d_poissonRatio;

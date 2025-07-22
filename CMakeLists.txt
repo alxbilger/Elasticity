@@ -14,15 +14,15 @@ set(HEADER_FILES
     src/Elasticity/FiniteElement[Tetrahedron].h
     src/Elasticity/FiniteElement[Triangle].h
 
-    src/Elasticity/LinearSmallStrainFEMForceField.h
-    src/Elasticity/LinearSmallStrainFEMForceField.inl
+    src/Elasticity/ElementLinearSmallStrainFEMForceField.h
+    src/Elasticity/ElementLinearSmallStrainFEMForceField.inl
     src/Elasticity/MatrixTools.h
 )
 
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/LinearSmallStrainFEMForceField.cpp
+    src/Elasticity/ElementLinearSmallStrainFEMForceField.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

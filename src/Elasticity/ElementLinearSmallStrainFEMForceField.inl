@@ -1,5 +1,5 @@
 #pragma once
-#include <Elasticity/LinearSmallStrainFEMForceField.h>
+#include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/MatrixTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
@@ -8,7 +8,7 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-LinearSmallStrainFEMForceField<DataTypes, ElementType>::LinearSmallStrainFEMForceField()
+ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
     : l_topology(initLink("topology", "Link to a topology containing elements"))
     , d_poissonRatio(
           initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
@@ -21,7 +21,7 @@ LinearSmallStrainFEMForceField<DataTypes, ElementType>::LinearSmallStrainFEMForc
 }
 
 template <class DataTypes, class ElementType>
-    void LinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
+    void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 {
     Inherit1::init();
 
@@ -42,7 +42,7 @@ template <class DataTypes, class ElementType>
 }
 
 template <class DataTypes, class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes, ElementType>::validateTopology()
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::validateTopology()
 {
     if (l_topology.empty())
     {
@@ -64,7 +64,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::validateTopology()
 }
 
 template <class DataTypes, class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
 {
     const ElasticityTensor C = computeElasticityTensor();
 
@@ -104,7 +104,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementSt
 }
 
 template <class DataTypes, class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     const sofa::core::MechanicalParams* mparams,
     DataVecDeriv& f, const DataVecCoord& x, const DataVecDeriv& v)
 {
@@ -143,7 +143,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
 }
 
 template <class DataTypes, class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
@@ -181,7 +181,7 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
 }
 
 template <class DataTypes, class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
@@ -207,14 +207,14 @@ void LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatri
 }
 
 template <class DataTypes, class ElementType>
-SReal LinearSmallStrainFEMForceField<DataTypes, ElementType>::getPotentialEnergy(
+SReal ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::getPotentialEnergy(
     const sofa::core::MechanicalParams*, const DataVecCoord& x) const
 {
     return 0;
 }
 
 template <class DataTypes, class ElementType>
-auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor(
+auto ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor(
     Real youngModulus, Real poissonRatio)
 -> ElasticityTensor
 {
@@ -252,7 +252,7 @@ auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTe
 }
 
 template <class DataTypes, class ElementType>
-auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor() -> ElasticityTensor
+auto ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTensor() -> ElasticityTensor
 {
     const auto E = d_youngModulus.getValue();
     const auto nu = d_poissonRatio.getValue();
@@ -261,8 +261,8 @@ auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElasticityTe
 }
 
 template <class DataTypes, class ElementType>
-typename LinearSmallStrainFEMForceField<DataTypes, ElementType>::StrainDisplacement
-LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStrainDisplacement(
+typename ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::StrainDisplacement
+ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStrainDisplacement(
     const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions)
 {
     StrainDisplacement B;
@@ -289,7 +289,7 @@ LinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStrainDisplacement(
 }
 
 template <class DataTypes, class ElementType>
-auto LinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementDisplacement(
+auto ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
     const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
     -> ElementDisplacement

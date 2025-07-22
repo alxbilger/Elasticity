@@ -1,15 +1,15 @@
-#include <Elasticity/LinearSmallStrainFEMForceField.h>
+#include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
+#include <Elasticity/FiniteElement[Tetrahedron].h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
-#include <Elasticity/FiniteElement[Tetrahedron].h>
 
 namespace elasticity
 {
 
 template<class DataTypes>
-struct TET4LinearSmallStrainFEMForceField_stepTest : public sofa::ForceField_test<LinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>>
+struct TET4LinearSmallStrainFEMForceField_stepTest : public sofa::ForceField_test<ElementLinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>>
 {
-    using ForceField = LinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>;
+    using ForceField = ElementLinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>;
     using Inherited = sofa::ForceField_test<ForceField>;
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
@@ -83,14 +83,14 @@ TYPED_TEST(TET4LinearSmallStrainFEMForceField_stepTest, extension )
     this->errorMax *= 1e6;
     this->deltaRange = std::make_pair( 1, this->errorMax * 10 );
     this->debug = true;
-    this->flags &= ~sofa::ForceField_test<LinearSmallStrainFEMForceField<TypeParam, sofa::geometry::Tetrahedron>>::TEST_POTENTIAL_ENERGY;
+    this->flags &= ~sofa::ForceField_test<ElementLinearSmallStrainFEMForceField<TypeParam, sofa::geometry::Tetrahedron>>::TEST_POTENTIAL_ENERGY;
 
     this->runTest();
 }
 
 TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
 {
-    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
+    using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
 
     constexpr auto youngModulus = 1_sreal;
     constexpr auto poissonRatio = 0_sreal;
@@ -132,7 +132,7 @@ TEST(FiniteElement_Tetra, quadraturePoints)
 
 TEST(TET4LinearSmallStrainFEMForceField, jacobian)
 {
-    using Force = LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
+    using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
     using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
