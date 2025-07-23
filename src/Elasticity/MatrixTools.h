@@ -94,10 +94,15 @@ sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
     }
 }
 
+// from
+// Müller, Matthias, et al. "A robust method to extract the rotational part of deformations." Proceedings of the 9th International Conference on Motion in Games. 2016.
 template<class Real>
-void extractRotation(const sofa::type::Mat<3,3,Real> &A, sofa::type::Quat<Real> &q,
-const unsigned int maxIter)
+void extractRotation(
+    const sofa::type::Mat<3,3,Real> &A,
+    sofa::type::Quat<Real> &q,
+    const unsigned int maxIter)
 {
+
     for (unsigned int iter = 0; iter < maxIter; iter++)
     {
         sofa::type::Mat<3,3,Real> R(sofa::type::NOINIT);
@@ -109,7 +114,8 @@ const unsigned int maxIter)
                 R.col(2).cross(A.col(2))
             ) * (1.0 / fabs(
                 sofa::type::dot(R.col(0), A.col(0)) +
-                sofa::type::dot(R.col(1), A.col(1)) +
+                sofa::type::dot(R.col(1),
+                    A.col(1)) +
                 sofa::type::dot(R.col(1), A.col(1))) + 1.0e-9);
         Real w = omega.norm();
         if (w < 1.0e-9)

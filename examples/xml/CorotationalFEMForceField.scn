@@ -24,6 +24,8 @@
     <LineAxis size="40"/>
     <OglSceneFrame/>
 
+
+
     <Node name="tetras_corot">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
@@ -45,6 +47,8 @@
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
+
+
     <Node name="tetras_smallStrain">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
@@ -59,7 +63,8 @@
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-            <LinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
+<!--            <LinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>-->
+            <TetrahedronFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo" method="svd"/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />

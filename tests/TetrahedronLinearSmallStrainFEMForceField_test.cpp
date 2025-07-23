@@ -1,5 +1,6 @@
 #include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/FiniteElement[Tetrahedron].h>
+#include <Elasticity/MatrixTools.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 
@@ -132,7 +133,6 @@ TEST(FiniteElement_Tetra, quadraturePoints)
 
 TEST(TET4LinearSmallStrainFEMForceField, jacobian)
 {
-    using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
     using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
@@ -145,15 +145,7 @@ TEST(TET4LinearSmallStrainFEMForceField, jacobian)
     const auto q = FE::quadraturePoints();
     const auto dN_dq_ref = FE::gradientShapeFunctions(q[0].first);
 
-    sofa::type::Mat<3, 4, SReal> X_element;
-    for (sofa::Size i = 0; i < 3; ++i)
-    {
-        for (sofa::Size j = 0; j < 4; ++j)
-        {
-            X_element[i][j] = tetraNodesCoordinates[j][i];
-        }
-    }
-
+    const sofa::type::Mat<3, 4, SReal> X_element = nodesMatrix(sofa::topology::Tetrahedron(0,1,2,3), tetraNodesCoordinates);
     const sofa::type::Mat<3, 3, SReal> jacobian = X_element * dN_dq_ref;
 
     for (sofa::Size i = 0; i < 3; ++i)

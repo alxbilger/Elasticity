@@ -3,6 +3,7 @@ project(Elasticity_test VERSION 1.0)
 find_package(Sofa.Testing REQUIRED)
 
 set(SOURCE_FILES
+    CorotationalFEM_test.cpp
     FiniteElement_test.cpp
     TetrahedronLinearSmallStrainFEMForceField_test.cpp
     HexahedronLinearSmallStrainFEMForceField_test.cpp

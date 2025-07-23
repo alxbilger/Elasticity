@@ -38,18 +38,27 @@ protected:
      */
     const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const override;
 
-     /**
-     * Compute the deformation gradient at the centroid of an element
-     */
-    DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
+    static void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
 
-    void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
-    static Coord elementCentroid();
     void computeRestJacobians(const VecCoord& restPosition);
 
 public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;
     void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
+
+
+    /**
+     * Return the reference element centroid
+     */
+    static Coord referenceElementCentroid();
+
+    static Coord computeCentroid(const std::array<Coord, NumberOfNodesInElement>& nodes);
+
+    /**
+     * Compute the deformation gradient at the centroid of an element
+     */
+    static DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
+
 
 };
 

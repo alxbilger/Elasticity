@@ -1,6 +1,7 @@
 #pragma once
 #include <Elasticity/CorotationalFEM.h>
 #include <Elasticity/MatrixTools.h>
+#include <sofa/helper/decompose.h>
 
 namespace elasticity
 {
@@ -17,15 +18,35 @@ void CorotationalFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecC
 
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
+        const auto& element = elements[i];
+
         ElementStiffness& K = m_rotatedStiffness[i];
         K = this->m_elementStiffness[i];
 
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            nodes[j] = positions[element[j]];
+        }
+        const auto centroid = computeCentroid(nodes);
+
+        sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> X_T(sofa::type::NOINIT);
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            X_T[j] = nodes[j] - centroid;
+        }
+
         // matrix where the i-th column is the i-th node coordinates in the element
-        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element = nodesMatrix(elements[i], positions);
+        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element = X_T.transposed();
 
         const DeformationGradient F = deformationGradient(X_element, m_restJacobians[i]);
 
-        ::elasticity::extractRotation(F, m_rotations[i], 1000);
+        // ::elasticity::extractRotation(F, m_rotations[i], 1000);
+
+        sofa::type::Mat<3,3,Real> R_0_1;
+        sofa::helper::Decompose<Real>::polarDecomposition( F, R_0_1 );
+        m_rotations[i].fromMatrix(R_0_1);
+
         applyRotation(K, m_rotations[i]);
     }
 }
@@ -44,7 +65,7 @@ auto CorotationalFEM<DataTypes, ElementType>::deformationGradient(
 {
     // gradient of shape functions in the reference element evaluated at the centroid of the element
     static const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
-        FiniteElement::gradientShapeFunctions(elementCentroid());
+        FiniteElement::gradientShapeFunctions(referenceElementCentroid());
 
     // jacobian of the mapping from the reference space to the physical space, evaluated at the
     // centroid of the physical element
@@ -72,18 +93,22 @@ void CorotationalFEM<DataTypes, ElementType>::applyRotation(ElementStiffness& K,
 }
 
 template <class DataTypes, class ElementType>
-auto CorotationalFEM<DataTypes, ElementType>::elementCentroid() -> Coord
+auto CorotationalFEM<DataTypes, ElementType>::referenceElementCentroid() -> Coord
 {
-    static Coord centroid = []()
+    static const Coord centroid = computeCentroid(FiniteElement::referenceElementNodes);
+    return centroid;
+}
+
+template <class DataTypes, class ElementType>
+auto CorotationalFEM<DataTypes, ElementType>::computeCentroid(
+    const std::array<Coord, NumberOfNodesInElement>& nodes) -> Coord
+{
+    Coord centroid;
+    for (const auto node : nodes)
     {
-        Coord centroid;
-        for (const auto node : FiniteElement::referenceElementNodes)
-        {
-            centroid += node;
-        }
-        centroid /= static_cast<Real>(FiniteElement::NumberOfNodesInElement);
-        return centroid;
-    }();
+        centroid += node;
+    }
+    centroid /= static_cast<Real>(FiniteElement::NumberOfNodesInElement);
     return centroid;
 }
 
@@ -97,13 +122,26 @@ void CorotationalFEM<DataTypes, ElementType>::computeRestJacobians(const VecCoor
 
     for (const auto& element : elements)
     {
-        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element =
-            nodesMatrix(element, restPosition);
+        std::array<Coord, NumberOfNodesInElement> nodes;
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            nodes[j] = restPosition[element[j]];
+        }
+        const auto centroid = computeCentroid(nodes);
+
+        sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> X_T(sofa::type::NOINIT);
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            X_T[j] = nodes[j] - centroid;
+        }
+
+        // matrix where the i-th column is the i-th node coordinates in the element
+        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element = X_T.transposed();
 
         // gradient of shape functions in the reference element evaluated at the centroid of the
         // element
         static const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
-            FiniteElement::gradientShapeFunctions(elementCentroid());
+            FiniteElement::gradientShapeFunctions(referenceElementCentroid());
 
         // jacobian of the mapping from the reference space to the physical space, evaluated at the
         // centroid of the rest element
@@ -124,7 +162,6 @@ void CorotationalFEM<DataTypes, ElementType>::precomputeElementStiffness(
 
     const auto& elements = FiniteElement::getElementSequence(*this->m_topology);
     m_rotations.resize(elements.size());
-
 }
 
 }  // namespace elasticity
