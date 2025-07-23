@@ -28,15 +28,26 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 
 protected:
 
+    /**
+     * Update the element stiffness matrices using the element rotation
+     */
     void updateStiffnessMatrices(const VecCoord& positions, const VecCoord& restPositions) override;
+
+    /**
+     * Return the rotated element stiffness matrices
+     */
     const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const override;
-    DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrixconst, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
-    void extractRotation(const DeformationGradient& F, sofa::type::Quat<Real>& rotation);
+
+     /**
+     * Compute the deformation gradient at the centroid of an element
+     */
+    DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
+
     void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
     static Coord elementCentroid();
     void computeRestJacobians(const VecCoord& restPosition);
 
-   public:
+public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;
     void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
 

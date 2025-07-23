@@ -17,18 +17,15 @@ void CorotationalFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecC
 
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
-        const auto& element = elements[i];
         ElementStiffness& K = m_rotatedStiffness[i];
-
         K = this->m_elementStiffness[i];
 
         // matrix where the i-th column is the i-th node coordinates in the element
-        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element =
-            nodesMatrix(element, positions);
+        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element = nodesMatrix(elements[i], positions);
 
         const DeformationGradient F = deformationGradient(X_element, m_restJacobians[i]);
 
-        extractRotation(F, m_rotations[i]);
+        ::elasticity::extractRotation(F, m_rotations[i], 1000);
         applyRotation(K, m_rotations[i]);
     }
 }
@@ -54,12 +51,6 @@ auto CorotationalFEM<DataTypes, ElementType>::deformationGradient(
     const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian = nodesMatrix * dN_dq_ref;
 
     return jacobian * inverseJacobian;
-}
-
-template <class DataTypes, class ElementType>
-void CorotationalFEM<DataTypes, ElementType>::extractRotation(const DeformationGradient& F, sofa::type::Quat<Real>& rotation)
-{
-    ::elasticity::extractRotation(F, rotation, 1000);
 }
 
 template <class DataTypes, class ElementType>
