@@ -17,15 +17,16 @@ class BaseLinearFEM
 public:
     ~BaseLinearFEM() = default;
 
-    virtual void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) const = 0;
+    virtual void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) = 0;
     virtual void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const = 0;
     virtual void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const = 0;
     virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) = 0;
 };
 
 template <class DataTypes, class ElementType>
-class LinearFEM final : public BaseLinearFEM<DataTypes>
+class LinearFEM : public BaseLinearFEM<DataTypes>
 {
+protected:
     using VecCoord = sofa::VecCoord_t<DataTypes>;
     using VecDeriv = sofa::VecDeriv_t<DataTypes>;
     using Coord = sofa::Coord_t<DataTypes>;
@@ -58,7 +59,7 @@ class LinearFEM final : public BaseLinearFEM<DataTypes>
 public:
     explicit LinearFEM(sofa::core::topology::BaseMeshTopology* topology = nullptr);
 
-    void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) const override;
+    void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) override;
     void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const override;
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const override;
 
@@ -83,6 +84,9 @@ protected:
     static ElementDisplacement computeElementDisplacement(
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
+
+    virtual void updateStiffnessMatrices(const VecCoord& positions, const VecCoord& restPositions);
+    virtual const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)

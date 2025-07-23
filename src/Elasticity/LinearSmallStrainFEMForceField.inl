@@ -142,7 +142,7 @@ void LinearSmallStrainFEMForceField<DataTypes>::selectFEMTypes()
 {
     if constexpr (spatial_dimensions == 1)
     {
-        addFEMType<sofa::geometry::Edge>();
+        addLinearFEMType<sofa::geometry::Edge>();
     }
     else if constexpr (spatial_dimensions == 2)
     {
@@ -152,17 +152,17 @@ void LinearSmallStrainFEMForceField<DataTypes>::selectFEMTypes()
 
         if (nbTriangles > 0 || nbQuads > 0)
         {
-            addFEMType<sofa::geometry::Triangle>();
-            addFEMType<sofa::geometry::Quad>();
+            addLinearFEMType<sofa::geometry::Triangle>();
+            addLinearFEMType<sofa::geometry::Quad>();
         }
         else if (nbEdges > 0)
         {
-            addFEMType<sofa::geometry::Edge>();
+            addLinearFEMType<sofa::geometry::Edge>();
         }
         else
         {
-            addFEMType<sofa::geometry::Triangle>();
-            addFEMType<sofa::geometry::Quad>();
+            addLinearFEMType<sofa::geometry::Triangle>();
+            addLinearFEMType<sofa::geometry::Quad>();
         }
     }
     else if constexpr (spatial_dimensions == 3)
@@ -175,29 +175,29 @@ void LinearSmallStrainFEMForceField<DataTypes>::selectFEMTypes()
 
         if (nbTetras > 0 || nbHexas > 0)
         {
-            addFEMType<sofa::geometry::Tetrahedron>();
-            addFEMType<sofa::geometry::Hexahedron>();
+            addLinearFEMType<sofa::geometry::Tetrahedron>();
+            addLinearFEMType<sofa::geometry::Hexahedron>();
         }
         else if (nbTriangles > 0 || nbQuads > 0)
         {
-            addFEMType<sofa::geometry::Triangle>();
-            addFEMType<sofa::geometry::Quad>();
+            addLinearFEMType<sofa::geometry::Triangle>();
+            addLinearFEMType<sofa::geometry::Quad>();
         }
         else if (nbEdges > 0)
         {
-            addFEMType<sofa::geometry::Edge>();
+            addLinearFEMType<sofa::geometry::Edge>();
         }
         else
         {
-            addFEMType<sofa::geometry::Tetrahedron>();
-            addFEMType<sofa::geometry::Hexahedron>();
+            addLinearFEMType<sofa::geometry::Tetrahedron>();
+            addLinearFEMType<sofa::geometry::Hexahedron>();
         }
     }
 }
 
 template <class DataTypes>
 template <class ElementType>
-void LinearSmallStrainFEMForceField<DataTypes>::addFEMType()
+void LinearSmallStrainFEMForceField<DataTypes>::addLinearFEMType()
 {
     m_finiteElements.emplace_back(
         std::make_unique<LinearFEM<DataTypes, ElementType>>(this->l_topology.get()));

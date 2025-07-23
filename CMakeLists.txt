@@ -7,6 +7,7 @@ find_package(Sofa.Core REQUIRED)
 set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
+
     src/Elasticity/FiniteElement.h
     src/Elasticity/FiniteElement[Edge].h
     src/Elasticity/FiniteElement[Hexahedron].h
@@ -14,6 +15,10 @@ set(HEADER_FILES
     src/Elasticity/FiniteElement[Tetrahedron].h
     src/Elasticity/FiniteElement[Triangle].h
 
+    src/Elasticity/CorotationalFEM.h
+    src/Elasticity/CorotationalFEM.inl
+    src/Elasticity/CorotationalFEMForceField.h
+    src/Elasticity/CorotationalFEMForceField.inl
     src/Elasticity/ElementLinearSmallStrainFEMForceField.h
     src/Elasticity/ElementLinearSmallStrainFEMForceField.inl
     src/Elasticity/LinearFEM.h
@@ -26,6 +31,8 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
+    src/Elasticity/CorotationalFEM.cpp
+    src/Elasticity/CorotationalFEMForceField.cpp
     src/Elasticity/ElementLinearSmallStrainFEMForceField.cpp
     src/Elasticity/LinearFEM.cpp
     src/Elasticity/LinearSmallStrainFEMForceField.cpp

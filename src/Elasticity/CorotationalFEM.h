@@ -1,0 +1,45 @@
+#pragma once
+
+#include <Elasticity/LinearFEM.h>
+
+namespace elasticity
+{
+
+template <class DataTypes, class ElementType>
+class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
+{
+    using Real = sofa::Real_t<DataTypes>;
+    using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using Coord = sofa::Coord_t<DataTypes>;
+    using TopologyElement = typename LinearFEM<DataTypes, ElementType>::TopologyElement;
+    using FiniteElement = typename LinearFEM<DataTypes, ElementType>::FiniteElement;
+
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
+    static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+
+    using ElementStiffness = typename LinearFEM<DataTypes, ElementType>::ElementStiffness;
+    using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
+    sofa::type::vector<ElementStiffness> m_rotatedStiffness;
+    sofa::type::vector<sofa::type::Mat<spatial_dimensions, ElementDimension, Real>> m_restJacobians;
+    sofa::type::vector<sofa::type::Quat<Real>> m_rotations;
+
+protected:
+
+    void updateStiffnessMatrices(const VecCoord& positions, const VecCoord& restPositions) override;
+    const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const override;
+    DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrixconst, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
+    void extractRotation(const DeformationGradient& F, sofa::type::Quat<Real>& rotation);
+    void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
+    static Coord elementCentroid();
+    void computeRestJacobians(const VecCoord& restPosition);
+
+   public:
+    using LinearFEM<DataTypes, ElementType>::LinearFEM;
+    void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
+
+};
+
+}  // namespace elasticity

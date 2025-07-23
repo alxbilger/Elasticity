@@ -61,7 +61,7 @@ protected:
     virtual void selectFEMTypes();
 
     template<class ElementType>
-    void addFEMType();
+    void addLinearFEMType();
 
     sofa::type::vector<std::unique_ptr<BaseLinearFEM<DataTypes>>> m_finiteElements;
 };

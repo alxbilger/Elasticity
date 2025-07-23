@@ -2,6 +2,7 @@
 
 #include <sofa/type/Mat.h>
 #include <sofa/topology/Element.h>
+#include <Eigen/Geometry>
 
 namespace elasticity
 {
@@ -92,5 +93,34 @@ sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
         return leftPseudoInverse(mat);
     }
 }
+
+template<class Real>
+void extractRotation(const sofa::type::Mat<3,3,Real> &A, sofa::type::Quat<Real> &q,
+const unsigned int maxIter)
+{
+    for (unsigned int iter = 0; iter < maxIter; iter++)
+    {
+        sofa::type::Mat<3,3,Real> R(sofa::type::NOINIT);
+        q.toMatrix(R);
+        sofa::type::Vec<3, Real> omega =
+            (
+                R.col(0).cross(A.col(0)) +
+                R.col(1).cross(A.col(1)) +
+                R.col(2).cross(A.col(2))
+            ) * (1.0 / fabs(
+                sofa::type::dot(R.col(0), A.col(0)) +
+                sofa::type::dot(R.col(1), A.col(1)) +
+                sofa::type::dot(R.col(1), A.col(1))) + 1.0e-9);
+        Real w = omega.norm();
+        if (w < 1.0e-9)
+            break;
+        Eigen::Vector3<Real> omegaEigen(omega[0], omega[1], omega[2]);
+        Eigen::AngleAxis<Real> angleAxis(w, (1.0 / w) * omegaEigen);
+        const auto axis = angleAxis.axis();
+        q = sofa::type::Quat<Real>({axis(0), axis(1), axis(2)}, angleAxis.angle()) * q;
+        q.normalize();
+    }
+}
+
 
 }

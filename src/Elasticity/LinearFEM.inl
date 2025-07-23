@@ -14,7 +14,7 @@ LinearFEM<DataTypes, ElementType>::LinearFEM(sofa::core::topology::BaseMeshTopol
 
 template <class DataTypes, class ElementType>
 void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
-                                                 const VecCoord& restPosition) const
+                                                 const VecCoord& restPosition)
 {
     if (m_topology == nullptr) return;
 
@@ -22,23 +22,22 @@ void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord
 
     Deriv nodeForce(sofa::type::NOINIT);
 
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    updateStiffnessMatrices(position, restPosition);
+    auto elementStiffnessIt = stiffnessMatrices().begin();
+
     for (const auto& element : elements)
     {
-        std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates,
-            restElementNodesCoordinates;
+        std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates, restElementNodesCoordinates;
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             elementNodesCoordinates[i] = position[element[i]];
             restElementNodesCoordinates[i] = restPosition[element[i]];
         }
 
-        const ElementDisplacement displacement =
-            computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
+        const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
-        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce =
-            stiffnessMatrix * displacement;
+        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
@@ -55,7 +54,7 @@ void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& 
 
     Deriv nodedForce(sofa::type::NOINIT);
 
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    auto elementStiffnessIt = stiffnessMatrices().begin();
     for (const auto& element : elements)
     {
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx;
@@ -85,7 +84,7 @@ void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
 
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    auto elementStiffnessIt = stiffnessMatrices().begin();
     for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
@@ -216,7 +215,8 @@ auto LinearFEM<DataTypes, ElementType>::buildStrainDisplacement(
 template <class DataTypes, class ElementType>
 auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates) -> ElementDisplacement
+    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
+    -> ElementDisplacement
 {
     ElementDisplacement displacement;
     for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
@@ -228,6 +228,20 @@ auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
         }
     }
     return displacement;
+}
+
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecCoord& positions,
+                                                                const VecCoord& restPositions)
+{
+    SOFA_UNUSED(positions);
+    SOFA_UNUSED(restPositions);
+}
+
+template <class DataTypes, class ElementType>
+auto LinearFEM<DataTypes, ElementType>::stiffnessMatrices() const -> const sofa::type::vector<ElementStiffness>&
+{
+    return m_elementStiffness;
 }
 
 }  // namespace elasticity
