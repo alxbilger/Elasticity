@@ -23,7 +23,6 @@ void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord
 
     Deriv nodeForce(sofa::type::NOINIT);
 
-    updateStiffnessMatrices(position, restPosition);
     auto elementStiffnessIt = stiffnessMatrices().begin();
 
     for (const auto& element : elements)
@@ -224,14 +223,6 @@ auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
         }
     }
     return displacement;
-}
-
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecCoord& positions,
-                                                                const VecCoord& restPositions)
-{
-    SOFA_UNUSED(positions);
-    SOFA_UNUSED(restPositions);
 }
 
 template <class DataTypes, class ElementType>

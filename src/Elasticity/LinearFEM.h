@@ -85,8 +85,7 @@ protected:
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 
-    virtual void updateStiffnessMatrices(const VecCoord& positions, const VecCoord& restPositions);
-    virtual const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
+    const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)

@@ -23,36 +23,24 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 
     using ElementStiffness = typename LinearFEM<DataTypes, ElementType>::ElementStiffness;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    using RotationMatrix = sofa::type::Mat<3,3, Real>;
 
     /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
-    sofa::type::vector<ElementStiffness> m_rotatedStiffness;
-    sofa::type::vector<sofa::type::Mat<spatial_dimensions, ElementDimension, Real>> m_restJacobians;
-    sofa::type::vector<sofa::type::Quat<Real>> m_rotations;
+    sofa::type::vector<RotationMatrix> m_rotations;
 
 protected:
 
-    /**
-     * Update the element stiffness matrices using the element rotation
-     */
-    void updateStiffnessMatrices(const VecCoord& positions, const VecCoord& restPositions) override;
-
-    /**
-     * Return the rotated element stiffness matrices
-     */
-    const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const override;
-
     static void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
 
-    void computeRestJacobians(const VecCoord& restPosition);
+    RotationMatrix computeElementRotation(
+        const std::array<Coord, NumberOfNodesInElement>& nodesPosition,
+        const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition);
 
 public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;
     using LinearFEM<DataTypes, ElementType>::m_topology;
-
-    void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
-
 
     /**
      * Return the reference element centroid
@@ -60,12 +48,6 @@ public:
     static Coord referenceElementCentroid();
 
     static Coord computeCentroid(const std::array<Coord, NumberOfNodesInElement>& nodes);
-
-    /**
-     * Compute the deformation gradient at the centroid of an element
-     */
-    static DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
-
 
     void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) override;
 
