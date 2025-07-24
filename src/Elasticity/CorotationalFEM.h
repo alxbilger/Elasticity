@@ -34,9 +34,10 @@ protected:
 
     static void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
 
-    RotationMatrix computeElementRotation(
+    void computeElementRotation(
         const std::array<Coord, NumberOfNodesInElement>& nodesPosition,
-        const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition);
+        const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition,
+        RotationMatrix& rotationMatrix);
 
 public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;

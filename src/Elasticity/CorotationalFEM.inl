@@ -30,7 +30,7 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
             extractNodesVectorFromGlobalVector(element, restPosition);
 
         auto& elementRotation = *rotationMatrixIt++;
-        elementRotation = computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
+        computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates, elementRotation);
 
         const auto t = translation(elementNodesCoordinates);
 
@@ -162,9 +162,10 @@ auto CorotationalFEM<DataTypes, ElementType>::computeCentroid(
 }
 
 template <class DataTypes, class ElementType>
-auto CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
+void CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
     const std::array<Coord, NumberOfNodesInElement>& nodesPosition,
-    const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition) -> RotationMatrix
+    const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition,
+    RotationMatrix& rotationMatrix)
 {
     const auto t = translation(nodesPosition);
     const auto t0 = translation(nodesRestPosition);
@@ -180,9 +181,12 @@ auto CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
 
     const auto H = P.transposed() * Q;
 
-    RotationMatrix rotation;
-    sofa::helper::Decompose<Real>::polarDecomposition(H, rotation);
-    return rotation;
+    sofa::helper::Decompose<Real>::polarDecomposition(H, rotationMatrix);
+
+    // sofa::type::Quat<Real> q;
+    // q.fromMatrix(rotationMatrix);
+    // extractRotation(H, q, 1000);
+    // q.toMatrix(rotationMatrix);
 }
 
 }  // namespace elasticity
