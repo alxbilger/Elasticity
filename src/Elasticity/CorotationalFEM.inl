@@ -160,11 +160,6 @@ void CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
     const auto H = P.transposed() * Q;
 
     sofa::helper::Decompose<Real>::polarDecomposition_stable(H, rotationMatrix);
-
-    // sofa::type::Quat<Real> q;
-    // q.fromMatrix(rotationMatrix);
-    // extractRotation(H, q, 1000);
-    // q.toMatrix(rotationMatrix);
 }
 
 }  // namespace elasticity
