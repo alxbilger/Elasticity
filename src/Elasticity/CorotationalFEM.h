@@ -10,7 +10,9 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 {
     using Real = sofa::Real_t<DataTypes>;
     using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using VecDeriv = sofa::VecDeriv_t<DataTypes>;
     using Coord = sofa::Coord_t<DataTypes>;
+    using Deriv = sofa::Deriv_t<DataTypes>;
     using TopologyElement = typename LinearFEM<DataTypes, ElementType>::TopologyElement;
     using FiniteElement = typename LinearFEM<DataTypes, ElementType>::FiniteElement;
 
@@ -21,6 +23,9 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 
     using ElementStiffness = typename LinearFEM<DataTypes, ElementType>::ElementStiffness;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
+    /// the concatenation of the displacement of the 4 nodes in a single vector
+    using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     sofa::type::vector<ElementStiffness> m_rotatedStiffness;
     sofa::type::vector<sofa::type::Mat<spatial_dimensions, ElementDimension, Real>> m_restJacobians;
@@ -44,6 +49,8 @@ protected:
 
 public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;
+    using LinearFEM<DataTypes, ElementType>::m_topology;
+
     void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
 
 
@@ -60,6 +67,9 @@ public:
     static DeformationGradient deformationGradient(const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix, const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian);
 
 
+    void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) override;
+
+    Coord translation(const std::array<Coord, NumberOfNodesInElement>& nodes) const;
 };
 
 }  // namespace elasticity

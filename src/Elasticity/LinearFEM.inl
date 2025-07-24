@@ -1,6 +1,7 @@
 #pragma once
 #include <Elasticity/LinearFEM.h>
 #include <Elasticity/MatrixTools.h>
+#include <Elasticity/VectorTools.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 namespace elasticity
@@ -27,12 +28,8 @@ void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord
 
     for (const auto& element : elements)
     {
-        std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates, restElementNodesCoordinates;
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        {
-            elementNodesCoordinates[i] = position[element[i]];
-            restElementNodesCoordinates[i] = restPosition[element[i]];
-        }
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
+        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
 
         const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
 
@@ -223,8 +220,7 @@ auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
     {
         for (sofa::Size j = 0; j < spatial_dimensions; ++j)
         {
-            displacement[i * spatial_dimensions + j] =
-                elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
+            displacement[i * spatial_dimensions + j] = elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
         }
     }
     return displacement;

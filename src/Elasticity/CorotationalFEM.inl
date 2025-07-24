@@ -42,8 +42,14 @@ void CorotationalFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecC
         const auto H = P.transposed() * Q;
 
 
+        sofa::type::Mat<3,3,Real> R_0_1;
+        sofa::helper::Decompose<Real>::polarDecomposition( H, R_0_1 );
+        m_rotations[i].fromMatrix(R_0_1);
 
-        //
+
+
+
+
         // const std::array<Coord, NumberOfNodesInElement> nodes = extractNodesVectorFromGlobalVector(element, positions);
         // const auto centroid = computeCentroid(nodes);
         //
@@ -57,12 +63,9 @@ void CorotationalFEM<DataTypes, ElementType>::updateStiffnessMatrices(const VecC
         // const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element = X_T.transposed();
         //
         // const DeformationGradient F = deformationGradient(X_element, m_restJacobians[i]);
+        // // std::cout << "F = " << F << std::endl;
         //
-        // // ::elasticity::extractRotation(F, m_rotations[i], 1000);
-
-        sofa::type::Mat<3,3,Real> R_0_1;
-        sofa::helper::Decompose<Real>::polarDecomposition( H, R_0_1 );
-        m_rotations[i].fromMatrix(R_0_1);
+        // ::elasticity::extractRotation(F, m_rotations[i], 1000);
 
         applyRotation(K, m_rotations[i]);
     }
@@ -78,7 +81,8 @@ auto CorotationalFEM<DataTypes, ElementType>::stiffnessMatrices() const
 template <class DataTypes, class ElementType>
 auto CorotationalFEM<DataTypes, ElementType>::deformationGradient(
     const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real>& nodesMatrix,
-    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian) -> DeformationGradient
+    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& inverseJacobian)
+    -> DeformationGradient
 {
     // gradient of shape functions in the reference element evaluated at the centroid of the element
     static const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
@@ -86,9 +90,87 @@ auto CorotationalFEM<DataTypes, ElementType>::deformationGradient(
 
     // jacobian of the mapping from the reference space to the physical space, evaluated at the
     // centroid of the physical element
-    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian = nodesMatrix * dN_dq_ref;
+    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian =
+        nodesMatrix * dN_dq_ref;
 
     return jacobian * inverseJacobian;
+}
+
+template <class DataTypes, class ElementType>
+void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
+                                                       const VecCoord& restPosition)
+{
+    if (m_topology == nullptr) return;
+
+    const auto& elements = FiniteElement::getElementSequence(*m_topology);
+
+    Deriv nodeForce(sofa::type::NOINIT);
+
+    // updateStiffnessMatrices(position, restPosition);
+    auto elementStiffnessIt = this->m_elementStiffness.begin();
+
+    for (sofa::Size i = 0; i < elements.size(); ++i)
+    {
+        const auto& element = elements[i];
+
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates =
+            extractNodesVectorFromGlobalVector(element, position);
+        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates =
+            extractNodesVectorFromGlobalVector(element, restPosition);
+
+        const auto t = translation(elementNodesCoordinates);
+        const auto t0 = translation(restElementNodesCoordinates);
+
+        sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> P(sofa::type::NOINIT);
+        sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> Q(sofa::type::NOINIT);
+
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            P[j] = elementNodesCoordinates[j] - t;
+            Q[j] = restElementNodesCoordinates[j] - t0;
+        }
+
+        const auto H = P.transposed() * Q;
+
+        sofa::type::Mat<3,3,Real> elementRotation;
+        sofa::helper::Decompose<Real>::polarDecomposition( H, elementRotation );
+        m_rotations[i].fromMatrix(elementRotation);
+
+        // elementRotation = sofa::type::Mat<3,3,Real>::Identity();
+
+        std::array<Coord, NumberOfNodesInElement> rotatedDisplacement;
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            rotatedDisplacement[j] = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
+        }
+
+        ElementDisplacement displacement(sofa::type::NOINIT);
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+            {
+                displacement[j * spatial_dimensions + k] = rotatedDisplacement[j][k];
+            }
+        }
+
+
+        const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
+        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
+
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            elementForce.getsub(i * spatial_dimensions, nodeForce);
+            force[element[i]] += - elementRotation * nodeForce;
+        }
+    }
+}
+
+template <class DataTypes, class ElementType>
+auto CorotationalFEM<DataTypes, ElementType>::translation(
+    const std::array<Coord, NumberOfNodesInElement>& nodes) const -> Coord
+{
+    // return nodes[0];
+    return computeCentroid(nodes);
 }
 
 template <class DataTypes, class ElementType>
