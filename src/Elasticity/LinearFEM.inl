@@ -108,10 +108,6 @@ void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoor
 
     for (const auto& element : elements)
     {
-        // matrix where the i-th column is the i-th node coordinates in the element
-        const sofa::type::Mat<spatial_dimensions, NumberOfNodesInElement, Real> X_element =
-            nodesMatrix(element, restPosition);
-
         ElementStiffness K;
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
@@ -122,8 +118,9 @@ void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoor
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at
             // the quadrature point
-            const sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian =
-                X_element * dN_dq_ref;
+            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                jacobian += sofa::type::dyad(restPosition[element[i]], dN_dq_ref[i]);
 
             const auto detJ = elasticity::determinant(jacobian);
             const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
@@ -131,8 +128,9 @@ void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoor
 
             // gradient of the shape functions in the physical element evaluated at the quadrature
             // point
-            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq =
-                dN_dq_ref * J_inv;
+            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
             const auto B = buildStrainDisplacement(dN_dq);
 
