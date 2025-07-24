@@ -25,14 +25,11 @@
     <OglSceneFrame/>
 
 
-
     <Node name="tetras_corot">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
-<!--        <EulerExplicitSolver name="forward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
-<!--        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="-5 -5 0" max="5 5 40" n="5 5 20"/>
+        <RegularGridTopology name="grid" min="-15 -5 0" max="-5 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
 
         <Node name="tetra">
@@ -45,33 +42,22 @@
             <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
         </Node>
 
-        <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
+        <BoxROI template="Vec3" name="box_roi" box="-16 -6 -1 -4 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
 
-
-    <Node name="tetras_smallStrain">
+    <Node name="hexas_corot">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
-<!--        <EulerExplicitSolver name="forward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
-<!--        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="10 -5 0" max="20 5 40" n="5 5 20"/>
+        <RegularGridTopology name="grid" min="5 -5 0" max="15 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
 
-        <Node name="tetra">
-            <TetrahedronSetTopologyContainer name="Tetra_topo"/>
-            <TetrahedronSetTopologyModifier name="Modifier" />
-            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="true"/>
-            <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
+        <MeshMatrixMass totalMass="1500" topology="@grid"/>
+        <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@grid"/>
 
-            <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-<!--            <LinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>-->
-            <TetrahedronFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo" method="svd" assembling="false"/>
-        </Node>
-
-        <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
+        <BoxROI template="Vec3" name="box_roi" box="4 -6 -1 16 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
