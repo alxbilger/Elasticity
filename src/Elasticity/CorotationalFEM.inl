@@ -30,13 +30,16 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
             extractNodesVectorFromGlobalVector(element, restPosition);
 
         auto& elementRotation = *rotationMatrixIt++;
-        elementRotation = computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
+        elementRotation =
+            computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
 
         const auto t = translation(elementNodesCoordinates);
         std::array<Coord, NumberOfNodesInElement> rotatedDisplacement;
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            rotatedDisplacement[j] = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
+            rotatedDisplacement[j] =
+                elementRotation.transposed() * (elementNodesCoordinates[j] - t) -
+                restElementNodesCoordinates[j];
         }
 
         ElementDisplacement displacement(sofa::type::NOINIT);
@@ -49,14 +52,56 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         }
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
-        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
+        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce =
+            stiffnessMatrix * displacement;
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             elementForce.getsub(i * spatial_dimensions, nodeForce);
-            force[element[i]] += - elementRotation * nodeForce;
+            force[element[i]] += -elementRotation * nodeForce;
         }
     }
+}
+
+template <class DataTypes, class ElementType>
+void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx,
+                                                        Real kFactor) const
+{
+    const auto& elements = FiniteElement::getElementSequence(*m_topology);
+
+    Deriv nodedForce(sofa::type::NOINIT);
+
+    auto elementStiffnessIt = this->stiffnessMatrices().begin();
+    auto rotationMatrixIt = m_rotations.begin();
+    for (const auto& element : elements)
+    {
+        const auto& elementRotation = *rotationMatrixIt++;
+
+        sofa::type::Vec<NumberOfDofsInElement, Real> element_dx;
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            const auto rotated_dx = elementRotation.transposed() * dx[element[i]];
+            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                element_dx[i * spatial_dimensions + j] = rotated_dx[j];
+            }
+        }
+
+        const auto& stiffnessMatrix = *elementStiffnessIt++;
+        const auto dForce = kFactor * stiffnessMatrix * element_dx;
+
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            dForce.getsub(i * spatial_dimensions, nodedForce);
+            df[element[i]] += -elementRotation * nodedForce;
+        }
+    }
+}
+
+template <class DataTypes, class ElementType>
+void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
+    sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
+{
 }
 
 template <class DataTypes, class ElementType>

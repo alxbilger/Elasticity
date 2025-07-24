@@ -50,6 +50,8 @@ public:
     static Coord computeCentroid(const std::array<Coord, NumberOfNodesInElement>& nodes);
 
     void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) override;
+    void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const override;
+    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const override;
 
     Coord translation(const std::array<Coord, NumberOfNodesInElement>& nodes) const;
 };
