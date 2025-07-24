@@ -29,8 +29,8 @@
     <Node name="tetras_corot">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
 <!--        <EulerExplicitSolver name="forward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
-        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>
-<!--        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>-->
+<!--        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
         <RegularGridTopology name="grid" min="-5 -5 0" max="5 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
@@ -54,8 +54,8 @@
     <Node name="tetras_smallStrain">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
 <!--        <EulerExplicitSolver name="forward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
-        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>
-<!--        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>-->
+<!--        <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
         <RegularGridTopology name="grid" min="10 -5 0" max="20 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>

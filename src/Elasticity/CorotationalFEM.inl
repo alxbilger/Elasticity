@@ -30,16 +30,13 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
             extractNodesVectorFromGlobalVector(element, restPosition);
 
         auto& elementRotation = *rotationMatrixIt++;
-        elementRotation =
-            computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
+        elementRotation = computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
 
         const auto t = translation(elementNodesCoordinates);
         std::array<Coord, NumberOfNodesInElement> rotatedDisplacement;
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            rotatedDisplacement[j] =
-                elementRotation.transposed() * (elementNodesCoordinates[j] - t) -
-                restElementNodesCoordinates[j];
+            rotatedDisplacement[j] = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
         }
 
         ElementDisplacement displacement(sofa::type::NOINIT);
@@ -52,8 +49,7 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         }
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
-        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce =
-            stiffnessMatrix * displacement;
+        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
@@ -102,6 +98,25 @@ template <class DataTypes, class ElementType>
 void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
 {
+    sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
+
+    const auto& elements = FiniteElement::getElementSequence(*m_topology);
+    auto elementStiffnessIt = this->stiffnessMatrices().begin();
+    auto rotationMatrixIt = m_rotations.begin();
+    for (const auto& element : elements)
+    {
+        const auto& elementRotation = *rotationMatrixIt++;
+        const auto& stiffnessMatrix = *elementStiffnessIt++;
+
+        for (sofa::Index n1 = 0; n1 < NumberOfNodesInElement; ++n1)
+        {
+            for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
+            {
+                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += - elementRotation * localMatrix * elementRotation.transposed();
+            }
+        }
+    }
 }
 
 template <class DataTypes, class ElementType>
