@@ -13,6 +13,11 @@ public:
 
 protected:
     void selectFEMTypes() override;
+
+private:
+
+    template<class ElementType>
+    void addCorotationalFEMType();
 };
 
 }  // namespace elasticity
