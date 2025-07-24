@@ -10,25 +10,33 @@ namespace elasticity
 template <class DataTypes>
 void CorotationalFEMForceField<DataTypes>::selectFEMTypes()
 {
-    const auto nbTetras = this->l_topology->getNbTetrahedra();
-    const auto nbHexas = this->l_topology->getNbHexahedra();
-    const auto nbTriangles = this->l_topology->getNbTriangles();
-    const auto nbQuads = this->l_topology->getNbQuads();
-
-    if (nbTetras > 0 || nbHexas > 0)
-    {
-        addCorotationalFEMType<sofa::geometry::Tetrahedron>();
-        addCorotationalFEMType<sofa::geometry::Hexahedron>();
-    }
-    else if (nbTriangles > 0 || nbQuads > 0)
+    if constexpr (spatial_dimensions == 2)
     {
         addCorotationalFEMType<sofa::geometry::Triangle>();
         addCorotationalFEMType<sofa::geometry::Quad>();
     }
-    else
+    else if constexpr (spatial_dimensions == 3)
     {
-        addCorotationalFEMType<sofa::geometry::Tetrahedron>();
-        addCorotationalFEMType<sofa::geometry::Hexahedron>();
+        const auto nbTriangles = this->l_topology->getNbTriangles();
+        const auto nbQuads = this->l_topology->getNbQuads();
+        const auto nbTetras = this->l_topology->getNbTetrahedra();
+        const auto nbHexas = this->l_topology->getNbHexahedra();
+
+        if (nbTetras > 0 || nbHexas > 0)
+        {
+            addCorotationalFEMType<sofa::geometry::Tetrahedron>();
+            addCorotationalFEMType<sofa::geometry::Hexahedron>();
+        }
+        else if (nbTriangles > 0 || nbQuads > 0)
+        {
+            addCorotationalFEMType<sofa::geometry::Triangle>();
+            addCorotationalFEMType<sofa::geometry::Quad>();
+        }
+        else
+        {
+            addCorotationalFEMType<sofa::geometry::Tetrahedron>();
+            addCorotationalFEMType<sofa::geometry::Hexahedron>();
+        }
     }
 }
 

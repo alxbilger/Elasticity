@@ -15,6 +15,7 @@ protected:
     void selectFEMTypes() override;
 
 private:
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
     template<class ElementType>
     void addCorotationalFEMType();

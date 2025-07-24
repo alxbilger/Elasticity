@@ -23,7 +23,7 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 
     using ElementStiffness = typename LinearFEM<DataTypes, ElementType>::ElementStiffness;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
-    using RotationMatrix = sofa::type::Mat<3,3, Real>;
+    using RotationMatrix = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
     /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
