@@ -32,8 +32,6 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
 
 protected:
 
-    static void applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation);
-
     void computeElementRotation(
         const std::array<Coord, NumberOfNodesInElement>& nodesPosition,
         const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition,
@@ -42,11 +40,6 @@ protected:
 public:
     using LinearFEM<DataTypes, ElementType>::LinearFEM;
     using LinearFEM<DataTypes, ElementType>::m_topology;
-
-    /**
-     * Return the reference element centroid
-     */
-    static Coord referenceElementCentroid();
 
     static Coord computeCentroid(const std::array<Coord, NumberOfNodesInElement>& nodes);
 

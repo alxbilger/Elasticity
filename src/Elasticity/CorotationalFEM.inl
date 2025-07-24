@@ -127,31 +127,6 @@ auto CorotationalFEM<DataTypes, ElementType>::translation(
 }
 
 template <class DataTypes, class ElementType>
-void CorotationalFEM<DataTypes, ElementType>::applyRotation(ElementStiffness& K, const sofa::type::Quat<Real>& rotation)
-{
-    sofa::type::Mat<3,3,Real> R(sofa::type::NOINIT);
-    rotation.toMatrix(R);
-
-    sofa::type::Mat<3,3,Real> K_ij(sofa::type::NOINIT);
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-    {
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
-        {
-            K.getsub(i * spatial_dimensions, j * spatial_dimensions, K_ij);
-            K_ij = R * K_ij * R.transposed();
-            K.setsub(i * spatial_dimensions, j * spatial_dimensions, K_ij);
-        }
-    }
-}
-
-template <class DataTypes, class ElementType>
-auto CorotationalFEM<DataTypes, ElementType>::referenceElementCentroid() -> Coord
-{
-    static const Coord centroid = computeCentroid(FiniteElement::referenceElementNodes);
-    return centroid;
-}
-
-template <class DataTypes, class ElementType>
 auto CorotationalFEM<DataTypes, ElementType>::computeCentroid(
     const std::array<Coord, NumberOfNodesInElement>& nodes) -> Coord
 {
