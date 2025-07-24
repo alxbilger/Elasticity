@@ -33,18 +33,14 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         elementRotation = computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates);
 
         const auto t = translation(elementNodesCoordinates);
-        std::array<Coord, NumberOfNodesInElement> rotatedDisplacement;
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
-        {
-            rotatedDisplacement[j] = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
-        }
 
         ElementDisplacement displacement(sofa::type::NOINIT);
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
+            const Coord rotatedDisplacement = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
             for (sofa::Size k = 0; k < spatial_dimensions; ++k)
             {
-                displacement[j * spatial_dimensions + k] = rotatedDisplacement[j][k];
+                displacement[j * spatial_dimensions + k] = rotatedDisplacement[k];
             }
         }
 
