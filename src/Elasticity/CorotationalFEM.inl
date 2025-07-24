@@ -68,11 +68,12 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
     for (const auto& element : elements)
     {
         const auto& elementRotation = *rotationMatrixIt++;
+        const auto elementRotation_T = elementRotation.transposed();
 
-        sofa::type::Vec<NumberOfDofsInElement, Real> element_dx;
+        sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            const auto rotated_dx = elementRotation.transposed() * dx[element[i]];
+            const auto rotated_dx = elementRotation_T * dx[element[i]];
             for (sofa::Size j = 0; j < spatial_dimensions; ++j)
             {
                 element_dx[i * spatial_dimensions + j] = rotated_dx[j];
@@ -102,6 +103,8 @@ void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
     for (const auto& element : elements)
     {
         const auto& elementRotation = *rotationMatrixIt++;
+        const auto elementRotation_T = elementRotation.transposed();
+
         const auto& stiffnessMatrix = *elementStiffnessIt++;
 
         for (sofa::Index n1 = 0; n1 < NumberOfNodesInElement; ++n1)
@@ -109,7 +112,7 @@ void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += - elementRotation * localMatrix * elementRotation.transposed();
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += - elementRotation * localMatrix * elementRotation_T;
             }
         }
     }
