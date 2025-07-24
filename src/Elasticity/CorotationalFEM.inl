@@ -159,7 +159,7 @@ void CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
 
     const auto H = P.transposed() * Q;
 
-    sofa::helper::Decompose<Real>::polarDecomposition(H, rotationMatrix);
+    sofa::helper::Decompose<Real>::polarDecomposition_stable(H, rotationMatrix);
 
     // sofa::type::Quat<Real> q;
     // q.fromMatrix(rotationMatrix);

@@ -28,7 +28,7 @@
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="-20 -5 0" max="-10 5 0" n="5 5 1"/>
+        <RegularGridTopology name="grid" min="-20 -5 0" max="-10 5 0" n="20 20 1"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
         <Node name="triangles">
             <TriangleSetTopologyContainer name="Triangle_topo" src="@../grid"/>
@@ -36,10 +36,10 @@
             <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="1"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo"/>
-            <CorotationalFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Triangle_topo"/>
+            <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Triangle_topo"/>
         </Node>
 
-        <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
+        <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 5.1 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
@@ -47,7 +47,7 @@
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="-20 10 0" max="-10 20 0" n="5 5 1"/>
+        <RegularGridTopology name="grid" min="10 -5 0" max="20 5 0" n="40 40 1"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
         <Node name="quads">
             <QuadSetTopologyContainer name="Quad_topo" src="@../grid"/>
@@ -55,10 +55,10 @@
             <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="1"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
-            <CorotationalFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Quad_topo"/>
+            <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Quad_topo"/>
         </Node>
 
-        <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />
+        <BoxROI template="Vec3" name="box_roi" box="9.9 4.9 -1 20.1 5.1 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
