@@ -9,13 +9,7 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
 {
     FINITEELEMENT_HEADER(sofa::geometry::Edge, DataTypes, 1);
 
-    constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
-    {
-        std::array<Coord, NumberOfNodesInElement> nodes;
-        DataTypes::set(nodes[0], -1, 0, 0);
-        DataTypes::set(nodes[1], 1, 0, 0);
-        return nodes;
-    }();
+    constexpr static std::array<ReferenceCoord, NumberOfNodesInElement> referenceElementNodes {{ReferenceCoord{-1}, ReferenceCoord{1}}};
 
     static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {

@@ -34,11 +34,17 @@
         <Node name="tetra">
             <TetrahedronSetTopologyContainer name="Tetra_topo"/>
             <TetrahedronSetTopologyModifier name="Modifier" />
-            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="true"/>
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="false"/>
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
@@ -55,11 +61,17 @@
         <Node name="tetra">
             <TetrahedronSetTopologyContainer name="Tetra_topo"/>
             <TetrahedronSetTopologyModifier name="Modifier" />
-            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="true"/>
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="false"/>
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
@@ -73,13 +85,19 @@
         <RegularGridTopology name="grid" min="25 -5 0" max="35 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
 
-        <Node name="tetra">
+        <Node name="hexa">
             <HexahedronSetTopologyContainer name="Hexa_topo" src="@../grid"/>
             <HexahedronSetTopologyModifier name="Modifier" />
-            <HexahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawHexahedra="true"/>
+            <HexahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawHexahedra="false"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Hexa_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Hexa_topo"/>
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../hexa/FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="24 -6 -1 36 6 0.1" drawBoxes="1" />
@@ -90,15 +108,21 @@
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="-20 -5 0" max="-10 5 0" n="5 5 1"/>
+        <RegularGridTopology name="grid" min="-20 -5 0" max="-10 5 0" n="15 15 1"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
         <Node name="triangles">
             <TriangleSetTopologyContainer name="Triangle_topo" src="@../grid"/>
             <TriangleSetTopologyModifier name="Modifier" />
-            <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="1"/>
+            <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="false"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Triangle_topo"/>
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../triangles/FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
@@ -109,15 +133,21 @@
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
-        <RegularGridTopology name="grid" min="-20 10 0" max="-10 20 0" n="5 5 1"/>
+        <RegularGridTopology name="grid" min="-20 10 0" max="-10 20 0" n="15 15 1"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
         <Node name="quads">
             <QuadSetTopologyContainer name="Quad_topo" src="@../grid"/>
             <QuadSetTopologyModifier name="Modifier" />
-            <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="1"/>
+            <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="false"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Quad_topo"/>
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../quads/FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />

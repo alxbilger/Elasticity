@@ -10,14 +10,10 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Triangle, DataTypes, 2);
     static_assert(spatial_dimensions > 1, "Triangles cannot be defined in 1D");
 
-    constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
-    {
-        std::array<Coord, NumberOfNodesInElement> nodes;
-        DataTypes::set(nodes[0], 0, 0, 0);
-        DataTypes::set(nodes[1], 1, 0, 0);
-        DataTypes::set(nodes[2], 0, 1, 0);
-        return nodes;
-    }();
+    constexpr static std::array<ReferenceCoord, NumberOfNodesInElement> referenceElementNodes {{
+        {0, 0},
+        {1, 0},
+        {0, 1}}};
 
     static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
