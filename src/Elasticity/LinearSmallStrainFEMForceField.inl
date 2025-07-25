@@ -13,15 +13,16 @@ namespace elasticity
 
 template <class DataTypes>
 LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
-    : l_topology(initLink("topology", "Link to a topology containing elements")),
-      d_poissonRatio(
-          initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio")),
-      d_youngModulus(
-          initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
+    : l_topology(initLink("topology", "Link to a topology containing elements"))
+    , d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
+    , d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
+    , d_vonMisesStressValues(initData(&d_vonMisesStressValues, "vonMisesStressValues", "Von Mises stress values"))
 {
     static std::string groupName = "Mechanical parameter";
     d_poissonRatio.setGroup(groupName);
     d_youngModulus.setGroup(groupName);
+
+    d_vonMisesStressValues.setGroup("Output");
 }
 
 template <class DataTypes>
@@ -46,6 +47,12 @@ void LinearSmallStrainFEMForceField<DataTypes>::init()
 
     if (!this->isComponentStateInvalid())
     {
+        m_vonMisesStressContainer.resize(this->mstate->getSize());
+        d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
+    }
+
+    if (!this->isComponentStateInvalid())
+    {
         this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
     }
 }
@@ -62,10 +69,22 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
+    m_vonMisesStressContainer.clear();
+    m_vonMisesStressContainer.resize(positionAccessor.size());
+
     for (const auto& finiteElement : m_finiteElements)
     {
         finiteElement->addForce(forceAccessor.wref(), positionAccessor.ref(), restPositionAccessor.ref());
     }
+
+    for (const auto& finiteElement : m_finiteElements)
+    {
+        finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
+    }
+
+    m_vonMisesStressContainer.accept();
+
+    d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
 }
 
 template <class DataTypes>

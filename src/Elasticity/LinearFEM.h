@@ -3,6 +3,7 @@
 #include <Elasticity/config.h>
 #include <Elasticity/FiniteElement.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <Elasticity/VonMisesStressContainer.h>
 
 namespace elasticity
 {
@@ -21,6 +22,7 @@ public:
     virtual void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const = 0;
     virtual void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const = 0;
     virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) = 0;
+    virtual void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer, const VecCoord& position, const VecCoord& restPosition) const {}
 };
 
 template <class DataTypes, class ElementType>
@@ -34,6 +36,7 @@ protected:
     using Real = sofa::Real_t<DataTypes>;
     using TopologyElement = sofa::topology::Element<ElementType>;
     using FiniteElement = FiniteElement<ElementType, DataTypes>;
+    using ReferenceCoord = typename FiniteElement::ReferenceCoord;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
@@ -65,6 +68,10 @@ public:
 
     void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) override;
 
+    void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer,
+                               const VecCoord& position,
+                               const VecCoord& restPosition) const override;
+
     static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
 
     static StrainDisplacement buildStrainDisplacement(const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions);
@@ -76,6 +83,10 @@ protected:
      */
     sofa::type::vector<ElementStiffness> m_elementStiffness;
 
+    sofa::type::vector<std::array<StrainDisplacement, NumberOfNodesInElement>> m_strainDisplacement;
+
+    ElasticityTensor m_elasticityTensor;
+
     sofa::core::topology::BaseMeshTopology* m_topology { nullptr };
 
     /**
@@ -86,6 +97,10 @@ protected:
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 
     const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
+
+    static std::pair<StrainDisplacement, Real> computeStrainDisplacement(
+        const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates,
+        const ReferenceCoord& evaluationPoint);
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)

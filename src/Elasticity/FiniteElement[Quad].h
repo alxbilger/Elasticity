@@ -10,15 +10,12 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
     FINITEELEMENT_HEADER(sofa::geometry::Quad, DataTypes, 2);
     static_assert(spatial_dimensions > 1, "Quads cannot be defined in 1D");
 
-    constexpr static std::array<Coord, NumberOfNodesInElement> referenceElementNodes = []()
-    {
-        std::array<Coord, NumberOfNodesInElement> nodes;
-        DataTypes::set(nodes[0], -1, -1, 0);
-        DataTypes::set(nodes[1], 1, -1, 0);
-        DataTypes::set(nodes[2], 1, 1, 0);
-        DataTypes::set(nodes[3], -1, 1, 0);
-        return nodes;
-    }();
+    constexpr static std::array<ReferenceCoord, NumberOfNodesInElement> referenceElementNodes {{
+        {-1, -1},
+        {1, -1},
+        {1, 1},
+        {-1, 1}
+    }};
 
     static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {

@@ -1,9 +1,10 @@
 #pragma once
 
+#include <Elasticity/LinearFEM.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
-#include <Elasticity/LinearFEM.h>
+#include <Elasticity/VonMisesStressContainer.h>
 
 namespace elasticity
 {
@@ -29,6 +30,7 @@ public:
 
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
+    sofa::Data<sofa::type::vector<Real> > d_vonMisesStressValues;
 
     void init() override;
 
@@ -64,6 +66,8 @@ protected:
     void addLinearFEMType();
 
     sofa::type::vector<std::unique_ptr<BaseLinearFEM<DataTypes>>> m_finiteElements;
+
+    VonMisesStressContainer<Real> m_vonMisesStressContainer;
 };
 
 }  // namespace elasticity
