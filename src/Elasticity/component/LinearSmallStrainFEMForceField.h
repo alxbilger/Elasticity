@@ -30,6 +30,7 @@ public:
 
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
+    sofa::Data<bool> d_computeVonMisesStress;
     sofa::Data<sofa::type::vector<Real> > d_vonMisesStressValues;
 
     void init() override;

@@ -16,6 +16,7 @@ LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
     : l_topology(initLink("topology", "Link to a topology containing elements"))
     , d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
     , d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
+    , d_computeVonMisesStress(initData(&d_computeVonMisesStress, true, "computeVonMisesStress", "Compute Von Mises stress"))
     , d_vonMisesStressValues(initData(&d_vonMisesStressValues, "vonMisesStressValues", "Von Mises stress values"))
 {
     static std::string groupName = "Mechanical parameter";
@@ -69,22 +70,25 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    m_vonMisesStressContainer.clear();
-    m_vonMisesStressContainer.resize(positionAccessor.size());
-
     for (const auto& finiteElement : m_finiteElements)
     {
         finiteElement->addForce(forceAccessor.wref(), positionAccessor.ref(), restPositionAccessor.ref());
     }
 
-    for (const auto& finiteElement : m_finiteElements)
+    if (d_computeVonMisesStress.getValue())
     {
-        finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
+        m_vonMisesStressContainer.clear();
+        m_vonMisesStressContainer.resize(positionAccessor.size());
+
+        for (const auto& finiteElement : m_finiteElements)
+        {
+            finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
+        }
+
+        m_vonMisesStressContainer.accept();
+
+        d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
     }
-
-    m_vonMisesStressContainer.accept();
-
-    d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
 }
 
 template <class DataTypes>
