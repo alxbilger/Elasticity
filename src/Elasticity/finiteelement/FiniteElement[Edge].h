@@ -1,5 +1,5 @@
 #pragma once
-#include <Elasticity/FiniteElement.h>
+#include <Elasticity/finiteelement/FiniteElement.h>
 
 namespace elasticity
 {

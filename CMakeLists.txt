@@ -8,36 +8,38 @@ set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
 
-    src/Elasticity/FiniteElement.h
-    src/Elasticity/FiniteElement[Edge].h
-    src/Elasticity/FiniteElement[Hexahedron].h
-    src/Elasticity/FiniteElement[Quad].h
-    src/Elasticity/FiniteElement[Tetrahedron].h
-    src/Elasticity/FiniteElement[Triangle].h
+    src/Elasticity/finiteelement/FiniteElement.h
+    src/Elasticity/finiteelement/FiniteElement[Edge].h
+    src/Elasticity/finiteelement/FiniteElement[Hexahedron].h
+    src/Elasticity/finiteelement/FiniteElement[Quad].h
+    src/Elasticity/finiteelement/FiniteElement[Tetrahedron].h
+    src/Elasticity/finiteelement/FiniteElement[Triangle].h
 
-    src/Elasticity/CorotationalFEM.h
-    src/Elasticity/CorotationalFEM.inl
-    src/Elasticity/CorotationalFEMForceField.h
-    src/Elasticity/CorotationalFEMForceField.inl
-    src/Elasticity/ElementLinearSmallStrainFEMForceField.h
-    src/Elasticity/ElementLinearSmallStrainFEMForceField.inl
-    src/Elasticity/LinearFEM.h
-    src/Elasticity/LinearFEM.inl
-    src/Elasticity/LinearSmallStrainFEMForceField.h
-    src/Elasticity/LinearSmallStrainFEMForceField.inl
-    src/Elasticity/MatrixTools.h
-    src/Elasticity/VectorTools.h
-    src/Elasticity/VonMisesStressContainer.h
+    src/Elasticity/component/CorotationalFEMForceField.h
+    src/Elasticity/component/CorotationalFEMForceField.inl
+    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.h
+    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.inl
+    src/Elasticity/component/LinearSmallStrainFEMForceField.h
+    src/Elasticity/component/LinearSmallStrainFEMForceField.inl
+
+    src/Elasticity/impl/CorotationalFEM.h
+    src/Elasticity/impl/CorotationalFEM.inl
+    src/Elasticity/impl/LinearFEM.h
+    src/Elasticity/impl/LinearFEM.inl
+    src/Elasticity/impl/MatrixTools.h
+    src/Elasticity/impl/VectorTools.h
+    src/Elasticity/impl/VonMisesStressContainer.h
 )
 
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/CorotationalFEM.cpp
-    src/Elasticity/CorotationalFEMForceField.cpp
-    src/Elasticity/ElementLinearSmallStrainFEMForceField.cpp
-    src/Elasticity/LinearFEM.cpp
-    src/Elasticity/LinearSmallStrainFEMForceField.cpp
+    src/Elasticity/component/CorotationalFEMForceField.cpp
+    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
+    src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
+
+    src/Elasticity/impl/CorotationalFEM.cpp
+    src/Elasticity/impl/LinearFEM.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SOURCE_FILES})

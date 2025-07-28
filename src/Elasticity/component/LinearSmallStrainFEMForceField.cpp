@@ -1,4 +1,4 @@
-#include <Elasticity/LinearSmallStrainFEMForceField.inl>
+#include <Elasticity/component/LinearSmallStrainFEMForceField.inl>
 
 namespace elasticity
 {

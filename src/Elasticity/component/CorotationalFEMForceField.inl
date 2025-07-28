@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Elasticity/CorotationalFEMForceField.h>
-#include <Elasticity/LinearSmallStrainFEMForceField.inl>
-#include <Elasticity/CorotationalFEM.h>
+#include <Elasticity/component/CorotationalFEMForceField.h>
+#include <Elasticity/component/LinearSmallStrainFEMForceField.inl>
+#include <Elasticity/impl/CorotationalFEM.h>
 
 namespace elasticity
 {

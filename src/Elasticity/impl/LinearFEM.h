@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/FiniteElement.h>
+#include <Elasticity/finiteelement/FiniteElement.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
-#include <Elasticity/VonMisesStressContainer.h>
+#include <Elasticity/impl/VonMisesStressContainer.h>
 
 namespace elasticity
 {
@@ -104,11 +104,11 @@ protected:
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)
-#include <Elasticity/FiniteElement[Edge].h>
-#include <Elasticity/FiniteElement[Hexahedron].h>
-#include <Elasticity/FiniteElement[Quad].h>
-#include <Elasticity/FiniteElement[Tetrahedron].h>
-#include <Elasticity/FiniteElement[Triangle].h>
+#include <Elasticity/finiteelement/FiniteElement[Edge].h>
+#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
+#include <Elasticity/finiteelement/FiniteElement[Quad].h>
+#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
+#include <Elasticity/finiteelement/FiniteElement[Triangle].h>
 
 extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
 extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;

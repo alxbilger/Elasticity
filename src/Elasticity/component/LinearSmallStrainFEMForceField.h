@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Elasticity/LinearFEM.h>
+#include <Elasticity/impl/LinearFEM.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
-#include <Elasticity/VonMisesStressContainer.h>
+#include <Elasticity/impl/VonMisesStressContainer.h>
 
 namespace elasticity
 {

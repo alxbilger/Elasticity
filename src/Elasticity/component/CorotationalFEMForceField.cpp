@@ -1,4 +1,4 @@
-#include <Elasticity/CorotationalFEMForceField.inl>
+#include <Elasticity/component/CorotationalFEMForceField.inl>
 
 namespace elasticity
 {

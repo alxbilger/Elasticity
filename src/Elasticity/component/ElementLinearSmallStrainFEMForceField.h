@@ -1,5 +1,5 @@
 #pragma once
-#include <Elasticity/LinearSmallStrainFEMForceField.h>
+#include <Elasticity/component/LinearSmallStrainFEMForceField.h>
 
 namespace elasticity
 {

@@ -1,7 +1,7 @@
 #pragma once
-#include <Elasticity/CorotationalFEM.h>
-#include <Elasticity/MatrixTools.h>
-#include <Elasticity/VectorTools.h>
+#include <Elasticity/impl/CorotationalFEM.h>
+#include <Elasticity/impl/MatrixTools.h>
+#include <Elasticity/impl/VectorTools.h>
 #include <sofa/helper/decompose.h>
 
 namespace elasticity

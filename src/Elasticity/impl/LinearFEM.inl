@@ -1,7 +1,7 @@
 #pragma once
-#include <Elasticity/LinearFEM.h>
-#include <Elasticity/MatrixTools.h>
-#include <Elasticity/VectorTools.h>
+#include <Elasticity/impl/LinearFEM.h>
+#include <Elasticity/impl/MatrixTools.h>
+#include <Elasticity/impl/VectorTools.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 namespace elasticity
