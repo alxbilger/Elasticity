@@ -79,7 +79,7 @@ def benchmark_beam(state, tetrahedron_force_field):
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
-def benchmark_beam_tetra_assembled_elasticity_simulation(state):
+def benchmark_beam_tetra_linear_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('LinearSmallStrainFEMForceField', name="FEM", youngModulus="10000",
                         poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
@@ -89,9 +89,29 @@ def benchmark_beam_tetra_assembled_elasticity_simulation(state):
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
-def benchmark_beam_tetra_assembled_sofa_simulation(state):
+def benchmark_beam_tetra_linear_assembled_sofa_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('TetrahedronFEMForceField', name="FEM", youngModulus="10000", method="small",
+                        poissonRatio="0.45", topology="@Tetra_topo")
+    benchmark_beam(state, tetrahedron_force_field)
+
+@benchmark.register
+@benchmark.option.unit(benchmark.kMillisecond)
+@benchmark.option.use_manual_time()
+@benchmark.option.iterations(nbIterations)
+def benchmark_beam_tetra_corotational_assembled_elasticity_simulation(state):
+    def tetrahedron_force_field(node):
+        node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
+                        poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
+    benchmark_beam(state, tetrahedron_force_field)
+
+@benchmark.register
+@benchmark.option.unit(benchmark.kMillisecond)
+@benchmark.option.use_manual_time()
+@benchmark.option.iterations(nbIterations)
+def benchmark_beam_tetra_corotational_assembled_sofa_simulation(state):
+    def tetrahedron_force_field(node):
+        node.addObject('TetrahedronFEMForceField', name="FEM", youngModulus="10000", method="svd",
                         poissonRatio="0.45", topology="@Tetra_topo")
     benchmark_beam(state, tetrahedron_force_field)
 
@@ -119,4 +139,4 @@ if __name__ == "__main__":
     # The following code is for debugging a SOFA scene using a GUI
     # import SofaImGui
     # with_gui = True
-    # benchmark_beam_tetra_assembled_elasticity_simulation(FakeState(5))
+    # benchmark_beam_tetra_corotational_assembled_sofa_simulation(FakeState(5))
