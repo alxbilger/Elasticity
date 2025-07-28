@@ -9,7 +9,7 @@ A SOFA plugin for the development of a clean FEM formulation.
   - [x] A unique linear formulation for any type of element in any dimension
   - [x] A unique corotational formulation for any type of element in any dimension
   - [x] Computation of von Mises stress for visualization (linear)
-  - [ ] Computation of von Mises stress for visualization (corotational)
+  - [x] Computation of von Mises stress for visualization (corotational)
   - [ ] Rigorous heterogeneous material
 - Hyperlaticity
   - [ ] A unique nonlinear formulation for any type of element in any dimension, with any constitutive equation

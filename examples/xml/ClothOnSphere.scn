@@ -56,18 +56,26 @@
 
         <QuadSetTopologyContainer name="Quad_topo" src="@../FEMMesh/grid"/>
         <QuadSetTopologyModifier name="Modifier" />
-        <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="true"/>
+        <QuadSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawQuads="false"/>
 
         <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
         <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Quad_topo"/>
 
         <Node name="trianglesCollision">
+            <VisualStyle displayFlags="hideCollisionModels" />
+
             <TriangleSetTopologyContainer name="Container" src="@../../collisionMesh/grid"/>
             <TriangleSetTopologyModifier name="Modifier" />
             <MechanicalObject template="Vec3" name="mappedState"/>
 
             <BarycentricMapping input="@../state" output="@mappedState" input_topology="@../Quad_topo" output_topology="@Container"/>
             <TriangleCollisionModel name="Collision" contactDistance="0.001" />
+        </Node>
+
+        <Node name="Data">
+            <DataDisplay pointData="@../FEM.vonMisesStressValues" name="data"/>
+            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
+            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <LinearSolverConstraintCorrection linearSolver="@ldl"/>

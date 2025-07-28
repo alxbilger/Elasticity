@@ -111,10 +111,63 @@ void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
         {
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
-                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += - elementRotation * localMatrix * elementRotation_T;
+                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2,
+                                       localMatrix);  // extract the submatrix corresponding to the
+                                                      // coupling of nodes n1 and n2
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) +=
+                    -elementRotation * localMatrix * elementRotation_T;
             }
         }
+    }
+}
+
+template <class DataTypes, class ElementType>
+void CorotationalFEM<DataTypes, ElementType>::computeVonMisesStress(
+    VonMisesStressContainer<Real>& vonMisesStressContainer,
+    const VecCoord& position, const VecCoord& restPosition) const
+{
+    const auto& elements = FiniteElement::getElementSequence(*m_topology);
+
+    for (sofa::Size i = 0; i < elements.size(); ++i)
+    {
+        const auto& element = elements[i];
+        const auto& elementRotation = m_rotations[i];
+
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
+        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+
+        const auto t = translation(elementNodesCoordinates);
+
+        ElementDisplacement displacement(sofa::type::NOINIT);
+        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        {
+            const Coord rotatedDisplacement = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
+            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+            {
+                displacement[j * spatial_dimensions + k] = rotatedDisplacement[k];
+            }
+        }
+
+        if constexpr (spatial_dimensions > 1)
+            for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+            {
+                const auto& B = this->m_strainDisplacement[i][j];
+                const auto strain = B * displacement;
+                const auto cauchyStress = this->m_elasticityTensor * strain;
+                const auto traceCauchyStress = traceFromVoigtTensor(cauchyStress);
+
+                auto deviatoricStress = cauchyStress;
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                    deviatoricStress[k] -= (1./spatial_dimensions) * traceCauchyStress;
+
+                Real vonMisesStressValue = 0;
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                    vonMisesStressValue += deviatoricStress[k] * deviatoricStress[k];
+                for (sofa::Size k = spatial_dimensions; k < NumberOfIndependentElements; ++k)
+                    vonMisesStressValue += 2 * deviatoricStress[k] * deviatoricStress[k];
+                vonMisesStressValue = sqrt(static_cast<Real>(spatial_dimensions) / (2. * (spatial_dimensions-1.)) * vonMisesStressValue);
+                vonMisesStressContainer.addVonMisesStress(element[j], vonMisesStressValue);
+            }
     }
 }
 

@@ -20,6 +20,7 @@ class CorotationalFEM : public LinearFEM<DataTypes, ElementType>
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+    static constexpr sofa::Size NumberOfIndependentElements = LinearFEM<DataTypes, ElementType>::NumberOfIndependentElements;
 
     using ElementStiffness = typename LinearFEM<DataTypes, ElementType>::ElementStiffness;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
@@ -46,6 +47,10 @@ public:
     void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) override;
     void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const override;
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const override;
+
+    void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer,
+                           const VecCoord& position,
+                           const VecCoord& restPosition) const override;
 
     Coord translation(const std::array<Coord, NumberOfNodesInElement>& nodes) const;
 };
