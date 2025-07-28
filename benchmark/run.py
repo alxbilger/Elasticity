@@ -15,11 +15,11 @@ SofaRuntime.importPlugin("Sofa.Component")
 SofaRuntime.importPlugin("Elasticity")
 
 
-def scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field):
+def scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field, linear_solver):
     root.addObject('DefaultAnimationLoop')
     root.addObject('DefaultVisualManagerLoop')
     root.addObject('EulerImplicitSolver', name="backward Euler", rayleighStiffness="0.1", rayleighMass="0.1")
-    root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
+    linear_solver(root)
     root.addObject('RegularGridTopology', name="grid", min="-5 -5 0", max="5 5 40", n="5 5 20")
     root.addObject('MechanicalObject', template="Vec3", name="state", showObject="true")
     tetra = root.addChild('tetra')
@@ -36,10 +36,16 @@ def scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field):
 
 nbIterations = 1
 
-def benchmark_beam(state, tetrahedron_force_field):
+def compute_force_timer(records):
+    return records['Simulation::animate']['solve']['Mechanical (root)']['ComputeForce']['total_time']
+
+def compute_addForce_timer(records):
+    return records['Simulation::animate']['solve']['Mechanical (root)']['MBKSolve']['CG-Solve']['total_time']
+
+def benchmark_beam(state, tetrahedron_force_field, linear_solver, timer):
     while state:
         root = Sofa.Core.Node("root")
-        scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field)
+        scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field, linear_solver)
         Sofa.Simulation.init(root)
 
         if with_gui:
@@ -64,7 +70,7 @@ def benchmark_beam(state, tetrahedron_force_field):
             if iteration != 0:
                 records = Timer.getRecords("Animate")
                 # print(records)
-                addForce_duration = records['Simulation::animate']['solve']['Mechanical (root)']['ComputeForce']['total_time']
+                addForce_duration = timer(records)
                 avg_addDForce += addForce_duration
 
             Timer.end("Animate")
@@ -83,7 +89,11 @@ def benchmark_beam_tetra_linear_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('LinearSmallStrainFEMForceField', name="FEM", youngModulus="10000",
                         poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
-    benchmark_beam(state, tetrahedron_force_field)
+
+    def linear_solver(root):
+        root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
 @benchmark.option.unit(benchmark.kMillisecond)
@@ -93,7 +103,11 @@ def benchmark_beam_tetra_linear_assembled_sofa_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('TetrahedronFEMForceField', name="FEM", youngModulus="10000", method="small",
                         poissonRatio="0.45", topology="@Tetra_topo")
-    benchmark_beam(state, tetrahedron_force_field)
+
+    def linear_solver(root):
+        root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
 @benchmark.option.unit(benchmark.kMillisecond)
@@ -103,7 +117,11 @@ def benchmark_beam_tetra_corotational_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
                         poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
-    benchmark_beam(state, tetrahedron_force_field)
+
+    def linear_solver(root):
+        root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
 @benchmark.option.unit(benchmark.kMillisecond)
@@ -113,7 +131,38 @@ def benchmark_beam_tetra_corotational_assembled_sofa_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('TetrahedronFEMForceField', name="FEM", youngModulus="10000", method="svd",
                         poissonRatio="0.45", topology="@Tetra_topo")
-    benchmark_beam(state, tetrahedron_force_field)
+    def linear_solver(root):
+        root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
+
+
+@benchmark.register
+@benchmark.option.unit(benchmark.kMillisecond)
+@benchmark.option.use_manual_time()
+@benchmark.option.iterations(nbIterations)
+def benchmark_beam_tetra_corotational_matrixfree_elasticity_simulation(state):
+    def tetrahedron_force_field(node):
+        node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
+                        poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
+
+    def linear_solver(root):
+        root.addObject('CGLinearSolver', iterations=25, tolerance=1.0e-9, threshold=1.0e-9)
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_addForce_timer)
+
+@benchmark.register
+@benchmark.option.unit(benchmark.kMillisecond)
+@benchmark.option.use_manual_time()
+@benchmark.option.iterations(nbIterations)
+def benchmark_beam_tetra_corotational_matrixfree_sofa_simulation(state):
+    def tetrahedron_force_field(node):
+        node.addObject('TetrahedronFEMForceField', name="FEM", youngModulus="10000", method="svd",
+                        poissonRatio="0.45", topology="@Tetra_topo")
+    def linear_solver(root):
+        root.addObject('CGLinearSolver', iterations=25, tolerance=1.0e-9, threshold=1.0e-9)
+
+    benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_addForce_timer)
 
 
 # Class used to fake a benchmark, so it can run without the Google Benchmark framework
