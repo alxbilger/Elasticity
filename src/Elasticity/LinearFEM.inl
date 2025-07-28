@@ -147,18 +147,19 @@ void LinearFEM<DataTypes, ElementType>::computeVonMisesStress(
     const VecCoord& position,
     const VecCoord& restPosition) const
 {
-    const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    for (sofa::Size i = 0; i < elements.size(); ++i)
+    if constexpr (spatial_dimensions > 1)
     {
-        const auto& element = elements[i];
+        const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
-        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+        for (sofa::Size i = 0; i < elements.size(); ++i)
+        {
+            const auto& element = elements[i];
 
-        const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
+            const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
+            const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
 
-        if constexpr (spatial_dimensions > 1)
+            const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
+
             for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
             {
                 const auto& B = m_strainDisplacement[i][j];
@@ -178,6 +179,7 @@ void LinearFEM<DataTypes, ElementType>::computeVonMisesStress(
                 vonMisesStressValue = sqrt(static_cast<Real>(spatial_dimensions) / (2. * (spatial_dimensions-1.)) * vonMisesStressValue);
                 vonMisesStressContainer.addVonMisesStress(element[j], vonMisesStressValue);
             }
+        }
     }
 }
 

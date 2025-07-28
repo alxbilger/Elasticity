@@ -126,29 +126,30 @@ void CorotationalFEM<DataTypes, ElementType>::computeVonMisesStress(
     VonMisesStressContainer<Real>& vonMisesStressContainer,
     const VecCoord& position, const VecCoord& restPosition) const
 {
-    const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    for (sofa::Size i = 0; i < elements.size(); ++i)
+    if constexpr (spatial_dimensions > 1)
     {
-        const auto& element = elements[i];
-        const auto& elementRotation = m_rotations[i];
+        const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
-        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
-
-        const auto t = translation(elementNodesCoordinates);
-
-        ElementDisplacement displacement(sofa::type::NOINIT);
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        for (sofa::Size i = 0; i < elements.size(); ++i)
         {
-            const Coord rotatedDisplacement = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
-            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
-            {
-                displacement[j * spatial_dimensions + k] = rotatedDisplacement[k];
-            }
-        }
+            const auto& element = elements[i];
+            const auto& elementRotation = m_rotations[i];
 
-        if constexpr (spatial_dimensions > 1)
+            const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
+            const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+
+            const auto t = translation(elementNodesCoordinates);
+
+            ElementDisplacement displacement(sofa::type::NOINIT);
+            for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+            {
+                const Coord rotatedDisplacement = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    displacement[j * spatial_dimensions + k] = rotatedDisplacement[k];
+                }
+            }
+
             for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
             {
                 const auto& B = this->m_strainDisplacement[i][j];
@@ -168,6 +169,7 @@ void CorotationalFEM<DataTypes, ElementType>::computeVonMisesStress(
                 vonMisesStressValue = sqrt(static_cast<Real>(spatial_dimensions) / (2. * (spatial_dimensions-1.)) * vonMisesStressValue);
                 vonMisesStressContainer.addVonMisesStress(element[j], vonMisesStressValue);
             }
+        }
     }
 }
 
