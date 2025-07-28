@@ -15,12 +15,12 @@ SofaRuntime.importPlugin("Sofa.Component")
 SofaRuntime.importPlugin("Elasticity")
 
 
-def scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field, linear_solver):
+def scene_beam_tetra_assembled_simulation(root, scale, tetrahedron_force_field, linear_solver):
     root.addObject('DefaultAnimationLoop')
     root.addObject('DefaultVisualManagerLoop')
     root.addObject('EulerImplicitSolver', name="backward Euler", rayleighStiffness="0.1", rayleighMass="0.1")
     linear_solver(root)
-    root.addObject('RegularGridTopology', name="grid", min="-5 -5 0", max="5 5 40", n="5 5 20")
+    root.addObject('RegularGridTopology', name="grid", min="-5 -5 0", max="5 5 40", n=[2 * scale, 2 * scale, 10 * scale],)
     root.addObject('MechanicalObject', template="Vec3", name="state", showObject="true")
     tetra = root.addChild('tetra')
 
@@ -45,8 +45,9 @@ def compute_addForce_timer(records):
 def benchmark_beam(state, tetrahedron_force_field, linear_solver, timer):
     while state:
         root = Sofa.Core.Node("root")
-        scene_beam_tetra_assembled_simulation(root, tetrahedron_force_field, linear_solver)
+        scene_beam_tetra_assembled_simulation(root, state.range(0), tetrahedron_force_field, linear_solver)
         Sofa.Simulation.init(root)
+        state.counters["nbElements"] = len(root.grid.hexahedra.value)
 
         if with_gui:
             Sofa.Gui.GUIManager.Init("myscene", "imgui")
@@ -81,7 +82,11 @@ def benchmark_beam(state, tetrahedron_force_field, linear_solver, timer):
         avg_addDForce = avg_addDForce / (nb_time_steps - 1)
         state.set_iteration_time(avg_addDForce / 1000.)
 
+minScaleFactor = 1
+maxScaleFactor = 4
+
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
@@ -96,6 +101,7 @@ def benchmark_beam_tetra_linear_assembled_elasticity_simulation(state):
     benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
@@ -110,6 +116,7 @@ def benchmark_beam_tetra_linear_assembled_sofa_simulation(state):
     benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
@@ -124,6 +131,7 @@ def benchmark_beam_tetra_corotational_assembled_elasticity_simulation(state):
     benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_force_timer)
 
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
@@ -138,6 +146,7 @@ def benchmark_beam_tetra_corotational_assembled_sofa_simulation(state):
 
 
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
@@ -152,6 +161,7 @@ def benchmark_beam_tetra_corotational_matrixfree_elasticity_simulation(state):
     benchmark_beam(state, tetrahedron_force_field, linear_solver, compute_addForce_timer)
 
 @benchmark.register
+@benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
 @benchmark.option.unit(benchmark.kMillisecond)
 @benchmark.option.use_manual_time()
 @benchmark.option.iterations(nbIterations)
