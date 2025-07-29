@@ -29,7 +29,7 @@ public:
     virtual void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer, const VecCoord& position, const VecCoord& restPosition) const {}
 };
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy = ComputationStrategy::DENSE>
+template <class DataTypes, class ElementType>
 class LinearFEM : public BaseLinearFEM<DataTypes>
 {
 protected:
@@ -52,16 +52,16 @@ protected:
     static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<spatial_dimensions>;
 
     /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
-    using ElasticityTensor = ElasticityTensor<DataTypes, strategy>;
+    using ElasticityTensor = ElasticityTensor<DataTypes>;
 
     /// the type of B in e = B d, if e is the strain, and d is the displacement
-    using StrainDisplacement = StrainDisplacement<DataTypes, ElementType, strategy>;
+    using StrainDisplacement = StrainDisplacement<DataTypes, ElementType>;
 
     /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = ElementStiffnessMatrix<DataTypes, ElementType, strategy>;
+    using ElementStiffness = ElementStiffness<DataTypes, ElementType>;
 
 public:
     explicit LinearFEM(sofa::core::topology::BaseMeshTopology* topology = nullptr);

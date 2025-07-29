@@ -10,14 +10,14 @@
 namespace elasticity
 {
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-LinearFEM<DataTypes, ElementType, strategy>::LinearFEM(sofa::core::topology::BaseMeshTopology* topology)
+template <class DataTypes, class ElementType>
+LinearFEM<DataTypes, ElementType>::LinearFEM(sofa::core::topology::BaseMeshTopology* topology)
     : m_topology(topology)
 {
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, const VecCoord& position,
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
                                                  const VecCoord& restPosition)
 {
     if (m_topology == nullptr) return;
@@ -44,8 +44,8 @@ void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, cons
     }
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
 {
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
@@ -71,8 +71,8 @@ void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const 
     }
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-void LinearFEM<DataTypes, ElementType, strategy>::buildStiffnessMatrix(
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
@@ -94,12 +94,12 @@ void LinearFEM<DataTypes, ElementType, strategy>::buildStiffnessMatrix(
     }
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-void LinearFEM<DataTypes, ElementType, strategy>::precomputeElementStiffness(const VecCoord& restPosition,
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoord& restPosition,
                                                                    Real youngModulus,
                                                                    Real poissonRatio)
 {
-    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes, strategy>(youngModulus, poissonRatio);
+    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(youngModulus, poissonRatio);
 
     m_elementStiffness.clear();
 
@@ -109,7 +109,7 @@ void LinearFEM<DataTypes, ElementType, strategy>::precomputeElementStiffness(con
     for (const auto& element : elements)
     {
         const std::array<Coord, NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
-        ElementStiffness K = integrate<DataTypes, ElementType, strategy>(nodesCoordinates, m_elasticityTensor);
+        ElementStiffness K = integrate<DataTypes, ElementType>(nodesCoordinates, m_elasticityTensor);
         m_elementStiffness.push_back(K);
     }
 
@@ -146,15 +146,15 @@ void LinearFEM<DataTypes, ElementType, strategy>::precomputeElementStiffness(con
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
                 dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
-            const auto B = makeStrainDisplacement<DataTypes, ElementType, strategy>(dN_dq);
+            const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
 
             m_strainDisplacement[i][j] = B;
         }
     }
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-void LinearFEM<DataTypes, ElementType, strategy>::computeVonMisesStress(
+template <class DataTypes, class ElementType>
+void LinearFEM<DataTypes, ElementType>::computeVonMisesStress(
     VonMisesStressContainer<Real>& vonMisesStressContainer,
     const VecCoord& position,
     const VecCoord& restPosition) const
@@ -195,8 +195,8 @@ void LinearFEM<DataTypes, ElementType, strategy>::computeVonMisesStress(
     }
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-auto LinearFEM<DataTypes, ElementType, strategy>::computeElementDisplacement(
+template <class DataTypes, class ElementType>
+auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
     const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
     -> ElementDisplacement
@@ -212,8 +212,8 @@ auto LinearFEM<DataTypes, ElementType, strategy>::computeElementDisplacement(
     return displacement;
 }
 
-template <class DataTypes, class ElementType, ComputationStrategy strategy>
-auto LinearFEM<DataTypes, ElementType, strategy>::stiffnessMatrices() const -> const sofa::type::vector<ElementStiffness>&
+template <class DataTypes, class ElementType>
+auto LinearFEM<DataTypes, ElementType>::stiffnessMatrices() const -> const sofa::type::vector<ElementStiffness>&
 {
     return m_elementStiffness;
 }
