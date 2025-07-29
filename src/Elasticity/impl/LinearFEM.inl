@@ -53,12 +53,11 @@ void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const 
     for (const auto& element : elements)
     {
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
+
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
-            {
-                element_dx[i * spatial_dimensions + j] = dx[element[i]][j];
-            }
+            VecView<spatial_dimensions, Real> node_dx(element_dx, i * spatial_dimensions);
+            node_dx = dx[element[i]];
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
