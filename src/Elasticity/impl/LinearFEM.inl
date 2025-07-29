@@ -128,8 +128,28 @@ void LinearFEM<DataTypes, ElementType, strategy>::precomputeElementStiffness(con
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
             const ReferenceCoord& x = referenceElementNodes[j];
-            // const auto [B, detJ] = computeStrainDisplacement(nodesCoordinates, x);
-            // m_strainDisplacement[i][j] = B;
+
+            // gradient of shape functions in the reference element evaluated at the quadrature point
+            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
+                FiniteElement::gradientShapeFunctions(x);
+
+            // jacobian of the mapping from the reference space to the physical space, evaluated at the
+            // quadrature point
+            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
+
+            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
+                elasticity::inverse(jacobian);
+
+            // gradient of the shape functions in the physical element evaluated at the quadrature point
+            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
+
+            const auto B = makeStrainDisplacement<DataTypes, ElementType, strategy>(dN_dq);
+
+            m_strainDisplacement[i][j] = B;
         }
     }
 }
