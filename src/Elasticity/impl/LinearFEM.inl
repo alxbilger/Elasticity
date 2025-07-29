@@ -182,7 +182,7 @@ auto LinearFEM<DataTypes, ElementType, strategy>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
     -> ElementDisplacement
 {
-    ElementDisplacement displacement;
+    ElementDisplacement displacement(sofa::type::NOINIT);
     for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
     {
         for (sofa::Size j = 0; j < spatial_dimensions; ++j)

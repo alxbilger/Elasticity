@@ -37,11 +37,8 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         ElementDisplacement displacement(sofa::type::NOINIT);
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            const Coord rotatedDisplacement = elementRotation.transposed() * (elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
-            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
-            {
-                displacement[j * spatial_dimensions + k] = rotatedDisplacement[k];
-            }
+            VecView<spatial_dimensions, Real> transformedDisplacement(displacement, j * spatial_dimensions);
+            transformedDisplacement = elementRotation.multTranspose(elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
         }
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
@@ -68,14 +65,13 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
     for (const auto& element : elements)
     {
         const auto& elementRotation = *rotationMatrixIt++;
-        const auto elementRotation_T = elementRotation.transposed();
 
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             VecView<spatial_dimensions, Real> rotated_dx(element_dx, i * spatial_dimensions);
-            rotated_dx = elementRotation_T * dx[element[i]];
+            rotated_dx = elementRotation.multTranspose(dx[element[i]]);
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
