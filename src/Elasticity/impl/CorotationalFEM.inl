@@ -4,6 +4,7 @@
 #include <Elasticity/impl/VectorTools.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/helper/decompose.h>
+#include <Elasticity/impl/VecView.h>
 
 namespace elasticity
 {
@@ -15,8 +16,6 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
     if (m_topology == nullptr) return;
 
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    Deriv nodeForce(sofa::type::NOINIT);
 
     m_rotations.resize(elements.size(), RotationMatrix::Identity());
 
@@ -50,7 +49,7 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            elementForce.getsub(i * spatial_dimensions, nodeForce);
+            VecView<spatial_dimensions, Real> nodeForce(elementForce, i * spatial_dimensions);
             force[element[i]] += -elementRotation * nodeForce;
         }
     }
@@ -63,7 +62,6 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
     SCOPED_TIMER("CorotationalFEM_addDForce");
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
-    Deriv nodedForce(sofa::type::NOINIT);
     sofa::type::Vec<NumberOfDofsInElement, Real> dForce;
 
     auto elementStiffnessIt = this->stiffnessMatrices().begin();
@@ -90,14 +88,14 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
         {
             SCOPED_TIMER("Ku");
             const auto& stiffnessMatrix = *elementStiffnessIt++;
-            dForce = kFactor * (stiffnessMatrix * element_dx);
+            dForce = (-kFactor) * (stiffnessMatrix * element_dx);
         }
 
         SCOPED_TIMER("df");
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            dForce.getsub(i * spatial_dimensions, nodedForce);
-            df[element[i]] += -elementRotation * nodedForce;
+            VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
+            df[element[i]] += elementRotation * nodedForce;
         }
     }
 }

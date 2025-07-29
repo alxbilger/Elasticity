@@ -33,6 +33,7 @@ set(HEADER_FILES
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
     src/Elasticity/impl/VectorTools.h
+    src/Elasticity/impl/VecView.h
     src/Elasticity/impl/VonMisesStressContainer.h
 )
 

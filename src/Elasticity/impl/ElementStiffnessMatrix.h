@@ -5,6 +5,7 @@
 #include <Elasticity/impl/ElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/StrainDisplacement.h>
+#include <Elasticity/finiteelement/FiniteElement.h>
 
 namespace elasticity
 {

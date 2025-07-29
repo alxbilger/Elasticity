@@ -1,10 +1,11 @@
 #pragma once
+#include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <Elasticity/impl/LinearFEM.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/VectorTools.h>
-#include <Elasticity/impl/ElasticityTensor.h>
-#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <Elasticity/impl/VecView.h>
 
 namespace elasticity
 {
@@ -23,8 +24,6 @@ void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, cons
 
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
-    Deriv nodeForce(sofa::type::NOINIT);
-
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
@@ -39,7 +38,7 @@ void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, cons
 
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            elementForce.getsub(j * spatial_dimensions, nodeForce);
+            VecView<spatial_dimensions, Real> nodeForce(elementForce, i * spatial_dimensions);
             force[element[j]] += -nodeForce;
         }
     }
@@ -49,8 +48,6 @@ template <class DataTypes, class ElementType, ComputationStrategy strategy>
 void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
 {
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    Deriv nodedForce(sofa::type::NOINIT);
 
     auto elementStiffnessIt = stiffnessMatrices().begin();
     for (const auto& element : elements)
@@ -65,12 +62,12 @@ void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const 
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
-        const auto dForce = kFactor * (stiffnessMatrix * element_dx);
+        const auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            dForce.getsub(i * spatial_dimensions, nodedForce);
-            df[element[i]] += -nodedForce;
+            VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
+            df[element[i]] += nodedForce.toVec();
         }
     }
 }
