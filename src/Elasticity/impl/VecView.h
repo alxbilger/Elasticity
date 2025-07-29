@@ -19,7 +19,7 @@ struct VecView
     {}
 
     template<sofa::Size L>
-    VecView(const sofa::type::Vec<L, ValueType>& vec, sofa::Size i)
+    VecView(sofa::type::Vec<L, ValueType>& vec, sofa::Size i)
         : m_data(&vec.elems.data()[i])
     {}
 
@@ -49,8 +49,15 @@ struct VecView
         return res;
     }
 
+    VecView& operator=(const sofa::type::Vec<N, ValueType>& vec)
+    {
+        for (sofa::Size i = 0; i < N; ++i)
+            m_data[i] = vec[i];
+        return *this;
+    }
+
 private:
-    const ValueType* m_data { nullptr };
+    ValueType* m_data { nullptr };
 };
 
 

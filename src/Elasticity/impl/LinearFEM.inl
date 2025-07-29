@@ -34,11 +34,11 @@ void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, cons
 
         const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
 
-        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
+        sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
 
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            VecView<spatial_dimensions, Real> nodeForce(elementForce, i * spatial_dimensions);
+            VecView<spatial_dimensions, Real> nodeForce(elementForce, j * spatial_dimensions);
             force[element[j]] += -nodeForce;
         }
     }
@@ -62,7 +62,7 @@ void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const 
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
-        const auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
+        auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {

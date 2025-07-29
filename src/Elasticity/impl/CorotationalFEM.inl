@@ -45,7 +45,7 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         }
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
-        const sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
+        sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
@@ -59,7 +59,7 @@ template <class DataTypes, class ElementType>
 void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx,
                                                         Real kFactor) const
 {
-    SCOPED_TIMER("CorotationalFEM_addDForce");
+    // SCOPED_TIMER("CorotationalFEM_addDForce");
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
     sofa::type::Vec<NumberOfDofsInElement, Real> dForce;
@@ -74,24 +74,21 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
 
         {
-            SCOPED_TIMER("element_dx");
+            // SCOPED_TIMER("element_dx");
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             {
-                const auto rotated_dx = elementRotation_T * dx[element[i]];
-                for (sofa::Size j = 0; j < spatial_dimensions; ++j)
-                {
-                    element_dx[i * spatial_dimensions + j] = rotated_dx[j];
-                }
+                VecView<spatial_dimensions, Real> rotated_dx(element_dx, i * spatial_dimensions);
+                rotated_dx = elementRotation_T * dx[element[i]];
             }
         }
 
         {
-            SCOPED_TIMER("Ku");
+            // SCOPED_TIMER("Ku");
             const auto& stiffnessMatrix = *elementStiffnessIt++;
             dForce = (-kFactor) * (stiffnessMatrix * element_dx);
         }
 
-        SCOPED_TIMER("df");
+        // SCOPED_TIMER("df");
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
