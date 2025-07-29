@@ -2,8 +2,12 @@
 
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement.h>
-#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <Elasticity/impl/VonMisesStressContainer.h>
+#include <Elasticity/impl/SymmetricTensor.h>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+
+#include <Elasticity/impl/ElasticityTensor.h>
 
 namespace elasticity
 {
@@ -25,7 +29,7 @@ public:
     virtual void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer, const VecCoord& position, const VecCoord& restPosition) const {}
 };
 
-template <class DataTypes, class ElementType>
+template <class DataTypes, class ElementType, ComputationStrategy strategy = ComputationStrategy::DENSE>
 class LinearFEM : public BaseLinearFEM<DataTypes>
 {
 protected:
@@ -45,19 +49,19 @@ protected:
 
     /// The number of independent elements in a symmetric 2nd-order tensor of size
     /// (spatial_dimensions x spatial_dimensions)
-    static constexpr sofa::Size NumberOfIndependentElements = spatial_dimensions * (spatial_dimensions + 1) / 2;
+    static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<spatial_dimensions>;
 
     /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
-    using ElasticityTensor = sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real>;
+    using ElasticityTensor = ElasticityTensor<DataTypes, strategy>;
 
     /// the type of B in e = B d, if e is the strain, and d is the displacement
-    using StrainDisplacement = sofa::type::Mat<NumberOfIndependentElements, NumberOfDofsInElement, Real>;
+    using StrainDisplacement = StrainDisplacement<DataTypes, ElementType, strategy>;
 
     /// the concatenation of the displacement of the 4 nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = sofa::type::Mat<NumberOfDofsInElement, NumberOfDofsInElement, Real>;
+    using ElementStiffness = ElementStiffnessMatrix<DataTypes, ElementType, strategy>;
 
 public:
     explicit LinearFEM(sofa::core::topology::BaseMeshTopology* topology = nullptr);
@@ -71,10 +75,6 @@ public:
     void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer,
                                const VecCoord& position,
                                const VecCoord& restPosition) const override;
-
-    static ElasticityTensor computeElasticityTensor(Real youngModulus, Real poissonRatio);
-
-    static StrainDisplacement buildStrainDisplacement(const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions);
 
 protected:
 
@@ -97,10 +97,6 @@ protected:
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
 
     const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
-
-    static std::pair<StrainDisplacement, Real> computeStrainDisplacement(
-        const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates,
-        const ReferenceCoord& evaluationPoint);
 };
 
 #if !defined(ELASTICITY_LINEARFEM_CPP)

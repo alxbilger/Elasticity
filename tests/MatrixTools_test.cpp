@@ -1,4 +1,4 @@
-#include <Elasticity/MatrixTools.h>
+#include <Elasticity/impl/MatrixTools.h>
 #include <gtest/gtest.h>
 #include <sofa/topology/Tetrahedron.h>
 #include <sofa/topology/Triangle.h>

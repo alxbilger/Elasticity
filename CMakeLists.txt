@@ -24,9 +24,14 @@ set(HEADER_FILES
 
     src/Elasticity/impl/CorotationalFEM.h
     src/Elasticity/impl/CorotationalFEM.inl
+    src/Elasticity/impl/ElasticityTensor.h
+    src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/LinearFEM.h
     src/Elasticity/impl/LinearFEM.inl
     src/Elasticity/impl/MatrixTools.h
+    src/Elasticity/impl/StaticSparseMatrix.h
+    src/Elasticity/impl/StrainDisplacement.h
+    src/Elasticity/impl/SymmetricTensor.h
     src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VonMisesStressContainer.h
 )

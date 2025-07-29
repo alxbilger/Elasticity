@@ -2,19 +2,21 @@
 #include <Elasticity/impl/LinearFEM.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/VectorTools.h>
+#include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 namespace elasticity
 {
 
-template <class DataTypes, class ElementType>
-LinearFEM<DataTypes, ElementType>::LinearFEM(sofa::core::topology::BaseMeshTopology* topology)
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+LinearFEM<DataTypes, ElementType, strategy>::LinearFEM(sofa::core::topology::BaseMeshTopology* topology)
     : m_topology(topology)
 {
 }
 
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+void LinearFEM<DataTypes, ElementType, strategy>::addForce(VecDeriv& force, const VecCoord& position,
                                                  const VecCoord& restPosition)
 {
     if (m_topology == nullptr) return;
@@ -43,8 +45,8 @@ void LinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord
     }
 }
 
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+void LinearFEM<DataTypes, ElementType, strategy>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
 {
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
@@ -63,7 +65,7 @@ void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& 
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
-        const auto dForce = kFactor * stiffnessMatrix * element_dx;
+        const auto dForce = kFactor * (stiffnessMatrix * element_dx);
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
@@ -73,8 +75,8 @@ void LinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& 
     }
 }
 
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+void LinearFEM<DataTypes, ElementType, strategy>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
 {
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
@@ -96,12 +98,12 @@ void LinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
     }
 }
 
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoord& restPosition,
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+void LinearFEM<DataTypes, ElementType, strategy>::precomputeElementStiffness(const VecCoord& restPosition,
                                                                    Real youngModulus,
                                                                    Real poissonRatio)
 {
-    m_elasticityTensor = computeElasticityTensor(youngModulus, poissonRatio);
+    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes, strategy>(youngModulus, poissonRatio);
 
     m_elementStiffness.clear();
 
@@ -110,14 +112,8 @@ void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoor
 
     for (const auto& element : elements)
     {
-        ElementStiffness K;
-        const auto nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
-        for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
-        {
-            const auto [B, detJ] = computeStrainDisplacement(nodesCoordinates, quadraturePoint);
-
-            K += (weight * detJ) * B.transposed() * m_elasticityTensor * B;
-        }
+        const std::array<Coord, NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+        ElementStiffness K = integrate<DataTypes, ElementType, strategy>(nodesCoordinates, m_elasticityTensor);
         m_elementStiffness.push_back(K);
     }
 
@@ -135,14 +131,14 @@ void LinearFEM<DataTypes, ElementType>::precomputeElementStiffness(const VecCoor
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
             const ReferenceCoord& x = referenceElementNodes[j];
-            const auto [B, detJ] = computeStrainDisplacement(nodesCoordinates, x);
-            m_strainDisplacement[i][j] = B;
+            // const auto [B, detJ] = computeStrainDisplacement(nodesCoordinates, x);
+            // m_strainDisplacement[i][j] = B;
         }
     }
 }
 
-template <class DataTypes, class ElementType>
-void LinearFEM<DataTypes, ElementType>::computeVonMisesStress(
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+void LinearFEM<DataTypes, ElementType, strategy>::computeVonMisesStress(
     VonMisesStressContainer<Real>& vonMisesStressContainer,
     const VecCoord& position,
     const VecCoord& restPosition) const
@@ -183,74 +179,8 @@ void LinearFEM<DataTypes, ElementType>::computeVonMisesStress(
     }
 }
 
-template <class DataTypes, class ElementType>
-typename LinearFEM<DataTypes, ElementType>::ElasticityTensor
-LinearFEM<DataTypes, ElementType>::computeElasticityTensor(Real youngModulus, Real poissonRatio)
-{
-    static constexpr auto volumetricTensor = []()
-    {
-        sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> I_vol;
-        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
-        {
-            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
-            {
-                I_vol[i][j] = 1;
-            }
-        }
-        return I_vol;
-    }();
-
-    static constexpr auto deviatoricTensor = []()
-    {
-        sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> I_dev;
-        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
-        {
-            I_dev[i][i] = 1;
-        }
-        for (sofa::Size i = spatial_dimensions; i < NumberOfIndependentElements; ++i)
-        {
-            I_dev[i][i] = 0.5;
-        }
-        return I_dev;
-    }();
-
-    const auto mu = youngModulus / (2 * (1 + poissonRatio));
-    const auto lambda = youngModulus * poissonRatio /
-                        ((1 + poissonRatio) * (1 - (spatial_dimensions - 1) * poissonRatio));
-
-    return lambda * volumetricTensor + 2 * mu * deviatoricTensor;
-}
-
-template <class DataTypes, class ElementType>
-auto LinearFEM<DataTypes, ElementType>::buildStrainDisplacement(
-    const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> gradientShapeFunctions)
--> StrainDisplacement
-{
-    StrainDisplacement B;
-    for (sofa::Size ne = 0; ne < NumberOfNodesInElement; ++ne)
-    {
-        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
-        {
-            B[i][ne * spatial_dimensions + i] = gradientShapeFunctions[ne][i];
-        }
-
-        auto row = spatial_dimensions;
-        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
-        {
-            for (sofa::Size j = i + 1; j < spatial_dimensions; ++j)
-            {
-                B[row][ne * spatial_dimensions + i] = gradientShapeFunctions[ne][j];
-                B[row][ne * spatial_dimensions + j] = gradientShapeFunctions[ne][i];
-                ++row;
-            }
-        }
-    }
-
-    return B;
-}
-
-template <class DataTypes, class ElementType>
-auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+auto LinearFEM<DataTypes, ElementType, strategy>::computeElementDisplacement(
     const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
     const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates)
     -> ElementDisplacement
@@ -266,37 +196,10 @@ auto LinearFEM<DataTypes, ElementType>::computeElementDisplacement(
     return displacement;
 }
 
-template <class DataTypes, class ElementType>
-auto LinearFEM<DataTypes, ElementType>::stiffnessMatrices() const -> const sofa::type::vector<ElementStiffness>&
+template <class DataTypes, class ElementType, ComputationStrategy strategy>
+auto LinearFEM<DataTypes, ElementType, strategy>::stiffnessMatrices() const -> const sofa::type::vector<ElementStiffness>&
 {
     return m_elementStiffness;
-}
-
-template <class DataTypes, class ElementType>
-auto LinearFEM<DataTypes, ElementType>::computeStrainDisplacement(
-    const std::array<Coord, NumberOfNodesInElement>& nodesCoordinates,
-    const ReferenceCoord& evaluationPoint) -> std::pair<StrainDisplacement, Real>
-{
-    // gradient of shape functions in the reference element evaluated at the quadrature point
-    const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
-        FiniteElement::gradientShapeFunctions(evaluationPoint);
-
-    // jacobian of the mapping from the reference space to the physical space, evaluated at the
-    // quadrature point
-    sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
-
-    const auto detJ = elasticity::determinant(jacobian);
-    const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
-        elasticity::inverse(jacobian);
-
-    // gradient of the shape functions in the physical element evaluated at the quadrature point
-    sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
-
-    return {buildStrainDisplacement(dN_dq), detJ};
 }
 
 }  // namespace elasticity

@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include <Elasticity/FiniteElement[Edge].h>
-#include <Elasticity/FiniteElement[Triangle].h>
-#include <Elasticity/FiniteElement[Quad].h>
-#include <Elasticity/FiniteElement[Tetrahedron].h>
-#include <Elasticity/FiniteElement[Hexahedron].h>
+#include <Elasticity/finiteelement/FiniteElement[Edge].h>
+#include <Elasticity/finiteelement/FiniteElement[Triangle].h>
+#include <Elasticity/finiteelement/FiniteElement[Quad].h>
+#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
+#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
 
 namespace elasticity
 {

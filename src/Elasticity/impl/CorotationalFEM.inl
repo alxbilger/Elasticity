@@ -2,6 +2,7 @@
 #include <Elasticity/impl/CorotationalFEM.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/VectorTools.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/helper/decompose.h>
 
 namespace elasticity
@@ -59,9 +60,11 @@ template <class DataTypes, class ElementType>
 void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx,
                                                         Real kFactor) const
 {
+    SCOPED_TIMER("CorotationalFEM_addDForce");
     const auto& elements = FiniteElement::getElementSequence(*m_topology);
 
     Deriv nodedForce(sofa::type::NOINIT);
+    sofa::type::Vec<NumberOfDofsInElement, Real> dForce;
 
     auto elementStiffnessIt = this->stiffnessMatrices().begin();
     auto rotationMatrixIt = m_rotations.begin();
@@ -71,18 +74,26 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
         const auto elementRotation_T = elementRotation.transposed();
 
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+
         {
-            const auto rotated_dx = elementRotation_T * dx[element[i]];
-            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+            SCOPED_TIMER("element_dx");
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             {
-                element_dx[i * spatial_dimensions + j] = rotated_dx[j];
+                const auto rotated_dx = elementRotation_T * dx[element[i]];
+                for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+                {
+                    element_dx[i * spatial_dimensions + j] = rotated_dx[j];
+                }
             }
         }
 
-        const auto& stiffnessMatrix = *elementStiffnessIt++;
-        const auto dForce = kFactor * stiffnessMatrix * element_dx;
+        {
+            SCOPED_TIMER("Ku");
+            const auto& stiffnessMatrix = *elementStiffnessIt++;
+            dForce = kFactor * (stiffnessMatrix * element_dx);
+        }
 
+        SCOPED_TIMER("df");
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
             dForce.getsub(i * spatial_dimensions, nodedForce);
@@ -111,11 +122,8 @@ void CorotationalFEM<DataTypes, ElementType>::buildStiffnessMatrix(
         {
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
-                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2,
-                                       localMatrix);  // extract the submatrix corresponding to the
-                                                      // coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) +=
-                    -elementRotation * localMatrix * elementRotation_T;
+                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix);  // extract the submatrix corresponding to the coupling of nodes n1 and n2
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += -elementRotation * localMatrix * elementRotation_T;
             }
         }
     }
@@ -217,4 +225,4 @@ void CorotationalFEM<DataTypes, ElementType>::computeElementRotation(
     sofa::helper::Decompose<Real>::polarDecomposition_stable(H, rotationMatrix);
 }
 
-}  // namespace elasticity
+}
