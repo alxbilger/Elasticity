@@ -33,12 +33,13 @@ void CorotationalFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const Ve
         computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates, elementRotation);
 
         const auto t = translation(elementNodesCoordinates);
+        const auto t0 = translation(restElementNodesCoordinates);
 
         ElementDisplacement displacement(sofa::type::NOINIT);
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
             VecView<spatial_dimensions, Real> transformedDisplacement(displacement, j * spatial_dimensions);
-            transformedDisplacement = elementRotation.multTranspose(elementNodesCoordinates[j] - t) - restElementNodesCoordinates[j];
+            transformedDisplacement = elementRotation.multTranspose(elementNodesCoordinates[j] - t) - (restElementNodesCoordinates[j] - t0);
         }
 
         const ElementStiffness& stiffnessMatrix = *elementStiffnessIt++;
