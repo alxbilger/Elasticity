@@ -15,6 +15,8 @@ A SOFA plugin for the development of a clean FEM formulation.
 - Hyperlaticity
   - [ ] A unique nonlinear formulation for any type of element in any dimension, with any constitutive equation
   - [ ] Common nonlinear constitutive equation
+- Other Features
+  - [ ] Support for topological changes
 - Performances
   - [x] Benchmark: compare to the existing SOFA force fields
   - [ ] Micro-benchmarking to improve performances
