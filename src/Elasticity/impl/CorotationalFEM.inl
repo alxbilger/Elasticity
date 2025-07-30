@@ -61,27 +61,26 @@ void CorotationalFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecD
 
     sofa::type::Vec<NumberOfDofsInElement, Real> dForce;
 
-    auto elementStiffnessIt = this->stiffnessMatrices().begin();
-    auto rotationMatrixIt = m_rotations.begin();
-    for (const auto& element : elements)
+    for (sofa::Size e = 0; e < elements.size(); ++e)
     {
-        const auto& elementRotation = *rotationMatrixIt++;
+        const auto& element = elements[e];
+        const auto& elementRotation = m_rotations[e];
 
         sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
 
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
         {
-            VecView<spatial_dimensions, Real> rotated_dx(element_dx, i * spatial_dimensions);
-            rotated_dx = elementRotation.multTranspose(dx[element[i]]);
+            VecView<spatial_dimensions, Real> rotated_dx(element_dx, n * spatial_dimensions);
+            rotated_dx = elementRotation.multTranspose(dx[element[n]]);
         }
 
-        const auto& stiffnessMatrix = *elementStiffnessIt++;
+        const auto& stiffnessMatrix = this->m_elementStiffness[e];
         dForce = (-kFactor) * (stiffnessMatrix * element_dx);
 
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
         {
-            VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
-            df[element[i]] += elementRotation * nodedForce;
+            VecView<spatial_dimensions, Real> nodedForce(dForce, n * spatial_dimensions);
+            df[element[n]] += elementRotation * nodedForce;
         }
     }
 }
