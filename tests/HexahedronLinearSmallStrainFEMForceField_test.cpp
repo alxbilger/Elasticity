@@ -1,6 +1,6 @@
-#include <Elasticity/ElementLinearSmallStrainFEMForceField.h>
-#include <Elasticity/FiniteElement[Hexahedron].h>
-#include <Elasticity/MatrixTools.h>
+#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
+#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
+#include <Elasticity/impl/MatrixTools.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 
@@ -30,11 +30,13 @@ TEST(HexahedronLinearSmallStrainFEMForceField, jacobian)
         {-1, 1, 1}
      });
 
-    const auto X_element = nodesMatrix(sofa::topology::Hexahedron(0,1,2,3,4,5,6,7), hexaNodesCoordinates);
     for (const auto& [q, w] : FE::quadraturePoints())
     {
         const auto dN_dq_ref = FE::gradientShapeFunctions(q);
-        const sofa::type::Mat<3, 3, SReal> jacobian = X_element * dN_dq_ref;
+
+        sofa::type::Mat<3, 3, SReal> jacobian;
+        for (sofa::Size i = 0; i < 8; ++i)
+            jacobian += sofa::type::dyad(hexaNodesCoordinates[i], dN_dq_ref[i]);
 
         for (sofa::Size i = 0; i < 3; ++i)
             for (sofa::Size j = 0; j < 3; ++j)
