@@ -17,6 +17,7 @@ A SOFA plugin for the development of a clean FEM formulation.
   - [ ] Common nonlinear constitutive equation
 - Other Features
   - [ ] Support for topological changes
+  - [ ] Support for computation of the potential energy
 - Performances
   - [x] Benchmark: compare to the existing SOFA force fields
   - [ ] Micro-benchmarking to improve performances
