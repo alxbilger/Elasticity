@@ -17,6 +17,7 @@ public:
                SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
 
 private:
+    using Inherit1::mstate;
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
@@ -30,7 +31,6 @@ public:
 
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
-    sofa::Data<bool> d_computeVonMisesStress;
     sofa::Data<sofa::type::vector<Real> > d_vonMisesStressValues;
 
     void init() override;
