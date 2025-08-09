@@ -99,21 +99,4 @@ protected:
     const sofa::type::vector<ElementStiffness>& stiffnessMatrices() const;
 };
 
-#if !defined(ELASTICITY_LINEARFEM_CPP)
-#include <Elasticity/finiteelement/FiniteElement[Edge].h>
-#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Quad].h>
-#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Triangle].h>
-
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Triangle>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec2Types, sofa::geometry::Quad>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Quad>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
-extern template class ELASTICITY_API LinearFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Hexahedron>;
-#endif
 }
