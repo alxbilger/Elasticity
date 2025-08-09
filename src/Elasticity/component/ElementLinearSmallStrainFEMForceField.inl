@@ -10,7 +10,7 @@ namespace elasticity
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectFEMTypes()
 {
-    this->addLinearFEMType<ElementType>();
+    this->template addLinearFEMType<ElementType>();
 }
 
 }  // namespace elasticity

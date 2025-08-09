@@ -24,12 +24,12 @@ TEST(CorotationalFEM, deformationGradientTetra)
 {
     using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
-    constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates({
-         {0, 0, 0},
-         {1, 0, 0},
-         {0, 1, 0},
-         {0, 0, 1}
-     });
+    constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates{{
+         {0_sreal, 0_sreal, 0_sreal},
+         {1_sreal, 0_sreal, 0_sreal},
+         {0_sreal, 1_sreal, 0_sreal},
+         {0_sreal, 0_sreal, 1_sreal}
+     }};
 
     const auto q = FE::quadraturePoints();
     static const auto centroid = CorotationalFEM<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>::computeCentroid(
