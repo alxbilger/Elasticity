@@ -16,7 +16,6 @@ LinearSmallStrainFEMForceField<DataTypes>::LinearSmallStrainFEMForceField()
     : l_topology(initLink("topology", "Link to a topology containing elements"))
     , d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
     , d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
-    , d_computeVonMisesStress(initData(&d_computeVonMisesStress, true, "computeVonMisesStress", "Compute Von Mises stress"))
     , d_vonMisesStressValues(initData(&d_vonMisesStressValues, "vonMisesStressValues", "Von Mises stress values"))
 {
     static std::string groupName = "Mechanical parameter";
@@ -30,6 +29,31 @@ template <class DataTypes>
 void LinearSmallStrainFEMForceField<DataTypes>::init()
 {
     sofa::core::behavior::ForceField<DataTypes>::init();
+
+    // We have a mstate here
+    auto position = mstate->write (sofa::core::vec_id::write_access::position);
+    auto restPosition = mstate->write (sofa::core::vec_id::write_access::restPosition);
+    sofa::core::objectmodel::Base::addUpdateCallback("computeVonMisesStress", {position,restPosition}, [this,position](const sofa::core::DataTracker& )
+    {
+        auto positionAccessor = mstate->readPositions();
+        auto restPositionAccessor = mstate->readRestPositions();
+
+        std::cout << "COMPUTING THE VON MISE STRESS FOR [" << this->getPathName() << "] AS POSITION OR REST POSITION CHANGED " << position->getCounter() << std::endl;
+
+        m_vonMisesStressContainer.clear();
+        m_vonMisesStressContainer.resize(positionAccessor.size());
+
+        for (const auto& finiteElement : m_finiteElements)
+        {
+            finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
+        }
+
+        m_vonMisesStressContainer.accept();
+
+        d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
+        return sofa::core::objectmodel::ComponentState::Valid;
+    }, {&d_vonMisesStressValues});
+
 
     if (!this->isComponentStateInvalid())
     {
@@ -73,21 +97,6 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
     for (const auto& finiteElement : m_finiteElements)
     {
         finiteElement->addForce(forceAccessor.wref(), positionAccessor.ref(), restPositionAccessor.ref());
-    }
-
-    if (d_computeVonMisesStress.getValue())
-    {
-        m_vonMisesStressContainer.clear();
-        m_vonMisesStressContainer.resize(positionAccessor.size());
-
-        for (const auto& finiteElement : m_finiteElements)
-        {
-            finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
-        }
-
-        m_vonMisesStressContainer.accept();
-
-        d_vonMisesStressValues.setValue(m_vonMisesStressContainer.getStressValues());
     }
 }
 

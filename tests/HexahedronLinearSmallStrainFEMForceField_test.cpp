@@ -19,16 +19,16 @@ TEST(HexahedronLinearSmallStrainFEMForceField, jacobian)
     using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Hexahedron>;
     using FE = FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
 
-    constexpr std::array<sofa::type::Vec3, 8> hexaNodesCoordinates({
-        {-1, -1, -1},
-        {1, -1, -1},
-        {1, 1, -1},
-        {-1, 1, -1},
-        {-1, -1, 1},
-        {1, -1, 1},
-        {1, 1, 1},
-        {-1, 1, 1}
-     });
+    constexpr std::array<sofa::type::Vec3, 8> hexaNodesCoordinates{{
+        {-1_sreal, -1_sreal, -1_sreal},
+        {1_sreal, -1_sreal, -1_sreal},
+        {1_sreal, 1_sreal, -1_sreal},
+        {-1_sreal, 1_sreal, -1_sreal},
+        {-1_sreal, -1_sreal, 1_sreal},
+        {1_sreal, -1_sreal, 1_sreal},
+        {1_sreal, 1_sreal, 1_sreal},
+        {-1_sreal, 1_sreal, 1_sreal}
+     }};
 
     for (const auto& [q, w] : FE::quadraturePoints())
     {

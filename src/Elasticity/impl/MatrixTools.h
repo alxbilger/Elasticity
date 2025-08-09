@@ -7,7 +7,7 @@
 namespace elasticity
 {
 
-template <size_t N, typename real>
+template <sofa::Size N, typename real>
 real determinantSquareMatrix(const sofa::type::Mat<N, N, real>& mat)
 {
     if constexpr (N == 1)
