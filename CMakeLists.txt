@@ -9,6 +9,7 @@ set(HEADER_FILES
     src/Elasticity/init.h
 
     src/Elasticity/finiteelement/FiniteElement.h
+    src/Elasticity/finiteelement/FiniteElement[all].h
     src/Elasticity/finiteelement/FiniteElement[Edge].h
     src/Elasticity/finiteelement/FiniteElement[Hexahedron].h
     src/Elasticity/finiteelement/FiniteElement[Quad].h
@@ -26,6 +27,7 @@ set(HEADER_FILES
     src/Elasticity/impl/CorotationalFEM.inl
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
+    src/Elasticity/impl/LinearFEM[all].h
     src/Elasticity/impl/LinearFEM.h
     src/Elasticity/impl/LinearFEM.inl
     src/Elasticity/impl/MatrixTools.h
