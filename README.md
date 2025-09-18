@@ -3,6 +3,11 @@
 ## Description
 A SOFA plugin for the development of a clean FEM formulation.
 
+## Compilation
+
+The plugin does not depend on any other plugin or external library.
+The procedure to compile the plugin is the same as for any other plugin and is described in the [SOFA documentation](https://sofa-framework.github.io/doc/plugins/build-a-plugin-from-sources/).
+
 ## Possible Roadmap
 
 - Linear elasticity
