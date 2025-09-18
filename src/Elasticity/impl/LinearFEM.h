@@ -20,7 +20,7 @@ class BaseLinearFEM
     using Real = sofa::Real_t<DataTypes>;
 
 public:
-    ~BaseLinearFEM() = default;
+    virtual ~BaseLinearFEM() = default;
 
     virtual void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) = 0;
     virtual void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const = 0;
