@@ -126,6 +126,7 @@ jobs:
 
       - name: Generate documentation
         uses: alxbilger/plugin_doc@master
+        if: runner.os == 'Linux'
         with:
           plugin_name: 'Elasticity'
   deploy:
