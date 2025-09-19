@@ -123,6 +123,11 @@ jobs:
           else
             echo "Regression tests are not supported on the CI for macOS yet (TODO)"
           fi
+
+      - name: Generate documentation
+        uses: alxbilger/plugin_doc@master
+        with:
+          plugin_name: 'Elasticity'
   deploy:
     name: Deploy artifacts
     if: always()
