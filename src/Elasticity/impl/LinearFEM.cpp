@@ -1,14 +1,9 @@
 #define ELASTICITY_LINEARFEM_CPP
 
-#include <Elasticity/impl/LinearFEM.inl>
 #include <Elasticity/config.h>
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <Elasticity/impl/LinearFEM.inl>
 #include <sofa/defaulttype/VecTypes.h>
-
-#include <Elasticity/finiteelement/FiniteElement[Edge].h>
-#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Quad].h>
-#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Triangle].h>
 
 namespace elasticity
 {
