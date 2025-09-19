@@ -20,8 +20,8 @@ jobs:
         id: sofa
         uses: sofa-framework/sofa-setup-action@v5
         with:
-          sofa_root: ${ github.workspace }}/sofa
-          sofa_version: ${ matrix.sofa_branch }}
+          sofa_root: ${{ github.workspace }}/sofa
+          sofa_version: ${{ matrix.sofa_branch }}
           sofa_scope: 'standard'
       
       - name: Checkout source code
