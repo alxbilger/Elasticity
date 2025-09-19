@@ -13,6 +13,18 @@ using StrainDisplacement = sofa::type::Mat<
     ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
     sofa::Real_t<DataTypes>>;
 
+/**
+ * Creates a strain-displacement matrix (B-matrix) for finite element calculations.
+ *
+ * This function constructs a strain-displacement matrix based on the provided gradient of shape
+ * functions. The matrix is filled according to spatial dimensions and the number of nodes in the
+ * element.
+ *
+ * @param gradientShapeFunctions A matrix containing the gradient of the shape functions.
+ *
+ * @return A strain-displacement matrix of type StrainDisplacement<DataTypes, ElementType>,
+ * constructed for the finite element with the given gradient shape functions.
+ */
 template <class DataTypes, class ElementType>
 StrainDisplacement<DataTypes, ElementType> makeStrainDisplacement(
     const sofa::type::Mat<ElementType::NumberOfNodes, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes> > gradientShapeFunctions)

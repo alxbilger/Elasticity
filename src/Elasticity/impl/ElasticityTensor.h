@@ -7,6 +7,19 @@
 namespace elasticity
 {
 
+/**
+ * @brief Converts Young's modulus and Poisson's ratio to Lamé parameters.
+ *
+ * This function calculates and returns the two Lamé parameters, μ (shear modulus)
+ * and λ, derived from the given Young’s modulus and Poisson’s ratio of a material.
+ * These parameters are fundamental in describing isotropic elastic behavior.
+ *
+ * @param youngModulus The Young's modulus of the material, representing its stiffness.
+ * @param poissonRatio The Poisson's ratio of the material, describing its deformation behavior.
+ * @return A pair containing the calculated Lamé parameters:
+ *         - First: μ (shear modulus),
+ *         - Second: λ.
+ */
 template<class DataTypes>
 std::pair<sofa::Real_t<DataTypes>, sofa::Real_t<DataTypes>>
 toLameParameters(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
@@ -23,6 +36,18 @@ using ElasticityTensor = sofa::type::Mat<
     symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>,
     sofa::Real_t<DataTypes>>;
 
+/**
+ * @brief Creates an isotropic elasticity tensor for given material properties.
+ *
+ * This function constructs and returns an elasticity tensor for an isotropic material
+ * characterized by its Young's modulus and Poisson's ratio. It computes the tensor
+ * using the Lamé parameters, which are derived from the given material properties.
+ *
+ * @param youngModulus The Young's modulus of the material, representing its stiffness.
+ * @param poissonRatio The Poisson's ratio of the material, describing its deformation behavior.
+ * @return The isotropic elasticity tensor represented as an object of
+ * `ElasticityTensor<DataTypes>`.
+ */
 template <class DataTypes>
 ElasticityTensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
 {

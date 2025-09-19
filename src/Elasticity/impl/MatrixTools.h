@@ -39,6 +39,15 @@ real determinantSquareMatrix(const sofa::type::Mat<N, N, real>& mat)
     }
 }
 
+/**
+ * Computes the determinant of a given matrix.
+ * For square matrices, the standard determinant is computed.
+ * For non-square matrices, the determinant is computed using the product of the transposed
+ * matrix and the original matrix, followed by taking the square root of the result.
+ *
+ * @param mat The input matrix of size LxC.
+ * @return The determinant of the matrix.
+ */
 template <sofa::Size L, sofa::Size C, class real>
 real determinant(const sofa::type::Mat<L, C, real>& mat)
 {
@@ -64,6 +73,14 @@ sofa::type::Mat<C, L, real> rightPseudoInverse(const sofa::type::Mat<L, C, real>
     return mat.transposed() * (mat * mat.transposed()).inverted();
 }
 
+/**
+ * Computes the inverse of a given matrix.
+ * For square matrices (L == C), the standard matrix inverse is computed.
+ * For non-square matrices, the left pseudo-inverse is returned.
+ *
+ * @param mat The input matrix of size LxC to be inverted or pseudo-inverted.
+ * @return A matrix of size CxL representing the inverse or left pseudo-inverse of the input matrix.
+ */
 template <sofa::Size L, sofa::Size C, class real>
 sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
 {

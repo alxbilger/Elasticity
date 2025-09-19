@@ -12,6 +12,10 @@
 namespace elasticity
 {
 
+/**
+ * Base class for linear FEM. The class is designed to be called in a ForceField. The derived classes
+ * are specific to a type of element.
+ */
 template <class DataTypes>
 class BaseLinearFEM
 {
