@@ -43,7 +43,7 @@ protected:
     using Deriv = sofa::Deriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
     using TopologyElement = sofa::topology::Element<ElementType>;
-    using FiniteElement = FiniteElement<ElementType, DataTypes>;
+    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
     using ReferenceCoord = typename FiniteElement::ReferenceCoord;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
