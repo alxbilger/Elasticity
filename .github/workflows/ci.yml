@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Run on ${{ matrix.os }} with SOFA ${ matrix.sofa_branch }}
+    name: Run on ${{ matrix.os }} with SOFA ${{ matrix.sofa_branch }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -23,12 +23,12 @@ jobs:
           sofa_root: ${{ github.workspace }}/sofa
           sofa_version: ${{ matrix.sofa_branch }}
           sofa_scope: 'standard'
-      
+
       - name: Checkout source code
         uses: actions/checkout@v2
         with:
-          path: ${{ env.WORKSPACE_SRC_PATH }}        
-      
+          path: ${{ env.WORKSPACE_SRC_PATH }}
+
       - name: Build and install
         shell: bash
         run: |
@@ -60,6 +60,7 @@ jobs:
             echo ${CCACHE_BASEDIR}
             ccache -s
           fi
+
       - name: Sanitize artifact name
         id: sanitize
         # This step removes special characters from the artifact name to ensure compatibility with upload-artifact
