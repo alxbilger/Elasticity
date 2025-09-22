@@ -35,8 +35,8 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
 
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
-        static constexpr sofa::type::Vec<ElementDimension, Real> q0(1./4., 1./4., 1./4.);
-        static constexpr std::array<QuadraturePointAndWeight, 1> q { std::make_pair(q0, 1./6.) };
+        constexpr sofa::type::Vec<ElementDimension, Real> q0(1./4., 1./4., 1./4.);
+        constexpr std::array<QuadraturePointAndWeight, 1> q { std::make_pair(q0, 1./6.) };
         return q;
     }
 };
