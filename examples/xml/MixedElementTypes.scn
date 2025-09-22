@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<Node name="root" dt="0.001" gravity="0 -9.81 0">
+
+    <Node name="plugins">
+        <RequiredPlugin name="Elasticity"/>
+        <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
+        <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
+        <RequiredPlugin name="Sofa.Component.IO.Mesh"/> <!-- Needed to use components [MeshOBJLoader] -->
+        <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
+        <RequiredPlugin name="Sofa.Component.Mapping.Linear"/> <!-- Needed to use components [IdentityMapping] -->
+        <RequiredPlugin name="Sofa.Component.Mass"/> <!-- Needed to use components [MeshMatrixMass] -->
+        <RequiredPlugin name="Sofa.Component.ODESolver.Backward"/> <!-- Needed to use components [EulerImplicitSolver] -->
+        <RequiredPlugin name="Sofa.Component.StateContainer"/> <!-- Needed to use components [MechanicalObject] -->
+        <RequiredPlugin name="Sofa.Component.Topology.Container.Constant"/> <!-- Needed to use components [MeshTopology] -->
+        <RequiredPlugin name="Sofa.Component.Visual"/> <!-- Needed to use components [LineAxis,VisualGrid,VisualStyle] -->
+        <RequiredPlugin name="Sofa.GL.Component.Rendering3D"/> <!-- Needed to use components [OglModel,OglSceneFrame] -->
+    </Node>
+
+    <DefaultAnimationLoop/>
+    <VisualStyle displayFlags="showBehaviorModels" />
+
+    <VisualGrid size="2"/>
+    <LineAxis size="2"/>
+    <OglSceneFrame/>
+
+    <Node name="halfDisc">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
+
+        <MeshOBJLoader name="inputMesh" filename="halfDisc.obj" rotation="90 0 90"/>
+        <MeshTopology name="topology" src="@inputMesh"/>
+        <MechanicalObject template="Vec3" name="state" position="@inputMesh.position"/>
+        <MeshMatrixMass totalMass="1500" topology="@topology"/>
+
+        <CorotationalFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@topology"/>
+        <BoxROI template="Vec3" name="box_roi" box="-1.1 -0.01 -0.01 1.1 0.01 0.01" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+
+        <Node name="visu">
+            <VisualStyle displayFlags="showWireframe"/>
+            <OglModel src="@../inputMesh" name="visu" color="yellow"/>
+            <IdentityMapping input="@../state" output="@visu"/>
+        </Node>
+    </Node>
+
+</Node>
