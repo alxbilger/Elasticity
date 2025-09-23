@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Elasticity/impl/LinearFEM[all].h>
+#include <Elasticity/impl/FEM/LinearFEM[all].h>
 
 namespace elasticity
 {

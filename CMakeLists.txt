@@ -27,13 +27,13 @@ set(HEADER_FILES
     src/Elasticity/component/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/LinearSmallStrainFEMForceField.inl
 
-    src/Elasticity/impl/CorotationalFEM.h
-    src/Elasticity/impl/CorotationalFEM.inl
+    src/Elasticity/impl/FEM/CorotationalFEM.h
+    src/Elasticity/impl/FEM/CorotationalFEM.inl
+    src/Elasticity/impl/FEM/LinearFEM[all].h
+    src/Elasticity/impl/FEM/LinearFEM.h
+    src/Elasticity/impl/FEM/LinearFEM.inl
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
-    src/Elasticity/impl/LinearFEM[all].h
-    src/Elasticity/impl/LinearFEM.h
-    src/Elasticity/impl/LinearFEM.inl
     src/Elasticity/impl/MatrixTools.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
@@ -51,8 +51,8 @@ set(SOURCE_FILES
     src/Elasticity/component/HyperelasticityFEMForceField.cpp
     src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
 
-    src/Elasticity/impl/CorotationalFEM.cpp
-    src/Elasticity/impl/LinearFEM.cpp
+    src/Elasticity/impl/FEM/CorotationalFEM.cpp
+    src/Elasticity/impl/FEM/LinearFEM.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED README.md ${HEADER_FILES} ${SOURCE_FILES})

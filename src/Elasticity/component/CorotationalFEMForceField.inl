@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/CorotationalFEMForceField.h>
 #include <Elasticity/component/LinearSmallStrainFEMForceField.inl>
-#include <Elasticity/impl/CorotationalFEM.h>
+#include <Elasticity/impl/FEM/CorotationalFEM.h>
 
 namespace elasticity
 {

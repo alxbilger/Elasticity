@@ -1,5 +1,5 @@
 #pragma once
-#include <Elasticity/impl/CorotationalFEM.h>
+#include <Elasticity/impl/FEM/CorotationalFEM.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/VectorTools.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>

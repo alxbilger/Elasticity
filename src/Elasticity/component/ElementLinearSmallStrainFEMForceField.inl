@@ -2,7 +2,7 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/component/LinearSmallStrainFEMForceField.inl>
 
-#include <Elasticity/impl/LinearFEM.inl>
+#include <Elasticity/impl/FEM/LinearFEM.inl>
 
 namespace elasticity
 {

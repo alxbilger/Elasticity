@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Elasticity/impl/LinearFEM.h>
+#include <Elasticity/impl/FEM/LinearFEM.h>
 #include <Elasticity/component/BaseElasticityFEMForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 

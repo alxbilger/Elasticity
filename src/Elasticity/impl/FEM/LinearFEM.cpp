@@ -2,7 +2,7 @@
 
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement[all].h>
-#include <Elasticity/impl/LinearFEM.inl>
+#include <Elasticity/impl/FEM/LinearFEM.inl>
 #include <sofa/defaulttype/VecTypes.h>
 
 namespace elasticity

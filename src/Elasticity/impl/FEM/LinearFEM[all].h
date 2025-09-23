@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/impl/LinearFEM.h>
+#include <Elasticity/impl/FEM/LinearFEM.h>
 #include <Elasticity/finiteelement/FiniteElement[all].h>
 
 namespace elasticity

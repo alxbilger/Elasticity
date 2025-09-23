@@ -1,4 +1,4 @@
-#include <Elasticity/impl/CorotationalFEM.inl>
+#include <Elasticity/impl/FEM/CorotationalFEM.inl>
 
 namespace elasticity
 {
