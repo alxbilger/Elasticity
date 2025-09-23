@@ -33,6 +33,8 @@ set(HEADER_FILES
     src/Elasticity/impl/FEM/LinearFEM[all].h
     src/Elasticity/impl/FEM/LinearFEM.h
     src/Elasticity/impl/FEM/LinearFEM.inl
+    src/Elasticity/impl/FEM/NonLinearFEM.h
+    src/Elasticity/impl/FEM/NonLinearFEM.inl
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/MatrixTools.h

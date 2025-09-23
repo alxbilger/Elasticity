@@ -2,6 +2,8 @@
 
 #include <Elasticity/component/BaseElasticityFEMForceField.h>
 
+#include <Elasticity/impl/FEM/NonLinearFEM.h>
+
 namespace elasticity
 {
 
@@ -16,6 +18,8 @@ private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
+
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
 public:
 
@@ -32,6 +36,11 @@ public:
 
 protected:
     void selectFEMTypes() override;
+
+    template<class ElementType>
+    void addNonLinearFEMType();
+
+    sofa::type::vector<std::unique_ptr<BaseNonLinearFEM<DataTypes>>> m_finiteElements;
 };
 
 }  // namespace elasticity
