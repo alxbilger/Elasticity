@@ -4,6 +4,14 @@
 namespace elasticity
 {
 
+/**
+ * This class is a @LinearSmallStrainFEMForceField, but working on a single specific type of element.
+ *
+ * While @LinearSmallStrainFEMForceField works on all the supported in the topology, this class works
+ * only a given element type, specified at compile-time.
+ *
+ * The component name is customized to include the element type in its name.
+ */
 template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField : public LinearSmallStrainFEMForceField<DataTypes>
 {
