@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/impl/LinearFEM.h>
-#include <sofa/core/behavior/ForceField.h>
+#include <Elasticity/component/BaseElasticityFEMForceField.h>
 #include <sofa/core/topology/BaseMeshTopology.h>
 
 #include <Elasticity/impl/VonMisesStressContainer.h>
@@ -10,11 +10,11 @@ namespace elasticity
 {
 
 template <class DataTypes>
-class LinearSmallStrainFEMForceField : public sofa::core::behavior::ForceField<DataTypes>
+class LinearSmallStrainFEMForceField : public BaseElasticityFEMForceField<DataTypes>
 {
 public:
     SOFA_CLASS(SOFA_TEMPLATE(LinearSmallStrainFEMForceField, DataTypes),
-               SOFA_TEMPLATE(sofa::core::behavior::ForceField, DataTypes));
+               SOFA_TEMPLATE(BaseElasticityFEMForceField, DataTypes));
 
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
@@ -24,9 +24,6 @@ private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
 public:
-    /// The topology will give access to the elements
-    sofa::SingleLink<LinearSmallStrainFEMForceField, sofa::core::topology::BaseMeshTopology,
-                     sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_topology;
 
     sofa::Data<Real> d_poissonRatio;
     sofa::Data<Real> d_youngModulus;
@@ -51,17 +48,11 @@ protected:
     LinearSmallStrainFEMForceField();
 
     /**
-     * Ensure a link to a valid topology. Without a topology, this force field cannot have access
-     * to the list of elements.
-     */
-    void validateTopology();
-
-    /**
      * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.
      */
     void precomputeElementStiffness();
 
-    virtual void selectFEMTypes();
+    void selectFEMTypes() override;
 
     template<class ElementType>
     void addLinearFEMType();

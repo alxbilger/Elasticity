@@ -16,6 +16,8 @@ set(HEADER_FILES
     src/Elasticity/finiteelement/FiniteElement[Tetrahedron].h
     src/Elasticity/finiteelement/FiniteElement[Triangle].h
 
+    src/Elasticity/component/BaseElasticityFEMForceField.h
+    src/Elasticity/component/BaseElasticityFEMForceField.inl
     src/Elasticity/component/CorotationalFEMForceField.h
     src/Elasticity/component/CorotationalFEMForceField.inl
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.h
@@ -41,6 +43,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
+    src/Elasticity/component/BaseElasticityFEMForceField.cpp
     src/Elasticity/component/CorotationalFEMForceField.cpp
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
     src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
