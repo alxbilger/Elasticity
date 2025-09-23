@@ -27,6 +27,7 @@ set(HEADER_FILES
     src/Elasticity/component/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/LinearSmallStrainFEMForceField.inl
 
+    src/Elasticity/impl/FEM/BaseFEM.h
     src/Elasticity/impl/FEM/CorotationalFEM.h
     src/Elasticity/impl/FEM/CorotationalFEM.inl
     src/Elasticity/impl/FEM/LinearFEM[all].h

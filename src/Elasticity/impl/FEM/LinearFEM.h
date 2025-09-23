@@ -2,12 +2,11 @@
 
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement.h>
-#include <Elasticity/impl/ElementStiffnessMatrix.h>
-#include <Elasticity/impl/VonMisesStressContainer.h>
-#include <Elasticity/impl/SymmetricTensor.h>
-#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
-
 #include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/impl/ElementStiffnessMatrix.h>
+#include <Elasticity/impl/SymmetricTensor.h>
+#include <Elasticity/impl/VonMisesStressContainer.h>
+#include <Elasticity/impl/FEM/BaseFEM.h>
 
 namespace elasticity
 {
@@ -17,18 +16,13 @@ namespace elasticity
  * are specific to a type of element.
  */
 template <class DataTypes>
-class BaseLinearFEM
+class BaseLinearFEM : public BaseFEM<DataTypes>
 {
     using VecCoord = sofa::VecCoord_t<DataTypes>;
     using VecDeriv = sofa::VecDeriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
 
 public:
-    virtual ~BaseLinearFEM() = default;
-
-    virtual void addForce(VecDeriv& force, const VecCoord& position, const VecCoord& restPosition) = 0;
-    virtual void addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const = 0;
-    virtual void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const = 0;
     virtual void precomputeElementStiffness(const VecCoord& restPosition, Real youngModulus, Real poissonRatio) = 0;
     virtual void computeVonMisesStress(VonMisesStressContainer<Real>& vonMisesStressContainer, const VecCoord& position, const VecCoord& restPosition) const {}
 };
