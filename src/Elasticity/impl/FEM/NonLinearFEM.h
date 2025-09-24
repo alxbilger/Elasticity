@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Elasticity/impl/FEM/BaseFEM.h>
+#include <Elasticity/finiteelement/FiniteElement[all].h>
 
 namespace elasticity
 {
@@ -17,6 +18,8 @@ protected:
     using VecCoord = sofa::VecCoord_t<DataTypes>;
     using VecDeriv = sofa::VecDeriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
+
+    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
 
 public:
     explicit NonLinearFEM(sofa::core::topology::BaseMeshTopology* topology = nullptr);

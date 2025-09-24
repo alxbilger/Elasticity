@@ -8,25 +8,6 @@ namespace elasticity
 {
 
 template <class DataTypes>
-void HyperelasticityFEMForceField<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams,
-                                                       DataVecDeriv& f, const DataVecCoord& x,
-                                                       const DataVecDeriv& v)
-{
-}
-
-template <class DataTypes>
-void HyperelasticityFEMForceField<DataTypes>::addDForce(const sofa::core::MechanicalParams* mparams,
-                                                        DataVecDeriv& df, const DataVecDeriv& dx)
-{
-}
-
-template <class DataTypes>
-void HyperelasticityFEMForceField<DataTypes>::buildStiffnessMatrix(
-    sofa::core::behavior::StiffnessMatrix* matrix)
-{
-}
-
-template <class DataTypes>
 SReal HyperelasticityFEMForceField<DataTypes>::getPotentialEnergy(
     const sofa::core::MechanicalParams*, const DataVecCoord& x) const
 {
@@ -97,6 +78,16 @@ void HyperelasticityFEMForceField<DataTypes>::addNonLinearFEMType()
 {
     m_finiteElements.emplace_back(
         std::make_unique<NonLinearFEM<DataTypes, ElementType>>(this->l_topology.get()));
+}
+
+template <class DataTypes>
+void HyperelasticityFEMForceField<DataTypes>::applyLambda(
+    const std::function<void(BaseFEM<DataTypes>&)>& callable)
+{
+    for (const auto& finiteElement : m_finiteElements)
+    {
+        callable(*finiteElement);
+    }
 }
 
 }  // namespace elasticity

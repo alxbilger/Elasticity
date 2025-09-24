@@ -32,13 +32,9 @@ public:
 
     void init() override;
 
+
     void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f,
                   const DataVecCoord& x, const DataVecDeriv& v) override;
-
-    void addDForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& df,
-                   const DataVecDeriv& dx) override;
-
-    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
@@ -60,6 +56,10 @@ protected:
     sofa::type::vector<std::unique_ptr<BaseLinearFEM<DataTypes>>> m_finiteElements;
 
     VonMisesStressContainer<Real> m_vonMisesStressContainer;
+
+    void computeVonMisesStress(const DataVecCoord& x);
+
+    void applyLambda(const std::function<void(BaseFEM<DataTypes>&)>& callable) override;
 };
 
 }  // namespace elasticity

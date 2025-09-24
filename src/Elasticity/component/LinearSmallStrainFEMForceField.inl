@@ -49,21 +49,10 @@ void LinearSmallStrainFEMForceField<DataTypes>::init()
 }
 
 template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::addForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x,
-    const DataVecDeriv& v)
+void LinearSmallStrainFEMForceField<DataTypes>::computeVonMisesStress(const DataVecCoord& x)
 {
-    SOFA_UNUSED(mparams);
-    SOFA_UNUSED(v);
-
-    auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
-
-    for (const auto& finiteElement : m_finiteElements)
-    {
-        finiteElement->addForce(forceAccessor.wref(), positionAccessor.ref(), restPositionAccessor.ref());
-    }
 
     if (d_computeVonMisesStress.getValue())
     {
@@ -72,7 +61,8 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
 
         for (const auto& finiteElement : m_finiteElements)
         {
-            finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(), restPositionAccessor.ref());
+            finiteElement->computeVonMisesStress(m_vonMisesStressContainer, positionAccessor.ref(),
+                                                 restPositionAccessor.ref());
         }
 
         m_vonMisesStressContainer.accept();
@@ -82,33 +72,12 @@ void LinearSmallStrainFEMForceField<DataTypes>::addForce(
 }
 
 template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::addDForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
+void LinearSmallStrainFEMForceField<DataTypes>::addForce(
+    const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x,
+    const DataVecDeriv& v)
 {
-    auto dfAccessor = sofa::helper::getWriteAccessor(df);
-    auto dxAccessor = sofa::helper::getReadAccessor(dx);
-    dfAccessor.resize(dxAccessor.size());
-
-    const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
-        mparams, this->rayleighStiffness.getValue());
-
-    for (const auto& finiteElement : m_finiteElements)
-    {
-        finiteElement->addDForce(dfAccessor.wref(), dxAccessor.ref(), kFactor);
-    }
-}
-
-template <class DataTypes>
-void LinearSmallStrainFEMForceField<DataTypes>::buildStiffnessMatrix(
-    sofa::core::behavior::StiffnessMatrix* matrix)
-{
-    auto dfdx = matrix->getForceDerivativeIn(this->mstate)
-               .withRespectToPositionsIn(this->mstate);
-
-    for (const auto& finiteElement : m_finiteElements)
-    {
-        finiteElement->buildStiffnessMatrix(dfdx);
-    }
+    BaseElasticityFEMForceField<DataTypes>::addForce(mparams, f, x, v);
+    computeVonMisesStress(x);
 }
 
 template <class DataTypes>
@@ -192,6 +161,16 @@ void LinearSmallStrainFEMForceField<DataTypes>::addLinearFEMType()
 {
     m_finiteElements.emplace_back(
         std::make_unique<LinearFEM<DataTypes, ElementType>>(this->l_topology.get()));
+}
+
+template <class DataTypes>
+void LinearSmallStrainFEMForceField<DataTypes>::applyLambda(
+    const std::function<void(BaseFEM<DataTypes>&)>& callable)
+{
+    for (const auto& finiteElement : m_finiteElements)
+    {
+        callable(*finiteElement);
+    }
 }
 
 }  // namespace elasticity

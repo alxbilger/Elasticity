@@ -29,6 +29,56 @@ void BaseElasticityFEMForceField<DataTypes>::init()
 }
 
 template <class DataTypes>
+void BaseElasticityFEMForceField<DataTypes>::addForce(const sofa::core::MechanicalParams* mparams,
+                                                      DataVecDeriv& f, const DataVecCoord& x,
+                                                      const DataVecDeriv& v)
+{
+    SOFA_UNUSED(mparams);
+    SOFA_UNUSED(v);
+
+    auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
+    auto positionAccessor = sofa::helper::getReadAccessor(x);
+    auto restPositionAccessor = this->mstate->readRestPositions();
+
+    applyLambda([&forceAccessor, &positionAccessor, &restPositionAccessor]
+        (BaseFEM<DataTypes>& finiteElement)
+        {
+            finiteElement.addForce(forceAccessor.wref(), positionAccessor.ref(), restPositionAccessor.ref());
+        });
+}
+
+template <class DataTypes>
+void BaseElasticityFEMForceField<DataTypes>::addDForce(const sofa::core::MechanicalParams* mparams,
+                                                       DataVecDeriv& df, const DataVecDeriv& dx)
+{
+    auto dfAccessor = sofa::helper::getWriteAccessor(df);
+    auto dxAccessor = sofa::helper::getReadAccessor(dx);
+    dfAccessor.resize(dxAccessor.size());
+
+    const Real kFactor = (Real)sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
+        mparams, this->rayleighStiffness.getValue());
+
+    applyLambda([&dfAccessor, &dxAccessor, kFactor]
+        (BaseFEM<DataTypes>& finiteElement)
+        {
+            finiteElement.addDForce(dfAccessor.wref(), dxAccessor.ref(), kFactor);
+        });
+}
+template <class DataTypes>
+void BaseElasticityFEMForceField<DataTypes>::buildStiffnessMatrix(
+    sofa::core::behavior::StiffnessMatrix* matrix)
+{
+    auto dfdx = matrix->getForceDerivativeIn(this->mstate)
+       .withRespectToPositionsIn(this->mstate);
+
+    applyLambda([&dfdx]
+        (BaseFEM<DataTypes>& finiteElement)
+        {
+            finiteElement.buildStiffnessMatrix(dfdx);
+        });
+}
+
+template <class DataTypes>
 void BaseElasticityFEMForceField<DataTypes>::validateTopology()
 {
     if (l_topology.empty())

@@ -23,14 +23,6 @@ private:
 
 public:
 
-    void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f,
-                  const DataVecCoord& x, const DataVecDeriv& v) override;
-
-    void addDForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& df,
-                   const DataVecDeriv& dx) override;
-
-    void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
-
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
                              const DataVecCoord& x) const override;
 
@@ -39,6 +31,8 @@ protected:
 
     template<class ElementType>
     void addNonLinearFEMType();
+
+    void applyLambda(const std::function<void(BaseFEM<DataTypes>&)>& callable) override;
 
     sofa::type::vector<std::unique_ptr<BaseNonLinearFEM<DataTypes>>> m_finiteElements;
 };
