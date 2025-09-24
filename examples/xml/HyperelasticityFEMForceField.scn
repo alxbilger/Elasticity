@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<Node name="root" dt="0.1" gravity="0 -9.81 0">
+<Node name="root" dt="0.001" gravity="0 -9.81 0">
 
     <Node name="plugins">
         <RequiredPlugin name="Elasticity"/>
@@ -26,7 +26,8 @@
 
 
     <Node name="tetras">
-        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+<!--        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
+        <EulerExplicitSolver name="forward Euler"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
         <RegularGridTopology name="grid" min="-15 -5 0" max="-5 5 40" n="5 5 20"/>
@@ -42,32 +43,30 @@
             <HyperelasticityFEMForceField name="FEM" topology="@Tetra_topo"/>
         </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
-        </Node>
-
         <BoxROI template="Vec3" name="box_roi" box="-16 -6 -1 -4 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
 
     <Node name="hexas">
-        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+<!--        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
+        <EulerExplicitSolver name="forward Euler"/>
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
         <RegularGridTopology name="grid" min="5 -5 0" max="15 5 40" n="5 5 20"/>
         <MechanicalObject template="Vec3" name="state" showObject="true"/>
 
-        <MeshMatrixMass totalMass="1500" topology="@grid"/>
-        <HyperelasticityFEMForceField name="FEM" topology="@grid"/>
+        <!-- Need to convert to tetras for the mass because the mass does not work properly with hexas-->
+        <Node name="tetra">
+            <TetrahedronSetTopologyContainer name="Tetra_topo"/>
+            <TetrahedronSetTopologyModifier name="Modifier" />
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="false"/>
+            <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
-        <Node name="Data">
-            <DataDisplay pointData="@../FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
         </Node>
+
+        <HyperelasticityFEMForceField name="FEM" topology="@grid"/>
 
         <BoxROI template="Vec3" name="box_roi" box="4 -6 -1 16 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
