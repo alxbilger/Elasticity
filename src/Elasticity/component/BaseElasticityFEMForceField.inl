@@ -1,6 +1,6 @@
 #pragma once
 
-#include <elasticity/component/BaseElasticityFEMForceField.h>
+#include <Elasticity/component/BaseElasticityFEMForceField.h>
 #include <sofa/core/ObjectFactory.h>
 
 namespace elasticity
