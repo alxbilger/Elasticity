@@ -20,21 +20,20 @@ set(HEADER_FILES
     src/Elasticity/component/CorotationalFEMForceField.inl
     src/Elasticity/component/ElementCorotationalFEMForceField.h
     src/Elasticity/component/ElementCorotationalFEMForceField.inl
+    src/Elasticity/component/ElementHyperelasticityFEMForceField.h
+    src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.h
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.inl
     src/Elasticity/component/ElementPrefab.h
     src/Elasticity/component/ElementPrefab.inl
-    #src/Elasticity/component/HyperelasticityFEMForceField.h
-    #src/Elasticity/component/HyperelasticityFEMForceField.inl
+    src/Elasticity/component/HyperelasticityFEMForceField.h
+    src/Elasticity/component/HyperelasticityFEMForceField.inl
     src/Elasticity/component/LinearMechanicalParametersComponent.h
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/LinearSmallStrainFEMForceField.inl
     src/Elasticity/component/TopologyAccessor.h
 
-    src/Elasticity/impl/FEM/BaseFEM.h
-    src/Elasticity/impl/FEM/NonLinearFEM.h
-    src/Elasticity/impl/FEM/NonLinearFEM.inl
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/MatrixTools.h
@@ -49,9 +48,11 @@ set(SOURCE_FILES
     src/Elasticity/init.cpp
     src/Elasticity/component/CorotationalFEMForceField.cpp
     src/Elasticity/component/ElementCorotationalFEMForceField.cpp
+    src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
+    src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp
-    #src/Elasticity/component/HyperelasticityFEMForceField.cpp
+    src/Elasticity/component/HyperelasticityFEMForceField.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
     src/Elasticity/component/TopologyAccessor.cpp

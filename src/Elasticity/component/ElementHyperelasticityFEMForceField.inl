@@ -1,6 +1,7 @@
 #pragma once
+
+#include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
 #include <Elasticity/impl/ElasticityTensor.h>
-#include <Elasticity/impl/FEM/NonLinearFEM.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/VectorTools.h>
 
@@ -8,23 +9,41 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-NonLinearFEM<DataTypes, ElementType>::NonLinearFEM(sofa::core::topology::BaseMeshTopology* topology)
-    : m_topology(topology)
+void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::init()
 {
+    sofa::core::behavior::ForceField<DataTypes>::init();
+
+    if (!this->isComponentStateInvalid())
+    {
+        this->validateTopology();
+    }
+
+    if (!this->isComponentStateInvalid())
+    {
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
+    }
 }
 
 template <class DataTypes, class ElementType>
-void NonLinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCoord& position,
-                                                    const VecCoord& restPosition)
+void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
+    const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x,
+    const DataVecDeriv& v)
 {
-    if (m_topology == nullptr) return;
+    SOFA_UNUSED(mparams);
+    SOFA_UNUSED(v);
 
-    const auto& elements = FiniteElement::getElementSequence(*m_topology);
+    auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
+    auto positionAccessor = sofa::helper::getReadAccessor(x);
+    auto restPositionAccessor = this->mstate->readRestPositions();
+
+    if (l_topology == nullptr) return;
+
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
     for (const auto& element : elements)
     {
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, position);
-        const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
+        const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
@@ -89,35 +108,29 @@ void NonLinearFEM<DataTypes, ElementType>::addForce(VecDeriv& force, const VecCo
 
             for (sofa::Index i = 0; i < NumberOfNodesInElement; ++i)
             {
-                force[element[i]] += (-detJ_Q * weight) * P * dN_dQ[i];
+                forceAccessor[element[i]] += (-detJ_Q * weight) * P * dN_dQ[i];
             }
         }
     }
 }
 
 template <class DataTypes, class ElementType>
-void NonLinearFEM<DataTypes, ElementType>::addDForce(VecDeriv& df, const VecDeriv& dx, Real kFactor) const
+void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
+    const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
-    if (m_topology == nullptr) return;
-
-    const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    for (const auto& element : elements)
-    {
-    }
 }
 
 template <class DataTypes, class ElementType>
-void NonLinearFEM<DataTypes, ElementType>::buildStiffnessMatrix(
-    sofa::core::behavior::StiffnessMatrix::Derivative& dfdx) const
+void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
+    sofa::core::behavior::StiffnessMatrix* matrix)
 {
-    if (m_topology == nullptr) return;
+}
 
-    const auto& elements = FiniteElement::getElementSequence(*m_topology);
-
-    for (const auto& element : elements)
-    {
-    }
+template <class DataTypes, class ElementType>
+SReal ElementHyperelasticityFEMForceField<DataTypes, ElementType>::getPotentialEnergy(
+    const sofa::core::MechanicalParams*, const DataVecCoord& x) const
+{
+    return 0;
 }
 
 }  // namespace elasticity

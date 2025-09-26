@@ -1,40 +1,32 @@
 #pragma once
 
-#include <Elasticity/component/BaseElasticityFEMForceField.h>
+#include <Elasticity/component/ElementPrefab.h>
+#include <Elasticity/component/LinearMechanicalParametersComponent.h>
+#include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
 
-#include <Elasticity/impl/FEM/NonLinearFEM.h>
+#if !defined(ELASTICITY_COMPONENT_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
+#include <sofa/defaulttype/VecTypes.h>
+#endif
 
 namespace elasticity
 {
 
 template <class DataTypes>
-class HyperelasticityFEMForceField : public BaseElasticityFEMForceField<DataTypes>
+class HyperelasticityFEMForceField :
+    public ElementPrefab<ElementPrefabTrait<ElementHyperelasticityFEMForceField, DataTypes>>,
+    public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
 {
 public:
-    SOFA_CLASS(SOFA_TEMPLATE(HyperelasticityFEMForceField, DataTypes),
-               SOFA_TEMPLATE(BaseElasticityFEMForceField, DataTypes));
-
-private:
-    using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
-    using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
-
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-
-public:
-
-    SReal getPotentialEnergy(const sofa::core::MechanicalParams*,
-                             const DataVecCoord& x) const override;
-
-protected:
-    void selectFEMTypes() override;
-
-    template<class ElementType>
-    void addNonLinearFEMType();
-
-    void applyLambda(const std::function<void(BaseFEM<DataTypes>&)>& callable) override;
-
-    sofa::type::vector<std::unique_ptr<BaseNonLinearFEM<DataTypes>>> m_finiteElements;
+    SOFA_CLASS2(
+        HyperelasticityFEMForceField<DataTypes>,
+            ElementPrefab<SOFA_TEMPLATE2(ElementPrefabTrait, ElementHyperelasticityFEMForceField, DataTypes)>,
+            LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
 };
+
+#if !defined(ELASTICITY_COMPONENT_HYPERELASTICITY_FEM_FORCEFIELD_CPP)
+extern template class ELASTICITY_API HyperelasticityFEMForceField<sofa::defaulttype::Vec1Types>;
+extern template class ELASTICITY_API HyperelasticityFEMForceField<sofa::defaulttype::Vec2Types>;
+extern template class ELASTICITY_API HyperelasticityFEMForceField<sofa::defaulttype::Vec3Types>;
+#endif
 
 }  // namespace elasticity

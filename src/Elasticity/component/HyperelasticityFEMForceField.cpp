@@ -1,4 +1,7 @@
+#define ELASTICITY_COMPONENT_HYPERELASTICITY_FEM_FORCEFIELD_CPP
+
 #include <Elasticity/component/HyperelasticityFEMForceField.inl>
+#include <sofa/core/ObjectFactory.h>
 
 namespace elasticity
 {
