@@ -1,4 +1,7 @@
+#define ELASTICITY_COMPONENT_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP
+
 #include <Elasticity/component/LinearSmallStrainFEMForceField.inl>
+#include <sofa/core/ObjectFactory.h>
 
 namespace elasticity
 {

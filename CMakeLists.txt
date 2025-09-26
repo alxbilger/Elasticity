@@ -16,23 +16,23 @@ set(HEADER_FILES
     src/Elasticity/finiteelement/FiniteElement[Tetrahedron].h
     src/Elasticity/finiteelement/FiniteElement[Triangle].h
 
-    src/Elasticity/component/BaseElasticityFEMForceField.h
-    src/Elasticity/component/BaseElasticityFEMForceField.inl
     src/Elasticity/component/CorotationalFEMForceField.h
     src/Elasticity/component/CorotationalFEMForceField.inl
+    src/Elasticity/component/ElementCorotationalFEMForceField.h
+    src/Elasticity/component/ElementCorotationalFEMForceField.inl
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.h
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.inl
-    src/Elasticity/component/HyperelasticityFEMForceField.h
-    src/Elasticity/component/HyperelasticityFEMForceField.inl
+    src/Elasticity/component/ElementPrefab.h
+    src/Elasticity/component/ElementPrefab.inl
+    #src/Elasticity/component/HyperelasticityFEMForceField.h
+    #src/Elasticity/component/HyperelasticityFEMForceField.inl
+    src/Elasticity/component/LinearMechanicalParametersComponent.h
+    src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/LinearSmallStrainFEMForceField.inl
+    src/Elasticity/component/TopologyAccessor.h
 
     src/Elasticity/impl/FEM/BaseFEM.h
-    src/Elasticity/impl/FEM/CorotationalFEM.h
-    src/Elasticity/impl/FEM/CorotationalFEM.inl
-    src/Elasticity/impl/FEM/LinearFEM[all].h
-    src/Elasticity/impl/FEM/LinearFEM.h
-    src/Elasticity/impl/FEM/LinearFEM.inl
     src/Elasticity/impl/FEM/NonLinearFEM.h
     src/Elasticity/impl/FEM/NonLinearFEM.inl
     src/Elasticity/impl/ElasticityTensor.h
@@ -47,15 +47,14 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     src/Elasticity/init.cpp
-
-    src/Elasticity/component/BaseElasticityFEMForceField.cpp
     src/Elasticity/component/CorotationalFEMForceField.cpp
+    src/Elasticity/component/ElementCorotationalFEMForceField.cpp
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
-    src/Elasticity/component/HyperelasticityFEMForceField.cpp
+    src/Elasticity/component/ElementPrefab.cpp
+    #src/Elasticity/component/HyperelasticityFEMForceField.cpp
+    src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
-
-    src/Elasticity/impl/FEM/CorotationalFEM.cpp
-    src/Elasticity/impl/FEM/LinearFEM.cpp
+    src/Elasticity/component/TopologyAccessor.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED README.md ${HEADER_FILES} ${SOURCE_FILES})

@@ -5,10 +5,11 @@
 namespace elasticity
 {
 
-extern void registerElementLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
-extern void registerLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
 extern void registerCorotationalFEMForceField(sofa::core::ObjectFactory* factory);
-extern void registerHyperelasticityFEMForceField(sofa::core::ObjectFactory* factory);
+extern void registerElementCorotationalFEMForceField(sofa::core::ObjectFactory* factory);
+extern void registerElementLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
+// extern void registerHyperelasticityFEMForceField(sofa::core::ObjectFactory* factory);
+extern void registerLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
 
 void initializePlugin() 
 {
@@ -51,9 +52,10 @@ extern "C"
 
     ELASTICITY_API void registerObjects(sofa::core::ObjectFactory* factory)
     {
-        elasticity::registerElementLinearSmallStrainFEMForceField(factory);
-        elasticity::registerLinearSmallStrainFEMForceField(factory);
         elasticity::registerCorotationalFEMForceField(factory);
-        elasticity::registerHyperelasticityFEMForceField(factory);
+        elasticity::registerElementCorotationalFEMForceField(factory);
+        elasticity::registerElementLinearSmallStrainFEMForceField(factory);
+        // elasticity::registerHyperelasticityFEMForceField(factory);
+        elasticity::registerLinearSmallStrainFEMForceField(factory);
     }
 }

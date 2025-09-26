@@ -1,10 +1,9 @@
-#include <Elasticity/finiteelement/FiniteElement[Edge].h>
-#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Quad].h>
-#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
-#include <Elasticity/finiteelement/FiniteElement[Triangle].h>
+#define ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP
 
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.inl>
+
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/core/ObjectFactory.h>
 
 namespace elasticity
 {
