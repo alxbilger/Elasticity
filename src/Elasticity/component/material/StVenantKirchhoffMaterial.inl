@@ -18,9 +18,6 @@ StVenantKirchhoffMaterial<DataTypes>::StVenantKirchhoffMaterial()
             this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
         return this->getComponentState();
     }, {});
-
-    std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
-            this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
 }
 
 template <class DataTypes>

@@ -25,6 +25,11 @@ protected:
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
 public:
+    void init() override;
+
+    /**
+     * Computes the First Piola-Kirchhoff stress tensor for a given deformation gradient.
+     */
     virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
 };
 
