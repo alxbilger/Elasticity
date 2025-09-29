@@ -30,6 +30,8 @@ set(HEADER_FILES
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/TopologyAccessor.h
 
+    src/Elasticity/component/material/DirichletMaterial.h
+    src/Elasticity/component/material/DirichletMaterial.inl
     src/Elasticity/component/material/StVenantKirchhoffMaterial.h
     src/Elasticity/component/material/StVenantKirchhoffMaterial.inl
 
@@ -61,6 +63,7 @@ set(SOURCE_FILES
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/TopologyAccessor.cpp
 
+    src/Elasticity/component/material/DirichletMaterial.cpp
     src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
 
     src/Elasticity/component/prefab/CorotationalFEMForceField.cpp
