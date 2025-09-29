@@ -4,7 +4,7 @@
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 
-#if !defined(ELASTICITY_COMPONENT_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
+#if !defined(ELASTICITY_COMPONENT_PREFAB_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
 
@@ -34,7 +34,7 @@ public:
             LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
 };
 
-#if !defined(ELASTICITY_COMPONENT_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
+#if !defined(ELASTICITY_COMPONENT_PREFAB_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
 extern template class ELASTICITY_API LinearSmallStrainFEMForceField<sofa::defaulttype::Vec1Types>;
 extern template class ELASTICITY_API LinearSmallStrainFEMForceField<sofa::defaulttype::Vec2Types>;
 extern template class ELASTICITY_API LinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>;

@@ -1,6 +1,6 @@
-#define ELASTICITY_COMPONENT_COROTATIONAL_FEM_FORCEFIELD_CPP
+#define ELASTICITY_COMPONENT_PREFAB_COROTATIONAL_FEM_FORCEFIELD_CPP
 
-#include <Elasticity/component/CorotationalFEMForceField.inl>
+#include <Elasticity/component/prefab/CorotationalFEMForceField.inl>
 #include <sofa/core/ObjectFactory.h>
 
 namespace elasticity
