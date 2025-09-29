@@ -112,4 +112,45 @@ constexpr auto flatten(const sofa::type::Mat<L, C, real>& mat)
     return res;
 }
 
+template <sofa::Size L1, sofa::Size C1, sofa::Size L2, sofa::Size C2, class real>
+constexpr sofa::type::Mat<L1 * L2, C1 * C2, real> kroneckerProduct(const sofa::type::Mat<L1, C1, real>& mat1, const sofa::type::Mat<L2, C2, real>& mat2)
+{
+    sofa::type::Mat<L1 * L2, C1 * C2, real> result(sofa::type::NOINIT);
+
+    for (sofa::Size i1 = 0; i1 < L1; ++i1)
+    {
+        for (sofa::Size j1 = 0; j1 < C1; ++j1)
+        {
+            for (sofa::Size i2 = 0; i2 < L2; ++i2)
+            {
+                for (sofa::Size j2 = 0; j2 < C2; ++j2)
+                {
+                    result(i1 * L2 + i2, j1 * C2 + j2) = mat1(i1, j1) * mat2(i2, j2);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+template <sofa::Size L1, sofa::Size C1, sofa::Size N, class real>
+constexpr sofa::type::Mat<L1 * N, C1, real> kroneckerProduct(const sofa::type::Mat<L1, C1, real>& mat, const sofa::type::Vec<N, real>& vec)
+{
+    sofa::type::Mat<L1 * N, C1, real> result(sofa::type::NOINIT);
+
+    for (sofa::Size i1 = 0; i1 < L1; ++i1)
+    {
+        for (sofa::Size j1 = 0; j1 < C1; ++j1)
+        {
+            for (sofa::Size i2 = 0; i2 < N; ++i2)
+            {
+                result(i1 * N + i2, j1) = mat(i1, j1) * vec[i2];
+            }
+        }
+    }
+
+    return result;
+}
+
 }

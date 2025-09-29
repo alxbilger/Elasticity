@@ -41,4 +41,11 @@ auto StVenantKirchhoffMaterial<DataTypes>::firstPiolaKirchhoffStress(const Defor
     return P;
 }
 
+template <class DataTypes>
+auto StVenantKirchhoffMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress() -> StressJacobian
+{
+    StressJacobian dPdF;
+    return dPdF;
 }
+
+}  // namespace elasticity

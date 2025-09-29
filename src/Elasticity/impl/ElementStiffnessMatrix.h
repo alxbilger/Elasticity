@@ -31,7 +31,6 @@ ElementStiffness<DataTypes, ElementType> integrate(
 
     ElementStiffness<DataTypes, ElementType> K;
 
-    sofa::Size quadraturePointIndex = 0;
     for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
     {
         // gradient of shape functions in the reference element evaluated at the quadrature point

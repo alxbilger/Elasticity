@@ -26,6 +26,7 @@ private:
 
     using HyperelasticMaterial<DataTypes>::DeformationGradient;
     using HyperelasticMaterial<DataTypes>::StressTensor;
+    using HyperelasticMaterial<DataTypes>::StressJacobian;
 
     // Lamé's coefficients
     Real m_lambda, m_mu;
@@ -35,6 +36,11 @@ protected:
 
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
+
+ /**
+  * Derivative of the first Piola-Kirchhoff stress tensor with respect to the deformation gradient
+  */
+    StressJacobian jacobianFirstPiolaKirchhoffStress() override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

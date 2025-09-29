@@ -1,10 +1,11 @@
 #pragma once
 
+#include <Elasticity/component/HyperelasticMaterial.h>
 #include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement.h>
+#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
-#include <Elasticity/component/HyperelasticMaterial.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -57,6 +58,9 @@ private:
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
+    /// the type of the element stiffness matrix
+    using ElementStiffness = ElementStiffness<DataTypes, ElementType>;
+
 public:
     void init() override;
 
@@ -78,7 +82,14 @@ protected:
 
     bool m_isHessianValid;
 
-    void computeHessian();
+    void computeHessian(const VecCoord& coordinates);
+
+    /**
+     * List of precomputed element stiffness matrices
+     */
+    sofa::type::vector<ElementStiffness> m_elementStiffness;
+
+    const VecCoord* m_coordinates{ nullptr };
 
     DeformationGradient computeDeformationGradient(
         const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& J_q,

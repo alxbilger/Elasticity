@@ -23,6 +23,9 @@ protected:
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    using StressJacobian = sofa::type::Mat<
+        spatial_dimensions * spatial_dimensions,
+        spatial_dimensions * spatial_dimensions, Real>;
 
 public:
     void init() override;
@@ -31,6 +34,12 @@ public:
      * Computes the First Piola-Kirchhoff stress tensor for a given deformation gradient.
      */
     virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
+
+    /**
+     * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the deformation
+     * gradient. The resulting 4th-order tensor must be flattened as a d^2 x d^2 matrix.
+     */
+    virtual StressJacobian jacobianFirstPiolaKirchhoffStress() = 0;
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
