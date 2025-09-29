@@ -94,4 +94,22 @@ sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
     }
 }
 
+/**
+ * Stack the columns of a matrix on top of each other to form a vector.
+ */
+template <sofa::Size L, sofa::Size C, class real>
+constexpr auto flatten(const sofa::type::Mat<L, C, real>& mat)
+{
+    sofa::type::Vec<L * C, real> res(sofa::type::NOINIT);
+    sofa::Index index = 0;
+    for (sofa::Size c = 0; c < C; ++c)
+    {
+        for (sofa::Size l = 0; l < L; ++l)
+        {
+            res[index++] = mat(l, c);
+        }
+    }
+    return res;
+}
+
 }
