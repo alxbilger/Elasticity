@@ -23,6 +23,13 @@ public:
             TopologyAccessor,
             sofa::core::behavior::ForceField<DataTypes>);
 
+    /**
+     * The purpose of this function is to register the name of this class according to the provided
+     * pattern.
+     *
+     * Example: ElementHyperelasticityFEMForceField<Vec3Types, sofa::geometry::Edge> will produce
+     * the class name "EdgeHyperelasticityFEMForceField".
+     */
     static const std::string GetCustomClassName()
     {
         return std::string(sofa::geometry::elementTypeToString(ElementType::Element_type)) +

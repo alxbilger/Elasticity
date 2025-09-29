@@ -18,6 +18,13 @@ public:
         SOFA_TEMPLATE2(ElementCorotationalFEMForceField, DataTypes, ElementType),
         SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType));
 
+    /**
+     * The purpose of this function is to register the name of this class according to the provided
+     * pattern.
+     *
+     * Example: ElementCorotationalFEMForceField<Vec3Types, sofa::geometry::Edge> will produce
+     * the class name "EdgeCorotationalFEMForceField".
+     */
     static const std::string GetCustomClassName()
     {
         return std::string(sofa::geometry::elementTypeToString(ElementType::Element_type)) +
@@ -43,7 +50,7 @@ private:
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
 
-    /// the concatenation of the displacement of the 4 nodes in a single vector
+    /// the concatenation of the displacement of the element nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     /// the type of the element stiffness matrix
