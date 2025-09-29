@@ -75,6 +75,17 @@ public:
 
 protected:
     void validateMaterial();
+
+    bool m_isHessianValid;
+
+    void computeHessian();
+
+    DeformationGradient computeDeformationGradient(
+        const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& J_q,
+        const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv);
+    DeformationGradient computeDeformationGradient2(
+        const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
+        const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ);
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)

@@ -79,7 +79,9 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
                 dN_dQ[i] = J_Q_inv.transposed() * dN_dq_ref[i];
 
-            const DeformationGradient F = J_q * J_Q_inv;
+            // both ways to compute the deformation gradient are equivalent
+            const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
+            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
             const auto detF = elasticity::determinant(F);
             if (detF < 0)
@@ -97,18 +99,45 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             }
         }
     }
+
+    // invalidate the Hessian, so it will be computed the next time it is necessary
+    m_isHessianValid = false;
 }
 
 template <class DataTypes, class ElementType>
 void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
     const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
+    if (l_topology == nullptr) return;
+    if (l_material == nullptr) return;
+
+    auto dfAccessor = sofa::helper::getWriteAccessor(df);
+    auto dxAccessor = sofa::helper::getReadAccessor(dx);
+    dfAccessor.resize(dxAccessor.size());
+
+    if (!m_isHessianValid)
+    {
+        computeHessian();
+    }
+
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+
+    const Real kFactor = static_cast<Real>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
+            mparams, this->rayleighStiffness.getValue()));
+
+    for (const auto& element : elements)
+    {
+    }
 }
 
 template <class DataTypes, class ElementType>
 void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
+    if (!m_isHessianValid)
+    {
+        computeHessian();
+    }
 }
 
 template <class DataTypes, class ElementType>
@@ -130,14 +159,41 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::validateMateri
 
     if (l_material == nullptr)
     {
-        msg_error() << "No material component found at path: " << this->l_material.getLinkedPath()
-                    << ", nor in current context: " << this->getContext()->name
+        msg_error() << "No material component found at path: '" << this->l_material.getLinkedPath()
+                    << "', nor in current context: " << this->getContext()->name
                     << ". Object must have a material. "
                     << "The list of available material components is: "
                     << sofa::core::ObjectFactory::getInstance()
                            ->listClassesDerivedFrom<HyperelasticMaterial<DataTypes>>();
         this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
     }
+}
+
+template <class DataTypes, class ElementType>
+void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian()
+{
+    m_isHessianValid = true;
+}
+
+template <class DataTypes, class ElementType>
+auto ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeDeformationGradient(
+    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& J_q,
+    const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv) -> DeformationGradient
+{
+    return J_q * J_Q_inv;
+}
+
+template <class DataTypes, class ElementType>
+auto ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeDeformationGradient2(
+    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
+    const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ)  -> DeformationGradient
+{
+    DeformationGradient F;
+
+    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        F += sofa::type::dyad(elementNodesCoordinates[i], dN_dQ[i]);
+
+    return F;
 }
 
 }  // namespace elasticity
