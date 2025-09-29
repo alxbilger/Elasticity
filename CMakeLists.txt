@@ -28,11 +28,16 @@ set(HEADER_FILES
     src/Elasticity/component/ElementPrefab.inl
     src/Elasticity/component/HyperelasticityFEMForceField.h
     src/Elasticity/component/HyperelasticityFEMForceField.inl
+    src/Elasticity/component/HyperelasticMaterial.h
+    src/Elasticity/component/HyperelasticMaterial.inl
     src/Elasticity/component/LinearMechanicalParametersComponent.h
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/LinearSmallStrainFEMForceField.inl
     src/Elasticity/component/TopologyAccessor.h
+
+    src/Elasticity/component/material/StVenantKirchhoffMaterial.h
+    src/Elasticity/component/material/StVenantKirchhoffMaterial.inl
 
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
@@ -53,9 +58,12 @@ set(SOURCE_FILES
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp
     src/Elasticity/component/HyperelasticityFEMForceField.cpp
+    src/Elasticity/component/HyperelasticMaterial.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/LinearSmallStrainFEMForceField.cpp
     src/Elasticity/component/TopologyAccessor.cpp
+
+    src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED README.md ${HEADER_FILES} ${SOURCE_FILES})

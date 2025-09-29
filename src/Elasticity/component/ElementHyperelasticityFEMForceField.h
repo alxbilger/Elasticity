@@ -1,9 +1,10 @@
 #pragma once
 
-#include <Elasticity/config.h>
 #include <Elasticity/component/TopologyAccessor.h>
+#include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement.h>
 #include <sofa/core/behavior/ForceField.h>
+#include <Elasticity/component/HyperelasticMaterial.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -68,6 +69,12 @@ public:
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const DataVecCoord& x) const override;
+
+    sofa::SingleLink<MyType, HyperelasticMaterial<DataTypes>,
+        sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_material;
+
+protected:
+    void validateMaterial();
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)

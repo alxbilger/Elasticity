@@ -24,6 +24,7 @@
     <LineAxis size="40"/>
     <OglSceneFrame/>
 
+    <StVenantKirchhoffMaterial youngModulus="10000" poissonRatio="0.45"/>
 
     <Node name="tetras">
 <!--        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />-->
