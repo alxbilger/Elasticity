@@ -12,14 +12,25 @@ namespace elasticity
 {
 
 template <class DataTypes>
+using CorotationalPrefabParent =
+    ElementPrefab<ElementPrefabTrait<ElementCorotationalFEMForceField, DataTypes>>;
+
+/**
+ * An intermediate class that instantiates other element-specific corotational components based on
+ * the types of elements found in the linked topology.
+ *
+ * The instantiated components are of type ElementCorotationalFEMForceField. Since this class
+ * and ElementCorotationalFEMForceField both share the same data, they will be linked.
+ */
+template <class DataTypes>
 class CorotationalFEMForceField :
-    public ElementPrefab<ElementPrefabTrait<ElementCorotationalFEMForceField, DataTypes>>,
+    public CorotationalPrefabParent<DataTypes>,
     public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
 {
 public:
     SOFA_CLASS2(
         CorotationalFEMForceField<DataTypes>,
-            ElementPrefab<SOFA_TEMPLATE2(ElementPrefabTrait, ElementCorotationalFEMForceField, DataTypes)>,
+            CorotationalPrefabParent<DataTypes>,
             LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
 };
 

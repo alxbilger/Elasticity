@@ -8,6 +8,13 @@
 namespace elasticity
 {
 
+/**
+ * An intermediate class that instantiates other components based on the types of elements found in
+ * the linked topology.
+ *
+ * @tparam ElementTypes A template providing the types of components to instantiate depending on
+ * the type of elements.
+ */
 template <class ElementTypes>
 class ElementPrefab : public virtual TopologyAccessor
 {
@@ -27,7 +34,11 @@ protected:
 
     void instantiateComponentBasedOnElementTypes();
 
-    template<class ComponentType>
+     /**
+      * Instantiate a component of type ComponentType and add it to the current context. It also
+      * creates a link between Data from this component to the created one.
+      */
+    template <class ComponentType>
     void addComponent();
 };
 
@@ -35,6 +46,7 @@ template<template<class, class> class ElementComponent, class TDataTypes>
 struct ElementPrefabTrait
 {
     using DataTypes = TDataTypes;
+
     using EdgeType = ElementComponent<DataTypes, sofa::geometry::Edge>;
     using TriangleType = ElementComponent<DataTypes, sofa::geometry::Triangle>;
     using QuadType = ElementComponent<DataTypes, sofa::geometry::Quad>;

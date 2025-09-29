@@ -12,14 +12,25 @@ namespace elasticity
 {
 
 template <class DataTypes>
+using HyperelasticityPrefabParent =
+    ElementPrefab<ElementPrefabTrait<ElementHyperelasticityFEMForceField, DataTypes>>;
+
+/**
+ * An intermediate class that instantiates other element-specific hyperelasticity components based on
+ * the types of elements found in the linked topology.
+ *
+ * The instantiated components are of type ElementHyperelasticityFEMForceField. Since this class
+ * and ElementHyperelasticityFEMForceField both share the same data, they will be linked.
+ */
+template <class DataTypes>
 class HyperelasticityFEMForceField :
-    public ElementPrefab<ElementPrefabTrait<ElementHyperelasticityFEMForceField, DataTypes>>,
+    public HyperelasticityPrefabParent<DataTypes>,
     public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
 {
 public:
     SOFA_CLASS2(
         HyperelasticityFEMForceField<DataTypes>,
-            ElementPrefab<SOFA_TEMPLATE2(ElementPrefabTrait, ElementHyperelasticityFEMForceField, DataTypes)>,
+            HyperelasticityPrefabParent<DataTypes>,
             LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
 };
 

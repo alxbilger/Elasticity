@@ -24,6 +24,12 @@ void ElementPrefab<ElementClass>::init()
 template <class ElementClass>
 void ElementPrefab<ElementClass>::instantiateComponentBasedOnElementTypes()
 {
+    using EdgeType = typename ElementClass::EdgeType;
+    using TriangleType = typename ElementClass::TriangleType;
+    using QuadType = typename ElementClass::QuadType;
+    using TetrahedronType = typename ElementClass::TetrahedronType;
+    using HexahedronType = typename ElementClass::HexahedronType;
+
     if constexpr (spatial_dimensions == 1)
     {
         addComponent<typename ElementClass::EdgeType>();
@@ -36,17 +42,18 @@ void ElementPrefab<ElementClass>::instantiateComponentBasedOnElementTypes()
 
         if (nbTriangles > 0 || nbQuads > 0)
         {
-            addComponent<typename ElementClass::TriangleType>();
-            addComponent<typename ElementClass::QuadType>();
+            addComponent<TriangleType>();
+            addComponent<QuadType>();
         }
         else if (nbEdges > 0)
         {
-            addComponent<typename ElementClass::EdgeType>();
+            addComponent<EdgeType>();
         }
         else
         {
-            addComponent<typename ElementClass::TriangleType>();
-            addComponent<typename ElementClass::QuadType>();
+            msg_warning() << "Cannot find any element in the topology: triangles and quads will be considered by default.";
+            addComponent<TriangleType>();
+            addComponent<QuadType>();
         }
     }
     else if constexpr (spatial_dimensions == 3)
@@ -59,22 +66,23 @@ void ElementPrefab<ElementClass>::instantiateComponentBasedOnElementTypes()
 
         if (nbTetras > 0 || nbHexas > 0)
         {
-            addComponent<typename ElementClass::TetrahedronType>();
-            addComponent<typename ElementClass::HexahedronType>();
+            addComponent<TetrahedronType>();
+            addComponent<HexahedronType>();
         }
         else if (nbTriangles > 0 || nbQuads > 0)
         {
-            addComponent<typename ElementClass::TriangleType>();
-            addComponent<typename ElementClass::QuadType>();
+            addComponent<TriangleType>();
+            addComponent<QuadType>();
         }
         else if (nbEdges > 0)
         {
-            addComponent<typename ElementClass::EdgeType>();
+            addComponent<EdgeType>();
         }
         else
         {
-            addComponent<typename ElementClass::TetrahedronType>();
-            addComponent<typename ElementClass::HexahedronType>();
+            msg_warning() << "Cannot find any element in the topology: tetrahedron and hexahedron will be considered by default.";
+            addComponent<TetrahedronType>();
+            addComponent<HexahedronType>();
         }
     }
 }
@@ -84,8 +92,11 @@ template <class ComponentType>
 void ElementPrefab<ElementClass>::addComponent()
 {
     BaseObject::SPtr component = sofa::core::objectmodel::New<ComponentType>();
+    assert(component);
+
     this->getContext()->addObject(component);
 
+    // this will link all the Data with the same name
     component->setSrc("@"+this->getName(), this);
 
     component->setName(this->getContext()->getNameHelper().resolveName(component->getClassName(), sofa::core::ComponentNameHelper::Convention::python));
