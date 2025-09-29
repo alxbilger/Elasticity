@@ -24,14 +24,10 @@ using HyperelasticityPrefabParent =
  */
 template <class DataTypes>
 class HyperelasticityFEMForceField :
-    public HyperelasticityPrefabParent<DataTypes>,
-    public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
+    public HyperelasticityPrefabParent<DataTypes>
 {
 public:
-    SOFA_CLASS2(
-        HyperelasticityFEMForceField<DataTypes>,
-            HyperelasticityPrefabParent<DataTypes>,
-            LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
+    SOFA_CLASS(HyperelasticityFEMForceField<DataTypes>, HyperelasticityPrefabParent<DataTypes>);
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTICITY_FEM_FORCEFIELD_CPP)
