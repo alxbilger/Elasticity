@@ -4,6 +4,8 @@
 namespace elasticity
 {
 
-template class ELASTICITY_API LinearMechanicalParametersComponent<SReal>;
+template class ELASTICITY_API LinearMechanicalParametersComponent<sofa::defaulttype::Vec1Types>;
+template class ELASTICITY_API LinearMechanicalParametersComponent<sofa::defaulttype::Vec2Types>;
+template class ELASTICITY_API LinearMechanicalParametersComponent<sofa::defaulttype::Vec3Types>;
 
 }

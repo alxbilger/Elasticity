@@ -25,13 +25,13 @@ using LinearPrefabParent =
 template <class DataTypes>
 class LinearSmallStrainFEMForceField :
     public LinearPrefabParent<DataTypes>,
-    public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
+    public LinearMechanicalParametersComponent<DataTypes>
 {
 public:
     SOFA_CLASS2(
         LinearSmallStrainFEMForceField<DataTypes>,
             LinearPrefabParent<DataTypes>,
-            LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
+            LinearMechanicalParametersComponent<DataTypes>);
 };
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)

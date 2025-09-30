@@ -4,20 +4,24 @@
 #include <Elasticity/component/HyperelasticMaterial.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 
-#if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)
+#if !defined(ELASTICITY_COMPONENT_MATERIAL_NEOHOOKEANMATERIAL_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
 
 namespace elasticity
 {
 
-template<class DataTypes>
-class StVenantKirchhoffMaterial :
+/**
+ * Formulation from Bonet, J. and R. D. Wood (2008). Nonlinear continuum mechanics for finite
+ * element analysis. Cambridge university press.
+ */
+template <class DataTypes>
+class NeoHookeanMaterial :
     public HyperelasticMaterial<DataTypes>,
     public LinearMechanicalParametersComponent<DataTypes>
 {
 public:
-    SOFA_CLASS2(StVenantKirchhoffMaterial, HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
+    SOFA_CLASS2(NeoHookeanMaterial, HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
 
 private:
     using Real = sofa::Real_t<DataTypes>;
@@ -37,9 +41,9 @@ public:
     StressJacobian jacobianFirstPiolaKirchhoffStress() override;
 };
 
-#if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>;
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>;
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>;
+#if !defined(ELASTICITY_COMPONENT_MATERIAL_NEOHOOKEANMATERIAL_CPP)
+template class ELASTICITY_API NeoHookeanMaterial<sofa::defaulttype::Vec1Types>;
+template class ELASTICITY_API NeoHookeanMaterial<sofa::defaulttype::Vec2Types>;
+template class ELASTICITY_API NeoHookeanMaterial<sofa::defaulttype::Vec3Types>;
 #endif
 }

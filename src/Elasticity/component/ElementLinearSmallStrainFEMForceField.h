@@ -17,14 +17,14 @@ namespace elasticity
 template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField :
     public TopologyAccessor,
-    public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>,
+    public LinearMechanicalParametersComponent<DataTypes>,
     public sofa::core::behavior::ForceField<DataTypes>
 {
 public:
     SOFA_CLASS3(
         SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType),
             TopologyAccessor,
-            LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>,
+            LinearMechanicalParametersComponent<DataTypes>,
             sofa::core::behavior::ForceField<DataTypes>);
 
     /**

@@ -1,0 +1,33 @@
+#pragma once
+
+#include <Elasticity/component/material/NeoHookeanMaterial.h>
+#include <Elasticity/impl/MatrixTools.h>
+
+#include <Elasticity/component/HyperelasticMaterial.inl>
+
+namespace elasticity
+{
+
+template <class DataTypes>
+auto NeoHookeanMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F)
+-> StressTensor
+{
+    const auto J = elasticity::determinant(F);
+    const auto J_inv = 1 / J;
+
+    const auto F_inv = elasticity::inverse(F);
+
+    // derivative of J with respect to F
+    const auto dJdF = J * F_inv.transposed();
+
+    return m_mu * (F - J_inv *  dJdF) + (m_lambda * log(J) * J_inv) * dJdF;
+}
+
+template <class DataTypes>
+auto NeoHookeanMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress() -> StressJacobian
+{
+    StressJacobian dPdF;
+    return dPdF;
+}
+
+}  // namespace elasticity

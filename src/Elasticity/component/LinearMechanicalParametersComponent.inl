@@ -1,14 +1,22 @@
 #pragma once
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
+#include <Elasticity/impl/ElasticityTensor.h>
 
 namespace elasticity
 {
 
-template <class TReal>
-LinearMechanicalParametersComponent<TReal>::LinearMechanicalParametersComponent()
-    : d_poissonRatio(initData(&d_poissonRatio, static_cast<TReal>(0.45), "poissonRatio", "Poisson's ratio"))
-    , d_youngModulus(initData(&d_youngModulus, static_cast<TReal>(1e6), "youngModulus", "Young's modulus"))
+template <class DataTypes>
+LinearMechanicalParametersComponent<DataTypes>::LinearMechanicalParametersComponent()
+    : d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
+    , d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
 {
+    this->addUpdateCallback("toLameCoefficients", {&this->d_youngModulus, &this->d_poissonRatio},
+    [this](const sofa::core::DataTracker& )
+    {
+        std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
+            this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
+        return this->getComponentState();
+    }, {});
 }
 
 }

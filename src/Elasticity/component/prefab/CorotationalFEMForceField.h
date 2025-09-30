@@ -25,13 +25,13 @@ using CorotationalPrefabParent =
 template <class DataTypes>
 class CorotationalFEMForceField :
     public CorotationalPrefabParent<DataTypes>,
-    public LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>
+    public LinearMechanicalParametersComponent<DataTypes>
 {
 public:
     SOFA_CLASS2(
         CorotationalFEMForceField<DataTypes>,
             CorotationalPrefabParent<DataTypes>,
-            LinearMechanicalParametersComponent<sofa::Real_t<DataTypes>>);
+            LinearMechanicalParametersComponent<DataTypes>);
 };
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_COROTATIONAL_FEM_FORCEFIELD_CPP)

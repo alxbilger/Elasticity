@@ -9,18 +9,6 @@ namespace elasticity
 {
 
 template <class DataTypes>
-StVenantKirchhoffMaterial<DataTypes>::StVenantKirchhoffMaterial()
-{
-    this->addUpdateCallback("toLameCoefficients", {&this->d_youngModulus, &this->d_poissonRatio},
-        [this](const sofa::core::DataTracker& )
-    {
-        std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
-            this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
-        return this->getComponentState();
-    }, {});
-}
-
-template <class DataTypes>
 auto StVenantKirchhoffMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F)
 -> StressTensor
 {
