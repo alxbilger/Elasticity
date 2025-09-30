@@ -15,10 +15,8 @@ auto NeoHookeanMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationG
     const auto J = elasticity::determinant(F);
     const auto J_inv = 1 / J;
 
-    const auto F_inv = elasticity::inverse(F);
-
     // derivative of J with respect to F
-    const auto dJdF = J * F_inv.transposed();
+    const auto dJdF = elasticity::adjugate(F).transposed();
 
     return m_mu * (F - J_inv *  dJdF) + (m_lambda * log(J) * J_inv) * dJdF;
 }
