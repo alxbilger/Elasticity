@@ -186,6 +186,17 @@ constexpr sofa::type::Mat<3, 3, real> adjugate(const sofa::type::Mat<3, 3, real>
     return adj;
 }
 
+template <sofa::Size N, class real>
+constexpr real squaredFrobeniusNorm(const sofa::type::Mat<N, N, real>& mat)
+{
+    real norm = 0;
+    for (sofa::Size i = 0; i < N; ++i)
+    {
+        norm += sofa::type::dot(mat[i], mat[i]);
+    }
+    return norm;
+}
+
 
 
 }

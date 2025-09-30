@@ -40,6 +40,24 @@ public:
      * deformation gradient. The resulting 4th-order tensor must be flattened as a d^2 x d^2 matrix.
      */
     virtual StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
+
+protected:
+
+    /**
+     * Compute the first Cauchy-Green invariant from the deformation gradient
+     */
+    static Real invariant1(const DeformationGradient& F);
+
+    /**
+     * Compute the second Cauchy-Green invariant from the deformation gradient
+     */
+    static Real invariant2(const DeformationGradient& F);
+
+    /**
+     * Compute the third Cauchy-Green invariant from the deformation gradient
+     */
+    static Real invariant3(const DeformationGradient& F);
+
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
