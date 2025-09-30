@@ -226,8 +226,10 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
     for (const auto& element : elements)
     {
-        const std::array<Coord, NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, coordinates);
-        ElementStiffness K = *elementStiffnessIt++;
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, this->mstate->readPositions().ref());
+        const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, this->mstate->readRestPositions().ref());
+
+        ElementStiffness& K = *elementStiffnessIt++;
 
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
@@ -237,20 +239,37 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_q;
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
+                J_q += sofa::type::dyad(elementNodesCoordinates[i], dN_dq_ref[i]);
 
-            const auto detJ = elasticity::determinant(jacobian);
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
-                elasticity::inverse(jacobian);
+            // jacobian of the mapping from the reference space to the rest physical space, evaluated at the
+            // quadrature point
+            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_Q;
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                J_Q += sofa::type::dyad(elementNodesRestCoordinates[i], dN_dq_ref[i]);
+
+            const auto detJ_q = elasticity::determinant(J_q);
+            const auto detJ_Q = elasticity::determinant(J_Q);
+
+            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_Q_inv = elasticity::inverse(J_Q);
+            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_q_inv = elasticity::inverse(J_q);
+
+            // gradient of the shape functions in the physical element evaluated at the quadrature point
+            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ(sofa::type::NOINIT);
+            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+                dN_dQ[i] = J_Q_inv.transposed() * dN_dq_ref[i];
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
+                dN_dq[i] = J_q_inv.transposed() * dN_dq_ref[i];
 
-            const auto dPdF = l_material->jacobianFirstPiolaKirchhoffStress();
+            // both ways to compute the deformation gradient are equivalent
+            const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
+            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
+
+            const auto dPdF = l_material->jacobianFirstPiolaKirchhoffStress(F);
 
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             {
@@ -259,13 +278,12 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
                     static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
                     const auto B_i = elasticity::kroneckerProduct(I, dN_dq[i]);
                     const auto B_j = elasticity::kroneckerProduct(I, dN_dq[j]);
-                    const auto K_ij = -detJ * weight * B_i.transposed() * dPdF * B_j;
+                    const auto K_ij = -detJ_Q * weight * B_i.transposed() * dPdF * B_j;
                     K.setsub(spatial_dimensions * i, spatial_dimensions * j, K_ij);
                 }
             }
         }
     }
-
 
     m_isHessianValid = true;
 }

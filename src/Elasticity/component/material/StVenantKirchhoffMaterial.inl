@@ -30,7 +30,7 @@ auto StVenantKirchhoffMaterial<DataTypes>::firstPiolaKirchhoffStress(const Defor
 }
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress() -> StressJacobian
+auto StVenantKirchhoffMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) -> StressJacobian
 {
     StressJacobian dPdF;
     return dPdF;

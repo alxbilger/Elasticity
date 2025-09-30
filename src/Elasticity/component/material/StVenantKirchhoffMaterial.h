@@ -34,7 +34,7 @@ private:
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
 
-    StressJacobian jacobianFirstPiolaKirchhoffStress() override;
+    StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

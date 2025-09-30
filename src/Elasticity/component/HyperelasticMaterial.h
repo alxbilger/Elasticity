@@ -39,7 +39,7 @@ public:
      * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the
      * deformation gradient. The resulting 4th-order tensor must be flattened as a d^2 x d^2 matrix.
      */
-    virtual StressJacobian jacobianFirstPiolaKirchhoffStress() = 0;
+    virtual StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
