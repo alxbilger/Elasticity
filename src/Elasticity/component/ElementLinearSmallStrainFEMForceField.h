@@ -69,7 +69,7 @@ private:
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = ElementStiffness<DataTypes, ElementType>;
+    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
 
 public:
     void init() override;

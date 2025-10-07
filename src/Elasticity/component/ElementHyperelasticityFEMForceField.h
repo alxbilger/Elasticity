@@ -59,7 +59,7 @@ private:
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = ElementStiffness<DataTypes, ElementType>;
+    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
 
 public:
     void init() override;
