@@ -3,6 +3,16 @@
 ## Description
 A SOFA plugin for the development of a clean FEM formulation.
 
+Elasticity is a plugin re-implementing the elastic force fields in SOFA in a generic and modular manner.
+In particular, a single piece of code allows generating a component for any type of element, in any dimension. 
+On top of that, a generic and element-agnostic component (prefab-like) instantiates the appropriate components based on the elements in the topology. 
+The emphasis was placed on the readability of the code, allowing to easily compare the code to the equations.
+
+The plugin supports the following formulations:
+- Linear elasticity assuming a small strain
+- Linear elasticity using a corotational approach
+- Hyperelasticity with different constitutive equations
+
 ## Compilation
 
 The plugin does not depend on any other plugin or external library.
@@ -38,3 +48,6 @@ The procedure to compile the plugin is the same as for any other plugin and is d
 - V&V
   - [ ] Unit testing
   - [ ] Mechanical tests
+- Python bindings
+  - [ ] Binding for the derivation of a hyperelastic material
+  - [ ] Binding for the automatic differentiation of the stress tensor and tangent stiffness matrix
