@@ -23,9 +23,9 @@ private:
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
-    using HyperelasticMaterial<DataTypes>::DeformationGradient;
-    using HyperelasticMaterial<DataTypes>::StressTensor;
-    using HyperelasticMaterial<DataTypes>::StressJacobian;
+    using DeformationGradient = HyperelasticMaterial<DataTypes>::DeformationGradient;
+    using StressTensor = HyperelasticMaterial<DataTypes>::StressTensor;
+    using StressJacobian = HyperelasticMaterial<DataTypes>::StressJacobian;
 
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
