@@ -38,8 +38,8 @@ public:
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>;
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>;
-template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>;
+extern template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>;
+extern template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>;
+extern template class ELASTICITY_API StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>;
 #endif
 }
