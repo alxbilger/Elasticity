@@ -2,6 +2,7 @@
 
 #include <Elasticity/config.h>
 #include <sofa/core/objectmodel/BaseObject.h>
+#include <Elasticity/impl/Tensor.h>
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
 #include <sofa/defaulttype/VecTypes.h>
@@ -23,21 +24,25 @@ protected:
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
-    using StressJacobian = sofa::type::Mat<
-        spatial_dimensions * spatial_dimensions,
-        spatial_dimensions * spatial_dimensions, Real>;
+    using StressJacobian = elasticity::Tensor<Real,
+        spatial_dimensions, spatial_dimensions, spatial_dimensions, spatial_dimensions>;
 
 public:
     void init() override;
 
     /**
      * Computes the First Piola-Kirchhoff stress tensor for a given deformation gradient.
+     *
+     * It corresponds to the derivative of the strain energy density function w.r.t. deformation
+     * gradient.
      */
     virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
 
     /**
      * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the
-     * deformation gradient. The resulting 4th-order tensor must be flattened as a d^2 x d^2 matrix.
+     * deformation gradient.
+     *
+     * It is called the material tangent modulus.
      */
     virtual StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
 

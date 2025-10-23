@@ -271,15 +271,19 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
             const auto dPdF = l_material->jacobianFirstPiolaKirchhoffStress(F);
 
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+            for (sofa::Size element_i = 0; element_i < NumberOfNodesInElement; ++element_i)
             {
-                for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+                for (sofa::Size element_j = 0; element_j < NumberOfNodesInElement; ++element_j)
                 {
-                    static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
-                    const auto B_i = elasticity::kroneckerProduct(I, dN_dq[i]);
-                    const auto B_j = elasticity::kroneckerProduct(I, dN_dq[j]);
-                    const auto K_ij = -detJ_Q * weight * B_i.transposed() * dPdF * B_j;
-                    K.setsub(spatial_dimensions * i, spatial_dimensions * j, K_ij);
+                    for (sofa::Size dimension_i = 0; dimension_i < spatial_dimensions; ++dimension_i)
+                    {
+                        for (sofa::Size dimension_j = 0; dimension_j < spatial_dimensions; ++dimension_j)
+                        {
+                            const auto A = dPdF.subtensor(tensor::all, dimension_i, tensor::all, dimension_j).toMat();
+                            K(element_i * spatial_dimensions + dimension_i, element_j * spatial_dimensions + dimension_j) +=
+                                (-detJ_Q * weight) * sofa::type::dot(dN_dq[element_i], A * dN_dq[element_j]);
+                        }
+                    }
                 }
             }
         }
