@@ -22,7 +22,7 @@ auto NeoHookeanMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationG
 }
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) -> StressJacobian
+auto NeoHookeanMaterial<DataTypes>::materialTangentModulus(const DeformationGradient& F) -> StressJacobian
 {
     // derivative of J with respect to F
     const auto dJdF = elasticity::adjugate(F).transposed();

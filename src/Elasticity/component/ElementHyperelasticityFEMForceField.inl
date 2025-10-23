@@ -269,7 +269,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
-            const auto dPdF = l_material->jacobianFirstPiolaKirchhoffStress(F);
+            const auto dPdF = l_material->materialTangentModulus(F);
 
             for (sofa::Size element_i = 0; element_i < NumberOfNodesInElement; ++element_i)
             {

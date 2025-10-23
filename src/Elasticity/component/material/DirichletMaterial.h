@@ -30,7 +30,7 @@ private:
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
 
-    StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) override;
+    StressJacobian materialTangentModulus(const DeformationGradient& F) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_DIRICHLETMATERIAL_CPP)

@@ -14,7 +14,7 @@ auto DirichletMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGr
 }
 
 template <class DataTypes>
-auto DirichletMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) -> StressJacobian
+auto DirichletMaterial<DataTypes>::materialTangentModulus(const DeformationGradient& F) -> StressJacobian
 {
     StressJacobian dPdF;
     return dPdF;

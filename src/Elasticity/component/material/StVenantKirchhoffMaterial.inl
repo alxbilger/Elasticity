@@ -9,7 +9,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F)
+auto StVenantKirchhoffMaterial<DataTypes>::secondPiolaKirchhoffStress(const DeformationGradient& F)
 -> StressTensor
 {
     static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
@@ -21,19 +21,29 @@ auto StVenantKirchhoffMaterial<DataTypes>::firstPiolaKirchhoffStress(const Defor
     const auto E = 0.5 * (C - I);
 
     // Second Piola-Kirchhoff stress tensor
-    const auto S = m_lambda * sofa::type::trace(E) * I + 2 * m_mu * E;
-
-    // First Piola-Kirchhoff stress tensor
-    const auto P = F * S;
-
-    return P;
+    return m_lambda * sofa::type::trace(E) * I + 2 * m_mu * E;
 }
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) -> StressJacobian
+auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const DeformationGradient& F) -> StressJacobian
 {
-    StressJacobian dPdF;
-    return dPdF;
+    StressJacobian C;
+
+    for (std::size_t i = 0; i < spatial_dimensions; ++i)
+    {
+        for (std::size_t j = 0; j < spatial_dimensions; ++j)
+        {
+            for (std::size_t k = 0; k < spatial_dimensions; ++k)
+            {
+                for (std::size_t l = 0; l < spatial_dimensions; ++l)
+                {
+                    C(i, j, k, l) = m_mu * kroneckerDelta(i, k) * kroneckerDelta(j, l) + 0.5 * m_lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
+                }
+            }
+        }
+    }
+
+    return C;
 }
 
 }  // namespace elasticity

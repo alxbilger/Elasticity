@@ -12,7 +12,7 @@ namespace elasticity
 {
 
 template<class DataTypes>
-class StVenantKirchhoffMaterial :
+class StVenantKirchhoffMaterial final:
     public HyperelasticMaterial<DataTypes>,
     public LinearMechanicalParametersComponent<DataTypes>
 {
@@ -31,10 +31,12 @@ private:
     using LinearMechanicalParametersComponent<DataTypes>::m_lambda;
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
 
-public:
-    StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
+    using HyperelasticMaterial<DataTypes>::kroneckerDelta;
 
-    StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) override;
+protected:
+    StressTensor secondPiolaKirchhoffStress(const DeformationGradient& F) override;
+
+    StressJacobian elasticityTensor(const DeformationGradient& F) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

@@ -27,6 +27,11 @@ protected:
     using StressJacobian = elasticity::Tensor<Real,
         spatial_dimensions, spatial_dimensions, spatial_dimensions, spatial_dimensions>;
 
+    static Real kroneckerDelta(std::size_t i, std::size_t j)
+    {
+        return static_cast<Real>(i == j);
+    }
+
 public:
     void init() override;
 
@@ -36,7 +41,7 @@ public:
      * It corresponds to the derivative of the strain energy density function w.r.t. deformation
      * gradient.
      */
-    virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
+    virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F);
 
     /**
      * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the
@@ -44,9 +49,12 @@ public:
      *
      * It is called the material tangent modulus.
      */
-    virtual StressJacobian jacobianFirstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
+    virtual StressJacobian materialTangentModulus(const DeformationGradient& F);
 
 protected:
+
+    virtual StressTensor secondPiolaKirchhoffStress(const DeformationGradient& F) { return {}; }
+    virtual StressJacobian elasticityTensor(const DeformationGradient& F) { return {}; }
 
     /**
      * Compute the first Cauchy-Green invariant from the deformation gradient
