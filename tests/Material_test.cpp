@@ -7,10 +7,9 @@ namespace elasticity
 {
 
 template <typename T>
-class MaterialTest : public testing::Test
+class BaseMaterialTest : public testing::Test
 {
-public:
-
+protected:
     using DataTypes = typename T::DataTypes;
     using Real = sofa::Real_t<DataTypes>;
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
@@ -50,9 +49,26 @@ public:
         return F;
     }
 
+
+    T::SPtr material;
+    sofa::testing::LinearCongruentialRandomGenerator lcg { 31321 };
+};
+
+template <typename T>
+class MaterialTest : public BaseMaterialTest<T>
+{
+    using BaseMaterialTest<T>::material;
+
+public:
+
+    using DataTypes = typename T::DataTypes;
+    using Real = sofa::Real_t<DataTypes>;
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
+    using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
     void testDerivative()
     {
-        const auto F = generatePositiveDefiniteMatrix();
+        const auto F = this->generatePositiveDefiniteMatrix();
 
         const auto P = material->firstPiolaKirchhoffStress(F);
         const auto A = material->materialTangentModulus(F);
@@ -100,7 +116,7 @@ public:
 
     void testMajorSymmetry()
     {
-        const auto F = generatePositiveDefiniteMatrix();
+        const auto F = this->generatePositiveDefiniteMatrix();
         const auto A = material->materialTangentModulus(F);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
@@ -117,10 +133,6 @@ public:
             }
         }
     }
-
-
-    T::SPtr material;
-    sofa::testing::LinearCongruentialRandomGenerator lcg { 31321 };
 };
 
 
@@ -144,5 +156,76 @@ TYPED_TEST(MaterialTest, tensorMajorSymmetry)
     this->testMajorSymmetry();
 }
 
+template <typename T>
+class PK2Material : public T
+{
+public:
+    SOFA_CLASS(PK2Material, T);
+    using T::secondPiolaKirchhoffStress;
+    using T::elasticityTensor;
+};
+
+template <typename T>
+class PK2MaterialTest : public BaseMaterialTest<PK2Material<T>>
+{
+public:
+    using DataTypes = typename T::DataTypes;
+    using Real = sofa::Real_t<DataTypes>;
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
+
+    void testMinorSymmetryPK2()
+    {
+        const auto F = this->generatePositiveDefiniteMatrix();
+        const auto S = this->material->secondPiolaKirchhoffStress(F);
+
+        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                EXPECT_NEAR(S(i,j), S(j,i), 1e-6);
+            }
+        }
+
+    }
+
+    void testSymmetryElasticityTensor()
+    {
+        const auto F = this->generatePositiveDefiniteMatrix();
+        const auto C = this->material->elasticityTensor(F);
+
+        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                for(sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    for(sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    {
+                        EXPECT_NEAR(C(i, j, k, l), C(k, l, i, j), 1e-6);
+                        // EXPECT_NEAR(C(i, j, k, l), C(j, i, k, l), 1e-6);
+                        EXPECT_NEAR(C(i, j, k, l), C(i, j, l, k), 1e-6);
+                    }
+                }
+            }
+        }
+    }
+};
+
+using PK2Materials = ::testing::Types<
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>,
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>,
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>
+>;
+TYPED_TEST_SUITE(PK2MaterialTest, PK2Materials);
+
+TYPED_TEST(PK2MaterialTest, symmetryElasticityTensor)
+{
+    this->testSymmetryElasticityTensor();
+}
+
+TYPED_TEST(PK2MaterialTest, minorSymmetryPK2)
+{
+    this->testMinorSymmetryPK2();
+}
 
 }

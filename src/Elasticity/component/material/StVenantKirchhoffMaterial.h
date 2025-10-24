@@ -12,7 +12,7 @@ namespace elasticity
 {
 
 template<class DataTypes>
-class StVenantKirchhoffMaterial final:
+class StVenantKirchhoffMaterial:
     public HyperelasticMaterial<DataTypes>,
     public LinearMechanicalParametersComponent<DataTypes>
 {
