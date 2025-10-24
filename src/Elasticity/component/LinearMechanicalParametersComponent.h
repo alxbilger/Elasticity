@@ -24,6 +24,8 @@ public:
 protected:
     LinearMechanicalParametersComponent();
 
+    void setLameCoefficients();
+
     // Lamé's coefficients
     Real m_lambda, m_mu;
 };

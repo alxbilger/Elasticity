@@ -13,10 +13,17 @@ LinearMechanicalParametersComponent<DataTypes>::LinearMechanicalParametersCompon
     this->addUpdateCallback("toLameCoefficients", {&this->d_youngModulus, &this->d_poissonRatio},
     [this](const sofa::core::DataTracker& )
     {
-        std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
-            this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
+        setLameCoefficients();
         return this->getComponentState();
     }, {});
+    setLameCoefficients();
 }
 
+template <class DataTypes>
+void LinearMechanicalParametersComponent<DataTypes>::setLameCoefficients()
+{
+    std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
+        this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
 }
+
+}  // namespace elasticity

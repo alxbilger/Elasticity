@@ -7,6 +7,7 @@ set(SOURCE_FILES
     FiniteElement_test.cpp
     TetrahedronLinearSmallStrainFEMForceField_test.cpp
     HexahedronLinearSmallStrainFEMForceField_test.cpp
+    Material_test.cpp
     MatrixTools_test.cpp
 )
 
