@@ -37,7 +37,9 @@ auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const DeformationGra
             {
                 for (std::size_t l = 0; l < spatial_dimensions; ++l)
                 {
-                    C(i, j, k, l) = m_mu * kroneckerDelta(i, k) * kroneckerDelta(j, l) + 0.5 * m_lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
+                    C(i, j, k, l) =
+                        m_mu * (kroneckerDelta(i, k) * kroneckerDelta(j, l) + kroneckerDelta(i, l) * kroneckerDelta(j, k))
+                        + m_lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
                 }
             }
         }

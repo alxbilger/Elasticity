@@ -202,7 +202,7 @@ public:
                     for(sofa::Size l = 0; l < spatial_dimensions; ++l)
                     {
                         EXPECT_NEAR(C(i, j, k, l), C(k, l, i, j), 1e-6);
-                        // EXPECT_NEAR(C(i, j, k, l), C(j, i, k, l), 1e-6);
+                        EXPECT_NEAR(C(i, j, k, l), C(j, i, k, l), 1e-6);
                         EXPECT_NEAR(C(i, j, k, l), C(i, j, l, k), 1e-6);
                     }
                 }
