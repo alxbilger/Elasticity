@@ -66,7 +66,7 @@ public:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
-    void testDerivative()
+    void testDerivativePK1()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
 
@@ -146,9 +146,9 @@ TYPED_TEST_SUITE(MaterialTest, AllMaterials);
 
 
 
-TYPED_TEST(MaterialTest, derivativeConsistency)
+TYPED_TEST(MaterialTest, derivativePK1)
 {
-    this->testDerivative();
+    this->testDerivativePK1();
 }
 
 TYPED_TEST(MaterialTest, tensorMajorSymmetry)
@@ -176,7 +176,7 @@ public:
     void testMinorSymmetryPK2()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
-        const auto S = this->material->secondPiolaKirchhoffStress(F);
+        const auto S = this->material->secondPiolaKirchhoffStress(F.transposed() * F);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -209,6 +209,69 @@ public:
             }
         }
     }
+
+    void testDerivativePK2()
+    {
+        const auto FTF = [this]()
+        {
+            const auto F = this->generatePositiveDefiniteMatrix();
+            return F.transposed() * F;
+        }();
+
+        const auto S = this->material->secondPiolaKirchhoffStress(FTF);
+        const auto C = this->material->elasticityTensor(FTF);
+
+        // Small perturbation for finite difference
+        constexpr Real epsilon = 1e-12;
+
+        std::stringstream ss;
+        ss << "numerical,analytical\n";
+
+        // For each component of F
+        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                // Create perturbed deformation gradient
+                auto FTF_perturbed = FTF;
+
+                // For symmetric tensor, perturb both (i,j) and (j,i)
+                if (i == j)
+                {
+                    FTF_perturbed(i,j) += epsilon;
+                }
+                else
+                {
+                    FTF_perturbed(i,j) += epsilon;
+                    FTF_perturbed(j,i) += epsilon;
+                }
+
+                // Compute perturbed stress
+                const auto S_perturbed = this->material->secondPiolaKirchhoffStress(FTF_perturbed);
+
+                // Compute numerical derivative
+                // For off-diagonal, we perturbed by 2*epsilon total (both (i,j) and (j,i))
+                const auto dS = (i == j) ? (S_perturbed - S) / epsilon : (S_perturbed - S) / (2 * epsilon);
+
+                // For each component of S
+                for(sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    for(sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    {
+                        // Compare numerical and analytical derivatives
+                        const Real numerical = dS(k,l);
+                        // For off-diagonal terms, the analytical derivative needs to account for symmetry
+                        const Real analytical = (i == j) ? C(i, j, k, l) : (C(i, j, k, l) + C(j, i, k, l));
+                        ss << numerical << "," << analytical << std::endl;
+                        EXPECT_NEAR(numerical, analytical, 1e-3);
+                    }
+                }
+            }
+        }
+
+        std::cout << ss.str();
+    }
+    
 };
 
 using PK2Materials = ::testing::Types<
@@ -226,6 +289,11 @@ TYPED_TEST(PK2MaterialTest, symmetryElasticityTensor)
 TYPED_TEST(PK2MaterialTest, minorSymmetryPK2)
 {
     this->testMinorSymmetryPK2();
+}
+
+TYPED_TEST(PK2MaterialTest, derivativePK2)
+{
+    this->testDerivativePK2();
 }
 
 }

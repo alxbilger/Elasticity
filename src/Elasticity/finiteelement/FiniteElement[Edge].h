@@ -19,14 +19,14 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
     static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
     {
         SOFA_UNUSED(q);
-        return {{-1/2}, {1/2}};
+        return {{-static_cast<Real>(0.5)}, {static_cast<Real>(0.5)}};
     }
 
     static std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
         static sofa::type::Vec<ElementDimension, Real> q0(static_cast<Real>(0));
         return {
-            std::make_pair(q0, 2.)
+            std::make_pair(q0, static_cast<Real>(2))
         };
     }
 

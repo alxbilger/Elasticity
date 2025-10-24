@@ -54,7 +54,7 @@ public:
 
 protected:
 
-    virtual StressTensor secondPiolaKirchhoffStress(const DeformationGradient& F) { return {}; }
+    virtual StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) { return {}; }
     virtual StressJacobian elasticityTensor(const DeformationGradient& F) { return {}; }
 
     /**

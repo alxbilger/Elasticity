@@ -19,7 +19,8 @@ void HyperelasticMaterial<DataTypes>::init()
 template <class DataTypes>
 auto HyperelasticMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F) -> StressTensor
 {
-    const auto S = secondPiolaKirchhoffStress(F);
+    const auto C = F.transposed() * F;
+    const auto S = secondPiolaKirchhoffStress(C);
     return F * S;
 }
 
@@ -28,7 +29,7 @@ auto HyperelasticMaterial<DataTypes>::materialTangentModulus(const DeformationGr
 {
     StressJacobian A;
     const auto C = elasticityTensor(F);
-    const auto S = secondPiolaKirchhoffStress(F);
+    const auto S = secondPiolaKirchhoffStress(F.transposed() * F);
 
     for (std::size_t i = 0; i < spatial_dimensions; ++i)
     {
@@ -44,7 +45,7 @@ auto HyperelasticMaterial<DataTypes>::materialTangentModulus(const DeformationGr
                     {
                         for (std::size_t r = 0; r < spatial_dimensions; ++r)
                         {
-                            A_ijkl += 2 * F(i, q) * C(q, j, l, r) * F(k, r);
+                            A_ijkl += F(i, q) * (C(q, j, l, r) + C(q, j, r, l)) * F(k, r);
                         }
                     }
                 }
