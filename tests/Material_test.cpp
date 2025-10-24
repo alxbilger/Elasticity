@@ -98,6 +98,26 @@ public:
         std::cout << ss.str();
     }
 
+    void testMajorSymmetry()
+    {
+        const auto F = generatePositiveDefiniteMatrix();
+        const auto A = material->materialTangentModulus(F);
+
+        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                for(sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    for(sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    {
+                        EXPECT_NEAR(A(i, j, k, l), A(k, l, i, j), 1e-6);
+                    }
+                }
+            }
+        }
+    }
+
 
     T::SPtr material;
     sofa::testing::LinearCongruentialRandomGenerator lcg { 31321 };
@@ -117,6 +137,11 @@ TYPED_TEST_SUITE(MaterialTest, AllMaterials);
 TYPED_TEST(MaterialTest, derivativeConsistency)
 {
     this->testDerivative();
+}
+
+TYPED_TEST(MaterialTest, tensorMajorSymmetry)
+{
+    this->testMajorSymmetry();
 }
 
 
