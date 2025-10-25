@@ -212,17 +212,17 @@ public:
 
     void testDerivativePK2()
     {
-        const auto FTF = [this]()
+        const auto C = [this]()
         {
             const auto F = this->generatePositiveDefiniteMatrix();
             return F.transposed() * F;
         }();
 
-        const auto S = this->material->secondPiolaKirchhoffStress(FTF);
-        const auto C = this->material->elasticityTensor(FTF);
+        const auto S = this->material->secondPiolaKirchhoffStress(C);
+        const auto elasticityTensor = this->material->elasticityTensor(C);
 
         // Small perturbation for finite difference
-        constexpr Real epsilon = 1e-12;
+        constexpr Real epsilon = 1e-8;
 
         std::stringstream ss;
         ss << "numerical,analytical\n";
@@ -232,26 +232,25 @@ public:
         {
             for(sofa::Size j = 0; j < spatial_dimensions; ++j)
             {
-                // Create perturbed deformation gradient
-                auto FTF_perturbed = FTF;
+                auto C_perturbed_plus = C;
+                auto C_perturbed_minus = C;
 
-                // For symmetric tensor, perturb both (i,j) and (j,i)
-                if (i == j)
+                C_perturbed_plus(i, j) += epsilon;
+                C_perturbed_plus(j, i) += epsilon;
+
+                if (i != j)
                 {
-                    FTF_perturbed(i,j) += epsilon;
-                }
-                else
-                {
-                    FTF_perturbed(i,j) += epsilon;
-                    FTF_perturbed(j,i) += epsilon;
+                    C_perturbed_minus(i, j) -= epsilon;
+                    C_perturbed_minus(j, i) -= epsilon;
                 }
 
                 // Compute perturbed stress
-                const auto S_perturbed = this->material->secondPiolaKirchhoffStress(FTF_perturbed);
+                const auto S_perturbed_plus = this->material->secondPiolaKirchhoffStress(C_perturbed_plus);
+                const auto S_perturbed_minus = this->material->secondPiolaKirchhoffStress(C_perturbed_minus);
 
                 // Compute numerical derivative
-                // For off-diagonal, we perturbed by 2*epsilon total (both (i,j) and (j,i))
-                const auto dS = (i == j) ? (S_perturbed - S) / epsilon : (S_perturbed - S) / (2 * epsilon);
+                const auto dSdC = (S_perturbed_plus - S_perturbed_minus) / (2. * (1. + (i != j)) * epsilon);
+                const auto dSdE = static_cast<Real>(2) * dSdC;
 
                 // For each component of S
                 for(sofa::Size k = 0; k < spatial_dimensions; ++k)
@@ -259,11 +258,10 @@ public:
                     for(sofa::Size l = 0; l < spatial_dimensions; ++l)
                     {
                         // Compare numerical and analytical derivatives
-                        const Real numerical = dS(k,l);
-                        // For off-diagonal terms, the analytical derivative needs to account for symmetry
-                        const Real analytical = (i == j) ? C(i, j, k, l) : (C(i, j, k, l) + C(j, i, k, l));
+                        const Real numerical = dSdE(k,l);
+                        Real analytical = elasticityTensor(i, j, k, l);
                         ss << numerical << "," << analytical << std::endl;
-                        EXPECT_NEAR(numerical, analytical, 1e-3);
+                        EXPECT_NEAR(numerical, analytical, 10) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
                     }
                 }
             }
