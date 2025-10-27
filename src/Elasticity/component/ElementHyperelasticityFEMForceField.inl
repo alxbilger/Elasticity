@@ -279,9 +279,14 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
                     {
                         for (sofa::Size dimension_j = 0; dimension_j < spatial_dimensions; ++dimension_j)
                         {
-                            const auto A = dPdF.subtensor(tensor::all, dimension_i, tensor::all, dimension_j).toMat();
-                            K(element_i * spatial_dimensions + dimension_i, element_j * spatial_dimensions + dimension_j) +=
-                                (-detJ_Q * weight) * sofa::type::dot(dN_dq[element_i], A * dN_dq[element_j]);
+                            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+                            {
+                                for (sofa::Size q = 0; q < spatial_dimensions; ++q)
+                                {
+                                    K(element_i * spatial_dimensions + dimension_i, element_j * spatial_dimensions + dimension_j) +=
+                                        (-detJ_Q * weight) * dN_dq[element_i][q] * dPdF(dimension_i, j, dimension_j, q) * dN_dq[element_j][j];
+                                }
+                            }
                         }
                     }
                 }
