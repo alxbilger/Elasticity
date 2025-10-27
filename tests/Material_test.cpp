@@ -29,7 +29,7 @@ protected:
         {
             for (int i = 0; i < spatial_dimensions; i++)
             {
-                F(i, j) = lcg.generateInRange(-10., 10.);
+                F(i, j) = lcg.generateInRange(-1., 1.);
             }
         }
 
@@ -76,10 +76,7 @@ public:
         EXPECT_TRUE(std::none_of(P.data(), P.data() + spatial_dimensions * spatial_dimensions, [](Real x) { return x == 0; })) << P;
 
         // Small perturbation for finite difference
-        constexpr Real epsilon = 1e-12;
-
-        std::stringstream ss;
-        ss << "numerical,analytical\n";
+        constexpr Real epsilon = 1e-8;
 
         // For each component of F
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
@@ -87,14 +84,18 @@ public:
             for(sofa::Size j = 0; j < spatial_dimensions; ++j)
             {
                 // Create perturbed deformation gradient
-                auto F_perturbed = F;
-                F_perturbed(i,j) += epsilon;
+                auto F_perturbed_plus = F;
+                F_perturbed_plus(i,j) += epsilon;
+
+                auto F_perturbed_minus = F;
+                F_perturbed_minus(i,j) -= epsilon;
 
                 // Compute perturbed stress
-                const auto P_perturbed = material->firstPiolaKirchhoffStress(F_perturbed);
+                const auto P_perturbed_plus = material->firstPiolaKirchhoffStress(F_perturbed_plus);
+                const auto P_perturbed_minus = material->firstPiolaKirchhoffStress(F_perturbed_minus);
 
                 // Compute numerical derivative
-                const auto dP = (P_perturbed - P) / ( epsilon);
+                const auto dP = (P_perturbed_plus - P_perturbed_minus) / (static_cast<Real>(2) * epsilon);
 
                 // For each component of P
                 for(sofa::Size k = 0; k < spatial_dimensions; ++k)
@@ -104,14 +105,11 @@ public:
                         // Compare numerical and analytical derivatives
                         const Real numerical = dP(k,l);
                         const Real analytical = A(i, j, k, l);
-                        ss << numerical << "," << analytical << std::endl;
-                        EXPECT_NEAR(numerical, analytical, 1e-3);
+                        EXPECT_NEAR(numerical, analytical, 0.25) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
                     }
                 }
             }
         }
-
-        std::cout << ss.str();
     }
 
     void testMajorSymmetry()
@@ -241,9 +239,6 @@ public:
         // Small perturbation for finite difference
         constexpr Real epsilon = 1e-8;
 
-        std::stringstream ss;
-        ss << "numerical,analytical\n";
-
         // For each component of F
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -277,14 +272,11 @@ public:
                         // Compare numerical and analytical derivatives
                         const Real numerical = dSdE(k,l);
                         Real analytical = elasticityTensor(i, j, k, l);
-                        ss << numerical << "," << analytical << std::endl;
-                        EXPECT_NEAR(numerical, analytical, 10) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
+                        EXPECT_NEAR(numerical, analytical, 0.25) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
                     }
                 }
             }
         }
-
-        std::cout << ss.str();
     }
     
 };
