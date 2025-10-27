@@ -94,7 +94,7 @@ public:
                 const auto P_perturbed = material->firstPiolaKirchhoffStress(F_perturbed);
 
                 // Compute numerical derivative
-                const auto dP = (P_perturbed - P) / (epsilon);
+                const auto dP = (P_perturbed - P) / ( epsilon);
 
                 // For each component of P
                 for(sofa::Size k = 0; k < spatial_dimensions; ++k)
@@ -103,7 +103,7 @@ public:
                     {
                         // Compare numerical and analytical derivatives
                         const Real numerical = dP(k,l);
-                        const Real analytical = A(k, l, i, j);
+                        const Real analytical = A(i, j, k, l);
                         ss << numerical << "," << analytical << std::endl;
                         EXPECT_NEAR(numerical, analytical, 1e-3);
                     }
@@ -185,7 +185,24 @@ public:
                 EXPECT_NEAR(S(i,j), S(j,i), 1e-6);
             }
         }
+    }
 
+    void testPK1PK2()
+    {
+        const auto F = this->generatePositiveDefiniteMatrix();
+
+        const auto S = this->material->secondPiolaKirchhoffStress(F.transposed() * F);
+        const auto P = this->material->firstPiolaKirchhoffStress(F);
+
+        const auto FS = F * S;
+
+        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                EXPECT_NEAR(FS(i,j), P(i,j), 1e-6);
+            }
+        }
     }
 
     void testSymmetryElasticityTensor()
@@ -292,6 +309,11 @@ TYPED_TEST(PK2MaterialTest, minorSymmetryPK2)
 TYPED_TEST(PK2MaterialTest, derivativePK2)
 {
     this->testDerivativePK2();
+}
+
+TYPED_TEST(PK2MaterialTest, PK1PK2)
+{
+    this->testPK1PK2();
 }
 
 }
