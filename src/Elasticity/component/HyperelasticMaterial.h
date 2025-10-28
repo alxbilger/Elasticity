@@ -15,7 +15,7 @@ template<class TDataTypes>
 class HyperelasticMaterial : public virtual sofa::core::objectmodel::BaseObject
 {
 public:
-    SOFA_ABSTRACT_CLASS(HyperelasticMaterial, sofa::core::objectmodel::BaseObject);
+    SOFA_ABSTRACT_CLASS(HyperelasticMaterial<TDataTypes>, sofa::core::objectmodel::BaseObject);
     using DataTypes = TDataTypes;
 
 protected:

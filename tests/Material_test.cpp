@@ -5,6 +5,29 @@
 
 namespace elasticity
 {
+template <typename T>
+struct SofaClassMaterialTest : public testing::Test
+{
+    void testParentClass()
+    {
+        using DataTypes = T::DataTypes;
+        const auto* HyperelasticMaterialClass = HyperelasticMaterial<DataTypes>::GetClass();
+        EXPECT_TRUE(T::GetClass()->hasParent(HyperelasticMaterialClass));
+    }
+};
+
+using AllSOFAClassMaterials = ::testing::Types<
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>,
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>,
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>
+>;
+TYPED_TEST_SUITE(SofaClassMaterialTest, AllSOFAClassMaterials);
+
+TYPED_TEST(SofaClassMaterialTest, parentClass)
+{
+    this->testParentClass();
+}
+
 
 template <typename T>
 class BaseMaterialTest : public testing::Test
