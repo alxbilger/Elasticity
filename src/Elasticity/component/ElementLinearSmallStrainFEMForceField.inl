@@ -134,6 +134,31 @@ SReal ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::getPotentia
 }
 
 template <class DataTypes, class ElementType>
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix(
+    sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset)
+{
+    sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
+
+    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    auto elementStiffnessIt = m_elementStiffness.begin();
+    for (const auto& element : elements)
+    {
+        const auto& stiffnessMatrix = *elementStiffnessIt++;
+
+        for (sofa::Index n1 = 0; n1 < NumberOfNodesInElement; ++n1)
+        {
+            for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
+            {
+                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
+                matrix->add(
+                    offset + element[n1] * spatial_dimensions,
+                    offset + element[n2] * spatial_dimensions, -kFact * localMatrix);
+            }
+        }
+    }
+}
+
+template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
 {
     const auto youngModulus = this->d_youngModulus.getValue();
