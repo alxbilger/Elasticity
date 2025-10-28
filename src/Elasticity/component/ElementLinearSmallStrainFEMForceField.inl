@@ -9,6 +9,17 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
+ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
+{
+    this->addUpdateCallback("precomputeStiffness", {&this->d_youngModulus, &this->d_poissonRatio},
+    [this](const sofa::core::DataTracker& )
+    {
+        precomputeElementStiffness();
+        return this->getComponentState();
+    }, {});
+}
+
+template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 {
     sofa::core::behavior::ForceField<DataTypes>::init();
@@ -69,6 +80,9 @@ template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
 {
+    if (this->isComponentStateInvalid())
+        return;
+
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
     auto dxAccessor = sofa::helper::getReadAccessor(dx);
     dfAccessor.resize(dxAccessor.size());
@@ -104,6 +118,9 @@ template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
+    if (this->isComponentStateInvalid())
+        return;
+
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
         .withRespectToPositionsIn(this->mstate);
 
@@ -137,6 +154,9 @@ template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix(
     sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset)
 {
+    if (this->isComponentStateInvalid())
+        return;
+
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
 
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
@@ -161,6 +181,9 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
 {
+    if (!l_topology)
+        return;
+
     const auto youngModulus = this->d_youngModulus.getValue();
     const auto poissonRatio = this->d_poissonRatio.getValue();
 

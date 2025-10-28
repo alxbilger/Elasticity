@@ -14,16 +14,18 @@
 namespace elasticity
 {
 
-template <class DataTypes, class ElementType>
+template <class TDataTypes, class TElementType>
 class ElementHyperelasticityFEMForceField :
     public TopologyAccessor,
-    public sofa::core::behavior::ForceField<DataTypes>
+    public sofa::core::behavior::ForceField<TDataTypes>
 {
 public:
     SOFA_CLASS2(
-        SOFA_TEMPLATE2(ElementHyperelasticityFEMForceField, DataTypes, ElementType),
+        SOFA_TEMPLATE2(ElementHyperelasticityFEMForceField, TDataTypes, TElementType),
             TopologyAccessor,
-            sofa::core::behavior::ForceField<DataTypes>);
+            sofa::core::behavior::ForceField<TDataTypes>);
+
+    using DataTypes = TDataTypes;
 
     /**
      * The purpose of this function is to register the name of this class according to the provided
@@ -34,32 +36,32 @@ public:
      */
     static const std::string GetCustomClassName()
     {
-        return std::string(sofa::geometry::elementTypeToString(ElementType::Element_type)) +
+        return std::string(sofa::geometry::elementTypeToString(TElementType::Element_type)) +
                "HyperelasticityFEMForceField";
     }
 
-    static const std::string GetCustomTemplateName() { return DataTypes::Name(); }
+    static const std::string GetCustomTemplateName() { return TDataTypes::Name(); }
 
 private:
-    using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
-    using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
-    using VecCoord = sofa::VecCoord_t<DataTypes>;
-    using VecDeriv = sofa::VecDeriv_t<DataTypes>;
-    using Coord = sofa::Coord_t<DataTypes>;
-    using Deriv = sofa::Deriv_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
+    using DataVecCoord = sofa::DataVecDeriv_t<TDataTypes>;
+    using DataVecDeriv = sofa::DataVecDeriv_t<TDataTypes>;
+    using VecCoord = sofa::VecCoord_t<TDataTypes>;
+    using VecDeriv = sofa::VecDeriv_t<TDataTypes>;
+    using Coord = sofa::Coord_t<TDataTypes>;
+    using Deriv = sofa::Deriv_t<TDataTypes>;
+    using Real = sofa::Real_t<TDataTypes>;
 
-    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
+    using FiniteElement = elasticity::FiniteElement<TElementType, TDataTypes>;
 
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+    static constexpr sofa::Size spatial_dimensions = TDataTypes::spatial_dimensions;
+    static constexpr sofa::Size NumberOfNodesInElement = TElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
+    using ElementStiffness = elasticity::ElementStiffness<TDataTypes, TElementType>;
 
 public:
     void init() override;
@@ -74,7 +76,7 @@ public:
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const DataVecCoord& x) const override;
 
-    sofa::SingleLink<MyType, HyperelasticMaterial<DataTypes>,
+    sofa::SingleLink<MyType, HyperelasticMaterial<TDataTypes>,
         sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_material;
 
 protected:

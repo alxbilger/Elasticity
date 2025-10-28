@@ -88,7 +88,9 @@ public:
     // almost deprecated, but here for compatibility with unit tests
     void addKToMatrix(sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset) override;
 
-   protected:
+protected:
+
+    ElementLinearSmallStrainFEMForceField();
 
     /**
      * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.
