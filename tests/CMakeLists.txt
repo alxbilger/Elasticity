@@ -4,6 +4,7 @@ find_package(Sofa.Testing REQUIRED)
 
 set(SOURCE_FILES
     CorotationalFEM_test.cpp
+    ElementHyperelasticityFEMForceField_test.cpp
     FiniteElement_test.cpp
     TetrahedronLinearSmallStrainFEMForceField_test.cpp
     HexahedronLinearSmallStrainFEMForceField_test.cpp

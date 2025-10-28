@@ -11,7 +11,13 @@ template<class DataTypes>
 using TetrahedronLinearSmallStrainFEMForceField =
     ElementLinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>;
 
-template<class DataTypes>
+/**
+ * This test is based on the generic test valid on every force field.
+ *
+ * It checks the consistency of the derivative functions (addDForce, addKToMatrix,
+ * buildStiffnessMatrix) compared to the force function (addForce) using finite differences.
+ */
+template <class DataTypes>
 struct TET4LinearSmallStrainFEMForceField_stepTest :
     public sofa::ForceField_test<TetrahedronLinearSmallStrainFEMForceField<DataTypes>>
 {
