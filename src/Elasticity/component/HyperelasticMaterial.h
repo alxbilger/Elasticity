@@ -28,7 +28,7 @@ protected:
     using StressJacobian = elasticity::Tensor<Real,
         spatial_dimensions, spatial_dimensions, spatial_dimensions, spatial_dimensions>;
 
-    static Real kroneckerDelta(std::size_t i, std::size_t j)
+    constexpr static Real kroneckerDelta(std::size_t i, std::size_t j)
     {
         return static_cast<Real>(i == j);
     }
