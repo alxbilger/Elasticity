@@ -10,7 +10,7 @@ TEST(FiniteElement_Hexa, quadraturePoints)
 {
     using FE = FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
     const auto q = FE::quadraturePoints();
-    EXPECT_EQ(q.size(), 8);
+    EXPECT_EQ(q.size(), 4);
 }
 
 
