@@ -24,7 +24,7 @@
     <LineAxis size="40"/>
     <OglSceneFrame/>
 
-    <Node name="tetras">
+    <Node name="tetras(blue)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
@@ -39,19 +39,23 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
-        </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <Node name="triangles">
+                <TriangleSetTopologyContainer name="Container" />
+                <TriangleSetTopologyModifier/>
+                <Tetra2TriangleTopologicalMapping input="@../Tetra_topo" output="@Container" />
+                <Node name="Visu">
+                    <OglModel name="Visual" color="blue" />
+                    <IdentityMapping input="@../../../state" output="@Visual" />
+                </Node>
+            </Node>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
-    <Node name="tetras_matrixFree">
+    <Node name="tetras_matrixFree(red)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <CGLinearSolver iterations="25" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>
 
@@ -66,19 +70,23 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
-        </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <Node name="triangles">
+                <TriangleSetTopologyContainer name="Container" />
+                <TriangleSetTopologyModifier/>
+                <Tetra2TriangleTopologicalMapping input="@../Tetra_topo" output="@Container" />
+                <Node name="Visu">
+                    <OglModel name="Visual" color="red" />
+                    <IdentityMapping input="@../../../state" output="@Visual" />
+                </Node>
+            </Node>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9 -6 -1 21 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
-    <Node name="hexas">
+    <Node name="hexas(yellow)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
@@ -92,19 +100,30 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Hexa_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Hexa_topo"/>
-        </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../hexa/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <Node name="tetra">
+                <TetrahedronSetTopologyContainer name="Tetra_topo"/>
+                <TetrahedronSetTopologyModifier name="Modifier" />
+                <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="false"/>
+                <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
+
+                <Node name="triangles">
+                    <TriangleSetTopologyContainer name="Container" />
+                    <TriangleSetTopologyModifier/>
+                    <Tetra2TriangleTopologicalMapping input="@../Tetra_topo" output="@Container" />
+                    <Node name="Visu">
+                        <OglModel name="Visual" color="yellow" />
+                        <IdentityMapping input="@../../../../state" output="@Visual" />
+                    </Node>
+                </Node>
+            </Node>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="24 -6 -1 36 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
-    <Node name="triangles3D">
+    <Node name="triangles3D(silver)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
@@ -117,19 +136,18 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Triangle_topo"/>
-        </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../triangles/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <Node name="Visu">
+                <OglModel name="Visual" color="silver" />
+                <IdentityMapping input="@../../state" output="@Visual" />
+            </Node>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
-    <Node name="quads3D">
+    <Node name="quads3D(orange)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixd"/>
 
@@ -142,12 +160,17 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Quad_topo"/>
-        </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../quads/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
+            <Node name="triangles">
+                <TriangleSetTopologyContainer name="Triangle_topo"/>
+                <TriangleSetTopologyModifier name="Modifier" />
+                <TriangleSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTriangles="false"/>
+                <Quad2TriangleTopologicalMapping input="@../Quad_topo" output="@Triangle_topo" />
+                <Node name="Visu">
+                    <OglModel name="Visual" color="orange" />
+                    <IdentityMapping input="@../../../state" output="@Visual" />
+                </Node>
+            </Node>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="-21 19.9 -1 -9 20.1 0.1" drawBoxes="1" />
@@ -166,7 +189,8 @@
             <TriangleSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawTriangles="1"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo" template="Vec2,Vec2"/>
-            <LinearSmallStrainFEMForceField mstate="@../state" template="Vec2" name="FEM" youngModulus="100000" poissonRatio="0.45" topology="@Triangle_topo"/>
+            <LinearSmallStrainFEMForceField template="Vec2" name="FEM" youngModulus="100000" poissonRatio="0.45" topology="@Triangle_topo"/>
+
         </Node>
 
         <BoxROI template="Vec2" name="box_roi" box="-0.1 14.9 0  0.1 20.1 0" drawBoxes="1" />
