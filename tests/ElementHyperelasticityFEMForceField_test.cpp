@@ -37,6 +37,12 @@ struct ElementHyperelasticityFEMForceField_stepTest :
 
         auto topology = sofa::core::objectmodel::New<sofa::component::topology::container::constant::MeshTopology>();
         this->node->addObject(topology);
+
+        constexpr auto& referenceElementNodes = FiniteElement<ElementType, DataTypes>::referenceElementNodes;
+
+        auto x = this->dof->writeOnlyRestPositions();
+        x.resize(ElementType::NumberOfNodes);
+        std::copy(referenceElementNodes.begin(), referenceElementNodes.end(), x.begin());
     }
 
     void runTestSVK()
