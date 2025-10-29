@@ -17,7 +17,7 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
         {0, 0, 1}
     }};
 
-    static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+    static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getTetrahedra();
     }

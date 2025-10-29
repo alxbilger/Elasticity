@@ -21,7 +21,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         {-1, 1, 1},
     }};
 
-    static sofa::type::vector<TopologyElement> getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
+    static const sofa::type::vector<TopologyElement>& getElementSequence(sofa::core::topology::BaseMeshTopology& topology)
     {
         return topology.getHexahedra();
     }
