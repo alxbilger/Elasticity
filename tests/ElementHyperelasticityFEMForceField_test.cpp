@@ -62,6 +62,11 @@ struct ElementHyperelasticityFEMForceField_stepTest :
         v.resize(ElementType::NumberOfNodes);
         f.resize(ElementType::NumberOfNodes);
 
+        for (auto& p : x)
+        {
+            p *= static_cast<Real>(1.1); //extension of 10%
+        }
+
         sofa::simulation::node::initRoot(Inherited::node.get());
 
         Inherited::run_test( x, v, f );
