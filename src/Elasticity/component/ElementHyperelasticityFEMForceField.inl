@@ -299,6 +299,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
+            // derivative of first Piola-Kirchhoff stress tensor with respect to deformation gradient
             const auto dPdF = l_material->materialTangentModulus(F);
 
             const auto factor = -detJ_Q * weight;
@@ -316,7 +317,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
                             {
                                 for (sofa::Size j = 0; j < spatial_dimensions; ++j)
                                 {
-                                     k += factor * dN_dq[element_i][i] * dPdF(dimension_i, i, dimension_j, j) * dN_dq[element_j][j];
+                                     k += factor * dN_dQ[element_i][i] * dPdF(dimension_i, i, dimension_j, j) * dN_dQ[element_j][j];
                                 }
                             }
                         }
