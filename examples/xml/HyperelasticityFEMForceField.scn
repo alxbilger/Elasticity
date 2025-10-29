@@ -29,8 +29,6 @@
 
     <Node name="tetras">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
-<!--        <EulerExplicitSolver name="forward Euler"/>-->
-<!--        <CGLinearSolver iterations="250" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
         <SparseLDLSolver template="CompressedRowSparseMatrixMat3x3d"/>
 
         <RegularGridTopology name="grid" min="-15 -5 0" max="-5 5 40" n="5 5 20"/>
@@ -60,11 +58,39 @@
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
+    <Node name="tetras(corot)">
+        <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
+        <SparseLDLSolver template="CompressedRowSparseMatrixMat3x3d"/>
+
+        <RegularGridTopology name="grid" min="-5 -5 0" max="5 5 40" n="5 5 20"/>
+        <MechanicalObject template="Vec3" name="state" showObject="true"/>
+
+        <Node name="tetra">
+            <TetrahedronSetTopologyContainer name="Tetra_topo"/>
+            <TetrahedronSetTopologyModifier name="Modifier" />
+            <TetrahedronSetGeometryAlgorithms template="Vec3" name="GeomAlgo" drawTetrahedra="false"/>
+            <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
+
+            <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
+            <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
+
+            <Node name="triangles">
+                <TriangleSetTopologyContainer name="Container" />
+                <TriangleSetTopologyModifier/>
+                <Tetra2TriangleTopologicalMapping input="@../Tetra_topo" output="@Container" />
+                <Node name="Visu">
+                    <OglModel name="Visual" color="blue" />
+                    <IdentityMapping input="@../../../state" output="@Visual" />
+                </Node>
+            </Node>
+        </Node>
+
+        <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />
+        <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
+    </Node>
 
     <Node name="hexas">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
-<!--        <EulerExplicitSolver name="forward Euler"/>-->
-<!--        <CGLinearSolver iterations="250" name="linear solver" tolerance="1.0e-9" threshold="1.0e-9"/>-->
         <SparseLDLSolver template="CompressedRowSparseMatrixMat3x3d"/>
 
         <RegularGridTopology name="grid" min="5 -5 0" max="15 5 40" n="5 5 20"/>
