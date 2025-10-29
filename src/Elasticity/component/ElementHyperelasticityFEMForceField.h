@@ -76,6 +76,10 @@ public:
 
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const DataVecCoord& x) const override;
 
+    using sofa::core::behavior::ForceField<DataTypes>::addKToMatrix;
+    // almost deprecated, but here for compatibility with unit tests
+    void addKToMatrix(sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset) override;
+
     sofa::SingleLink<MyType, HyperelasticMaterial<TDataTypes>,
         sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_material;
 
