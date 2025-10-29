@@ -1,4 +1,5 @@
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
+#include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <Elasticity/init.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
@@ -38,10 +39,17 @@ struct ElementHyperelasticityFEMForceField_stepTest :
         this->node->addObject(topology);
     }
 
-    void runTest()
+    void runTestSVK()
     {
+        auto material = sofa::core::objectmodel::New<StVenantKirchhoffMaterial<DataTypes>>();
+        this->node->addObject(material);
+
         VecCoord x = this->dof->readRestPositions().ref();
         VecDeriv v,f;
+
+        x.resize(ElementType::NumberOfNodes);
+        v.resize(ElementType::NumberOfNodes);
+        f.resize(ElementType::NumberOfNodes);
 
         sofa::simulation::node::initRoot(Inherited::node.get());
 
@@ -95,7 +103,7 @@ TYPED_TEST(Hyperelasticity_stepTest, extension )
     this->flags &= ~sofa::ForceField_test<
         typename Hyperelasticity_stepTest<TypeParam>::ForceField>::TEST_POTENTIAL_ENERGY;
 
-    this->runTest();
+    this->runTestSVK();
 }
 
 }
