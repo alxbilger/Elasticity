@@ -279,21 +279,14 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
                 J_Q += sofa::type::dyad(elementNodesRestCoordinates[i], dN_dq_ref[i]);
 
-            const auto detJ_q = elasticity::determinant(J_q);
             const auto detJ_Q = elasticity::determinant(J_Q);
 
             const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_Q_inv = elasticity::inverse(J_Q);
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_q_inv = elasticity::inverse(J_q);
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ(sofa::type::NOINIT);
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
                 dN_dQ[i] = J_Q_inv.transposed() * dN_dq_ref[i];
-
-            // gradient of the shape functions in the physical element evaluated at the quadrature point
-            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                dN_dq[i] = J_q_inv.transposed() * dN_dq_ref[i];
 
             // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
