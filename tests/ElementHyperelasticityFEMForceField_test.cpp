@@ -174,9 +174,9 @@ typedef ::testing::Types<
 
 TYPED_TEST_SUITE(Hyperelasticity_stepTest, TestTypes);
 
-TYPED_TEST(Hyperelasticity_stepTest, extension )
+TYPED_TEST(Hyperelasticity_stepTest, extension)
 {
-    this->errorMax *= 1e6;
+    this->errorMax *= 1e2;
     this->deltaRange = std::make_pair( 1, this->errorMax * 10 );
     this->debug = true;
     this->flags &= ~sofa::ForceField_test<

@@ -141,7 +141,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
-        auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
+        auto dForce = (kFactor) * (stiffnessMatrix * element_dx);
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
@@ -176,7 +176,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffness
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += -localMatrix;
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += localMatrix;
             }
         }
     }
@@ -213,7 +213,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
                 matrix->add(
                     offset + element[n1] * spatial_dimensions,
-                    offset + element[n2] * spatial_dimensions, -kFact * localMatrix);
+                    offset + element[n2] * spatial_dimensions, kFact * localMatrix);
             }
         }
     }
@@ -301,6 +301,8 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
             const auto dPdF = l_material->materialTangentModulus(F);
 
+            const auto factor = -detJ_Q * weight;
+
             for (sofa::Size element_i = 0; element_i < NumberOfNodesInElement; ++element_i)
             {
                 for (sofa::Size element_j = 0; element_j < NumberOfNodesInElement; ++element_j)
@@ -309,12 +311,12 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
                     {
                         for (sofa::Size dimension_j = 0; dimension_j < spatial_dimensions; ++dimension_j)
                         {
-                            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+                            auto& k = K(element_i * spatial_dimensions + dimension_i, element_j * spatial_dimensions + dimension_j);
+                            for (sofa::Size i = 0; i < spatial_dimensions; ++i)
                             {
-                                for (sofa::Size q = 0; q < spatial_dimensions; ++q)
+                                for (sofa::Size j = 0; j < spatial_dimensions; ++j)
                                 {
-                                    K(element_i * spatial_dimensions + dimension_i, element_j * spatial_dimensions + dimension_j) +=
-                                        (-detJ_Q * weight) * dN_dq[element_i][q] * dPdF(dimension_i, j, dimension_j, q) * dN_dq[element_j][j];
+                                     k += factor * dN_dq[element_i][i] * dPdF(dimension_i, i, dimension_j, j) * dN_dq[element_j][j];
                                 }
                             }
                         }
