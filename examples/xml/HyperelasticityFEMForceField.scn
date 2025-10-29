@@ -58,7 +58,7 @@
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
 
-    <Node name="tetras(corot)">
+    <Node name="tetras(legacy)">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
         <SparseLDLSolver template="CompressedRowSparseMatrixMat3x3d"/>
 
@@ -72,7 +72,7 @@
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-            <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@Tetra_topo"/>
+            <TetrahedronHyperelasticityFEMForceField name="FEM" ParameterSet="31034.482758620699 3448.2758620689656" materialName="StVenantKirchhoff"/>
 
             <Node name="triangles">
                 <TriangleSetTopologyContainer name="Container" />

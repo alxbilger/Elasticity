@@ -40,6 +40,9 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(v);
 
+    if (this->isComponentStateInvalid())
+        return;
+
     auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
@@ -115,6 +118,9 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
     if (l_topology == nullptr) return;
     if (l_material == nullptr) return;
 
+    if (this->isComponentStateInvalid())
+        return;
+
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
     auto dxAccessor = sofa::helper::getReadAccessor(dx);
     dfAccessor.resize(dxAccessor.size());
@@ -155,6 +161,9 @@ template <class DataTypes, class ElementType>
 void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
+    if (this->isComponentStateInvalid())
+        return;
+
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
         .withRespectToPositionsIn(this->mstate);
 
@@ -193,6 +202,9 @@ template <class TDataTypes, class TElementType>
 void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix(
     sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset)
 {
+    if (this->isComponentStateInvalid())
+        return;
+
     if (!m_isHessianValid)
     {
         computeHessian(*m_coordinates);
