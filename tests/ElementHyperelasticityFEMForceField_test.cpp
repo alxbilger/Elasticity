@@ -1,5 +1,9 @@
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
+#include <Elasticity/init.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
+#include <sofa/component/topology/container/constant/MeshTopology.h>
+#include <sofa/core/ObjectFactory.h>
+#include <sofa/simpleapi/SimpleApi.h>
 
 namespace elasticity
 {
@@ -26,7 +30,12 @@ struct ElementHyperelasticityFEMForceField_stepTest :
 
     ElementHyperelasticityFEMForceField_stepTest()
     {
+        elasticity::initializePlugin();
+        sofa::core::ObjectFactory* objectFactory = sofa::core::ObjectFactory::getInstance();
+        objectFactory->registerObjectsFromPlugin(elasticity::MODULE_NAME);
 
+        auto topology = sofa::core::objectmodel::New<sofa::component::topology::container::constant::MeshTopology>();
+        this->node->addObject(topology);
     }
 
     void runTest()
