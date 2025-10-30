@@ -28,8 +28,14 @@ The procedure to compile the plugin is the same as for any other plugin and is d
   - [ ] Multiple methods to compute the rotation
   - [ ] Rigorous heterogeneous material
 - Hyperlaticity
-  - [ ] A unique nonlinear formulation for any type of element in any dimension, with any constitutive equation
+  - [x] A unique nonlinear formulation for any type of element in any dimension, with any constitutive equation
   - [ ] Common nonlinear constitutive equation
+    - [x] Saint Venant-Kirchhoff
+    - [ ] Neo-Hookean
+    - [ ] Stable Neo-Hookean
+    - [ ] Arruda Boyce
+    - [ ] Mooney-Rivlin
+    - [ ] Ogden
 - Other Features
   - [ ] Support for topological changes
   - [ ] Support for computation of the potential energy
