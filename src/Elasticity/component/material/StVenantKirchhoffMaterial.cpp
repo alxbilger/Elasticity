@@ -10,7 +10,7 @@ namespace elasticity
 
 void registerStVenantKirchhoffMaterial(sofa::core::ObjectFactory* factory)
 {
-    factory->registerObjects(sofa::core::ObjectRegistrationData("Saint Venant-Kirchhoff material")
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Saint Venant-Kirchhoff material model for hyperelastic materials")
         .add< StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types> >()
         .add< StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types> >()
         .add< StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types> >(true));

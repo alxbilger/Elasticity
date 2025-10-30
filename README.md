@@ -3,7 +3,7 @@
 ## Description
 A SOFA plugin for the development of a clean FEM formulation.
 
-Elasticity is a plugin re-implementing the elastic force fields in SOFA in a generic and modular manner.
+Elasticity is a plugin implementing the elastic force fields in SOFA in a generic and modular manner.
 In particular, a single piece of code allows generating a component for any type of element, in any dimension. 
 On top of that, a generic and element-agnostic component (prefab-like) instantiates the appropriate components based on the elements in the topology. 
 The emphasis was placed on the readability of the code, allowing to easily compare the code to the equations.
@@ -17,6 +17,40 @@ The plugin supports the following formulations:
 
 The plugin does not depend on any other plugin or external library.
 The procedure to compile the plugin is the same as for any other plugin and is described in the [SOFA documentation](https://sofa-framework.github.io/doc/plugins/build-a-plugin-from-sources/).
+
+## Hyperelastic materials
+
+The plugin supports the following constitutive equations:
+
+### Saint Venant-Kirchhoff
+
+The strain energy density function is:
+
+$$
+\psi = \frac{1}{2} \lambda \, \mathrm{tr} (E)^2 + \mu \, E : E
+$$
+
+The second Piola-Kirchhoff stress tensor is:
+
+$$
+S = 2 \mu E + \lambda \, \mathrm{tr} (E) \, I
+$$
+
+And the elasticity tensor is defined in index notation:
+
+$$
+\mathbb{C}_{ijkl} = \mu (\delta_{ik} \delta_{jl} + \delta_{il} \delta_{jk}) + \frac{1}{2} \lambda \delta_{ij} \delta_{kl}
+$$
+
+Example in a XML scene:
+
+```xml
+...
+<StVenantKirchhoffMaterial youngModulus="10000" poissonRatio="0.45"/>
+<HyperelasticityFEMForceField name="FEM" topology="@Tetra_topo"/>
+...
+```
+
 
 ## Possible Roadmap
 

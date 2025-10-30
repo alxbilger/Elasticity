@@ -7,8 +7,10 @@ namespace elasticity
 
 template <class DataTypes>
 LinearMechanicalParametersComponent<DataTypes>::LinearMechanicalParametersComponent()
-    : d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio", "Poisson's ratio"))
-    , d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus", "Young's modulus"))
+: d_poissonRatio(initData(&d_poissonRatio, static_cast<Real>(0.45), "poissonRatio",
+    "Poisson's ratio: represents the material's ability to undergo deformation in directions orthogonal to the applied stress"))
+, d_youngModulus(initData(&d_youngModulus, static_cast<Real>(1e6), "youngModulus",
+    "Young's modulus: describes the material's stiffness"))
 {
     this->addUpdateCallback("toLameCoefficients", {&this->d_youngModulus, &this->d_poissonRatio},
     [this](const sofa::core::DataTracker& )
