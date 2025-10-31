@@ -24,6 +24,7 @@ protected:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    using RightCauchyGreenTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressJacobian = elasticity::Tensor<Real,
         spatial_dimensions, spatial_dimensions, spatial_dimensions, spatial_dimensions>;

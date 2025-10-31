@@ -9,7 +9,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(const DeformationGradient& C) -> StressTensor
+auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) -> StressTensor
 {
     static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
 
@@ -20,11 +20,11 @@ auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(const Deformation
 }
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const DeformationGradient& C) -> StressJacobian
+auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> StressJacobian
 {
     StressJacobian elasticityTensor;
 
-    const DeformationGradient C_1 = elasticity::inverse(C);
+    const RightCauchyGreenTensor C_1 = elasticity::inverse(C);
     const Real J = elasticity::determinantSquareMatrix(C);
     const Real logJ = std::log(J);
 

@@ -44,6 +44,7 @@ private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
     using DeformationGradient = PK2HyperelasticMaterial<DataTypes>::DeformationGradient;
+    using RightCauchyGreenTensor = PK2HyperelasticMaterial<DataTypes>::RightCauchyGreenTensor;
     using StressTensor = PK2HyperelasticMaterial<DataTypes>::StressTensor;
     using StressJacobian = PK2HyperelasticMaterial<DataTypes>::StressJacobian;
 
@@ -53,9 +54,9 @@ private:
     using PK2HyperelasticMaterial<DataTypes>::kroneckerDelta;
 
 protected:
-    StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) override;
+    StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) override;
 
-    StressJacobian elasticityTensor(const DeformationGradient& C) override;
+    StressJacobian elasticityTensor(const RightCauchyGreenTensor& C) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

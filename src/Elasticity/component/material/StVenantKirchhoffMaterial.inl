@@ -9,7 +9,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::secondPiolaKirchhoffStress(const DeformationGradient& C)
+auto StVenantKirchhoffMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C)
 -> StressTensor
 {
     static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
@@ -22,9 +22,9 @@ auto StVenantKirchhoffMaterial<DataTypes>::secondPiolaKirchhoffStress(const Defo
 }
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const DeformationGradient& F) -> StressJacobian
+auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> StressJacobian
 {
-    SOFA_UNUSED(F);
+    SOFA_UNUSED(C);
     StressJacobian elasticityTensor;
 
     elasticityTensor.fill(
