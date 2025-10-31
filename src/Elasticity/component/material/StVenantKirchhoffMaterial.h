@@ -53,9 +53,9 @@ private:
     using HyperelasticMaterial<DataTypes>::kroneckerDelta;
 
 protected:
-    StressTensor secondPiolaKirchhoffStress(const DeformationGradient& F) override;
+    StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) override;
 
-    StressJacobian elasticityTensor(const DeformationGradient& F) override;
+    StressJacobian elasticityTensor(const DeformationGradient& C) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

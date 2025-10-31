@@ -9,29 +9,41 @@ namespace elasticity
 {
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F)
--> StressTensor
+auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(const DeformationGradient& C) -> StressTensor
 {
-    const auto J = elasticity::determinant(F);
-    const auto J_inv = 1 / J;
+    static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
 
-    // derivative of J with respect to F
-    const auto dJdF = elasticity::adjugate(F).transposed();
+    const DeformationGradient C_1 = inverse(C);
+    const Real J = determinantSquareMatrix(C);
 
-    return m_mu * (F - J_inv *  dJdF) + (m_lambda * log(J) * J_inv) * dJdF;
+    return m_mu * (I - C_1) + m_lambda * std::log(J) * C_1;
 }
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::materialTangentModulus(const DeformationGradient& F) -> StressJacobian
+auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const DeformationGradient& C) -> StressJacobian
 {
-    // derivative of J with respect to F
-    const auto dJdF = elasticity::adjugate(F).transposed();
+    StressJacobian elasticityTensor;
 
-    const auto dJdF_vec = elasticity::flatten(dJdF);
+    const DeformationGradient C_1 = elasticity::inverse(C);
+    const Real J = elasticity::determinantSquareMatrix(C);
+    const Real logJ = std::log(J);
 
+    for (std::size_t i = 0; i < spatial_dimensions; ++i)
+    {
+        for (std::size_t j = 0; j < spatial_dimensions; ++j)
+        {
+            for (std::size_t k = 0; k < spatial_dimensions; ++k)
+            {
+                for (std::size_t l = 0; l < spatial_dimensions; ++l)
+                {
+                    elasticityTensor(i, j, k, l) = (m_mu - m_lambda * logJ) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j))
+                        + m_lambda * C_1(l, k) * C_1(i, j);
+                }
+            }
+        }
+    }
 
-    StressJacobian dPdF;
-    return dPdF;
+    return elasticityTensor;
 }
 
 }  // namespace elasticity

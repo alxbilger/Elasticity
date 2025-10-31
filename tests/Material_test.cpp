@@ -1,6 +1,8 @@
+#include <Elasticity/component/material/NeoHookeanMaterial.h>
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <gtest/gtest.h>
 #include <sofa/testing/LinearCongruentialRandomGenerator.h>
+
 #include <Eigen/Eigenvalues>
 
 namespace elasticity
@@ -19,7 +21,10 @@ struct SofaClassMaterialTest : public testing::Test
 using AllSOFAClassMaterials = ::testing::Types<
     StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>,
     StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>,
-    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec3Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec2Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(SofaClassMaterialTest, AllSOFAClassMaterials);
 
@@ -42,6 +47,11 @@ protected:
     {
         material = sofa::core::objectmodel::New<T>();
         material->init();
+
+        if (auto* linearMaterial = dynamic_cast<LinearMechanicalParametersComponent<DataTypes>*>(material.get()) )
+        {
+            linearMaterial->d_youngModulus.setValue(10.);
+        }
     }
 
     DeformationGradient generatePositiveDefiniteMatrix()
@@ -229,7 +239,7 @@ public:
     void testSymmetryElasticityTensor()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
-        const auto C = this->material->elasticityTensor(F);
+        const auto C = this->material->elasticityTensor(F.transposed() * F);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -307,7 +317,10 @@ public:
 using PK2Materials = ::testing::Types<
     StVenantKirchhoffMaterial<sofa::defaulttype::Vec3Types>,
     StVenantKirchhoffMaterial<sofa::defaulttype::Vec2Types>,
-    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>
+    StVenantKirchhoffMaterial<sofa::defaulttype::Vec1Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec3Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec2Types>,
+    NeoHookeanMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(PK2MaterialTest, PK2Materials);
 

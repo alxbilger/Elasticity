@@ -36,10 +36,11 @@ private:
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
 
 public:
-    StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) override;
+    StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) override;
 
-    StressJacobian materialTangentModulus(const DeformationGradient& F) override;
+    StressJacobian elasticityTensor(const DeformationGradient& C) override;
 };
+
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_NEOHOOKEANMATERIAL_CPP)
 extern template class ELASTICITY_API NeoHookeanMaterial<sofa::defaulttype::Vec1Types>;
