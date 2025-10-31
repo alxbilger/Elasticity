@@ -51,6 +51,25 @@ Example in a XML scene:
 ...
 ```
 
+### Neo-Hookean
+
+The strain energy density function is:
+
+$$
+\psi = \frac{\mu}{2} (\mathrm{tr}(C) - d) - \mu \log J + \frac{\lambda}{2} (\log J)^2
+$$
+
+The second Piola-Kirchhoff stress tensor is:
+
+$$
+S = \mu (I - C^{-1}) + \lambda (\log J) C^{-1}
+$$
+
+And the elasticity tensor is defined in index notation:
+
+$$
+\mathbb{C}_{ijkl} = (\mu - \lambda \log J)(C^{-1}_{i k} C^{-1}_{l j} + C^{-1}_{i l} C^{-1}_{k j}) + \lambda C^{-1}_{l k} C^{-1}_{i j}
+$$
 
 ## Possible Roadmap
 
@@ -65,7 +84,7 @@ Example in a XML scene:
   - [x] A unique nonlinear formulation for any type of element in any dimension, with any constitutive equation
   - [ ] Common nonlinear constitutive equation
     - [x] Saint Venant-Kirchhoff
-    - [ ] Neo-Hookean
+    - [x] Neo-Hookean
     - [ ] Stable Neo-Hookean
     - [ ] Arruda Boyce
     - [ ] Mooney-Rivlin
