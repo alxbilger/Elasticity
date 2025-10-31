@@ -17,6 +17,9 @@ auto PK2HyperelasticMaterial<TDataTypes>::firstPiolaKirchhoffStress(const Deform
 template <class TDataTypes>
 auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(const DeformationGradient& F) -> StressJacobian
 {
+    using HyperelasticMaterial<TDataTypes>::spatial_dimensions;
+    using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
+
     StressJacobian A;
 
     const auto rightCauchyGreenTensor = F.transposed() * F;

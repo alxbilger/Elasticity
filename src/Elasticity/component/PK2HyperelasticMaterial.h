@@ -4,7 +4,11 @@
 namespace elasticity
 {
 
-template<class TDataTypes>
+/**
+ * A hyperelastic material defined by its second Piola-Kirchhoff stress tensosr and its Lagrangian
+ * elasticity tensor.
+ */
+template <class TDataTypes>
 class PK2HyperelasticMaterial : public HyperelasticMaterial<TDataTypes>
 {
 public:
@@ -15,8 +19,6 @@ protected:
     using HyperelasticMaterial<TDataTypes>::DeformationGradient;
     using HyperelasticMaterial<TDataTypes>::StressTensor;
     using HyperelasticMaterial<TDataTypes>::StressJacobian;
-    using HyperelasticMaterial<TDataTypes>::spatial_dimensions;
-    using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
 
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) final;
