@@ -28,20 +28,12 @@ auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const DeformationGradient& 
     const Real J = elasticity::determinantSquareMatrix(C);
     const Real logJ = std::log(J);
 
-    for (std::size_t i = 0; i < spatial_dimensions; ++i)
-    {
-        for (std::size_t j = 0; j < spatial_dimensions; ++j)
+    elasticityTensor.fill(
+        [mu = m_mu, lambda = m_lambda, &C_1, logJ](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
-            for (std::size_t k = 0; k < spatial_dimensions; ++k)
-            {
-                for (std::size_t l = 0; l < spatial_dimensions; ++l)
-                {
-                    elasticityTensor(i, j, k, l) = (m_mu - m_lambda * logJ) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j))
-                        + m_lambda * C_1(l, k) * C_1(i, j);
-                }
-            }
-        }
-    }
+            return (mu - lambda * logJ) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j))
+                + lambda * C_1(l, k) * C_1(i, j);
+        });
 
     return elasticityTensor;
 }

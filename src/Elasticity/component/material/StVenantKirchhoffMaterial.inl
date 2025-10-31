@@ -25,25 +25,16 @@ template <class DataTypes>
 auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const DeformationGradient& F) -> StressJacobian
 {
     SOFA_UNUSED(F);
-    StressJacobian C;
+    StressJacobian elasticityTensor;
 
-    for (std::size_t i = 0; i < spatial_dimensions; ++i)
-    {
-        for (std::size_t j = 0; j < spatial_dimensions; ++j)
+    elasticityTensor.fill(
+        [mu = m_mu, lambda = m_lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
-            for (std::size_t k = 0; k < spatial_dimensions; ++k)
-            {
-                for (std::size_t l = 0; l < spatial_dimensions; ++l)
-                {
-                    C(i, j, k, l) =
-                        m_mu * (kroneckerDelta(i, k) * kroneckerDelta(j, l) + kroneckerDelta(i, l) * kroneckerDelta(j, k)) +
-                        m_lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
-                }
-            }
-        }
-    }
+            return mu * (kroneckerDelta(i, k) * kroneckerDelta(j, l) + kroneckerDelta(i, l) * kroneckerDelta(j, k)) +
+                        lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
+        });
 
-    return C;
+    return elasticityTensor;
 }
 
 }  // namespace elasticity
