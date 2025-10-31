@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/component/HyperelasticMaterial.h>
+#include <Elasticity/component/PK2HyperelasticMaterial.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_NEOHOOKEANMATERIAL_CPP)
@@ -17,20 +17,20 @@ namespace elasticity
  */
 template <class DataTypes>
 class NeoHookeanMaterial :
-    public HyperelasticMaterial<DataTypes>,
+    public PK2HyperelasticMaterial<DataTypes>,
     public LinearMechanicalParametersComponent<DataTypes>
 {
 public:
-    SOFA_CLASS2(NeoHookeanMaterial, HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
+    SOFA_CLASS2(NeoHookeanMaterial, PK2HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
 
 private:
     using Real = sofa::Real_t<DataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
-    using DeformationGradient = HyperelasticMaterial<DataTypes>::DeformationGradient;
-    using StressTensor = HyperelasticMaterial<DataTypes>::StressTensor;
-    using StressJacobian = HyperelasticMaterial<DataTypes>::StressJacobian;
+    using DeformationGradient = PK2HyperelasticMaterial<DataTypes>::DeformationGradient;
+    using StressTensor = PK2HyperelasticMaterial<DataTypes>::StressTensor;
+    using StressJacobian = PK2HyperelasticMaterial<DataTypes>::StressJacobian;
 
     using LinearMechanicalParametersComponent<DataTypes>::m_lambda;
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;

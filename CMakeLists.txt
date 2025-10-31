@@ -28,6 +28,8 @@ set(HEADER_FILES
     src/Elasticity/component/HyperelasticMaterial.inl
     src/Elasticity/component/LinearMechanicalParametersComponent.h
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
+    src/Elasticity/component/PK2HyperelasticMaterial.h
+    src/Elasticity/component/PK2HyperelasticMaterial.inl
     src/Elasticity/component/TopologyAccessor.h
 
     src/Elasticity/component/material/DirichletMaterial.h
@@ -64,6 +66,7 @@ set(SOURCE_FILES
     src/Elasticity/component/ElementPrefab.cpp
     src/Elasticity/component/HyperelasticMaterial.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
+    src/Elasticity/component/PK2HyperelasticMaterial.cpp
     src/Elasticity/component/TopologyAccessor.cpp
 
     src/Elasticity/component/material/DirichletMaterial.cpp

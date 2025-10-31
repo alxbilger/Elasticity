@@ -42,7 +42,7 @@ public:
      * It corresponds to the derivative of the strain energy density function w.r.t. deformation
      * gradient.
      */
-    virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F);
+    virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
 
     /**
      * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the
@@ -50,12 +50,11 @@ public:
      *
      * It is called the material tangent modulus.
      */
-    virtual StressJacobian materialTangentModulus(const DeformationGradient& F);
+    virtual StressJacobian materialTangentModulus(const DeformationGradient& F) = 0;
 
 protected:
 
-    virtual StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) { return {}; }
-    virtual StressJacobian elasticityTensor(const DeformationGradient& F) { return {}; }
+
 
     /**
      * Compute the first Cauchy-Green invariant from the deformation gradient

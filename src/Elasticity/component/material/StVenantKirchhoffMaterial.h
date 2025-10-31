@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/component/HyperelasticMaterial.h>
+#include <Elasticity/component/PK2HyperelasticMaterial.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)
@@ -32,25 +32,25 @@ namespace elasticity
  */
 template <class DataTypes>
 class StVenantKirchhoffMaterial:
-    public HyperelasticMaterial<DataTypes>,
+    public PK2HyperelasticMaterial<DataTypes>,
     public LinearMechanicalParametersComponent<DataTypes>
 {
 public:
-    SOFA_CLASS2(StVenantKirchhoffMaterial, HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
+    SOFA_CLASS2(StVenantKirchhoffMaterial, PK2HyperelasticMaterial<DataTypes>, LinearMechanicalParametersComponent<DataTypes>);
 
 private:
     using Real = sofa::Real_t<DataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
 
-    using DeformationGradient = HyperelasticMaterial<DataTypes>::DeformationGradient;
-    using StressTensor = HyperelasticMaterial<DataTypes>::StressTensor;
-    using StressJacobian = HyperelasticMaterial<DataTypes>::StressJacobian;
+    using DeformationGradient = PK2HyperelasticMaterial<DataTypes>::DeformationGradient;
+    using StressTensor = PK2HyperelasticMaterial<DataTypes>::StressTensor;
+    using StressJacobian = PK2HyperelasticMaterial<DataTypes>::StressJacobian;
 
     using LinearMechanicalParametersComponent<DataTypes>::m_lambda;
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
 
-    using HyperelasticMaterial<DataTypes>::kroneckerDelta;
+    using PK2HyperelasticMaterial<DataTypes>::kroneckerDelta;
 
 protected:
     StressTensor secondPiolaKirchhoffStress(const DeformationGradient& C) override;
