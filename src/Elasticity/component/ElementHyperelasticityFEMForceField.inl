@@ -7,6 +7,7 @@
 #include <Elasticity/impl/VectorTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace elasticity
 {
@@ -259,6 +260,8 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
     if (l_topology == nullptr) return;
     if (l_material == nullptr) return;
 
+    SCOPED_TIMER("ComputeHessian");
+
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
     m_elementStiffness.resize(elements.size());
@@ -268,6 +271,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
     for (const auto& element : elements)
     {
+        SCOPED_TIMER_TR("Element");
         const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, this->mstate->readPositions().ref());
         const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, this->mstate->readRestPositions().ref());
 
@@ -275,6 +279,8 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
         for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
         {
+            SCOPED_TIMER_TR("GaussPoint");
+
             // gradient of shape functions in the reference element evaluated at the quadrature point
             const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
                 FiniteElement::gradientShapeFunctions(quadraturePoint);
@@ -305,10 +311,15 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
             // derivative of first Piola-Kirchhoff stress tensor with respect to deformation gradient
-            const auto dPdF = l_material->materialTangentModulus(F);
+            const auto dPdF = [&]()
+            {
+                SCOPED_TIMER_VARNAME_TR(dPdFTimer, "dPdF");
+                return l_material->materialTangentModulus(F);
+            }();
 
             const auto factor = -detJ_Q * weight;
 
+            SCOPED_TIMER_VARNAME_TR(tensorTimer, "Tensor");
             for (sofa::Size element_i = 0; element_i < NumberOfNodesInElement; ++element_i)
             {
                 for (sofa::Size element_j = 0; element_j < NumberOfNodesInElement; ++element_j)

@@ -20,22 +20,18 @@ auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauchy
 }
 
 template <class DataTypes>
-auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> StressJacobian
+auto NeoHookeanMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> ElasticityTensor
 {
-    StressJacobian elasticityTensor;
-
     const RightCauchyGreenTensor C_1 = elasticity::inverse(C);
     const Real J = elasticity::determinantSquareMatrix(C);
     const Real logJ = std::log(J);
 
-    elasticityTensor.fill(
+    return ElasticityTensor(
         [mu = m_mu, lambda = m_lambda, &C_1, logJ](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
             return (mu - lambda * logJ) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j))
                 + lambda * C_1(l, k) * C_1(i, j);
         });
-
-    return elasticityTensor;
 }
 
 }  // namespace elasticity

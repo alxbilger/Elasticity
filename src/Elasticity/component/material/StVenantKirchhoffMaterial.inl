@@ -2,8 +2,8 @@
 
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <Elasticity/impl/ElasticityTensor.h>
-
 #include <Elasticity/component/HyperelasticMaterial.inl>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace elasticity
 {
@@ -22,19 +22,17 @@ auto StVenantKirchhoffMaterial<DataTypes>::secondPiolaKirchhoffStress(const Righ
 }
 
 template <class DataTypes>
-auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> StressJacobian
+auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> ElasticityTensor
 {
+    SCOPED_TIMER_TR("elasticityTensor");
     SOFA_UNUSED(C);
-    StressJacobian elasticityTensor;
 
-    elasticityTensor.fill(
+    return ElasticityTensor(
         [mu = m_mu, lambda = m_lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
             return mu * (kroneckerDelta(i, k) * kroneckerDelta(j, l) + kroneckerDelta(i, l) * kroneckerDelta(j, k)) +
                         lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
         });
-
-    return elasticityTensor;
 }
 
 }  // namespace elasticity

@@ -19,17 +19,18 @@ protected:
     using HyperelasticMaterial<TDataTypes>::DeformationGradient;
     using HyperelasticMaterial<TDataTypes>::RightCauchyGreenTensor;
     using HyperelasticMaterial<TDataTypes>::StressTensor;
-    using HyperelasticMaterial<TDataTypes>::StressJacobian;
+    using HyperelasticMaterial<TDataTypes>::ElasticityTensor;
+    using HyperelasticMaterial<TDataTypes>::TangentModulus;
     using HyperelasticMaterial<TDataTypes>::spatial_dimensions;
     using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
 
 public:
     StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) final;
-    StressJacobian materialTangentModulus(const DeformationGradient& F) final;
+    TangentModulus materialTangentModulus(const DeformationGradient& F) final;
 
 protected:
     virtual StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) = 0;
-    virtual StressJacobian elasticityTensor(const RightCauchyGreenTensor& C) = 0;
+    virtual ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) = 0;
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)

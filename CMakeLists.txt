@@ -46,12 +46,15 @@ set(HEADER_FILES
 
     src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
+    src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/MatrixTools.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
+    src/Elasticity/impl/TangentModulus.h
     src/Elasticity/impl/Tensor.h
     src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VecView.h
+    src/Elasticity/impl/VoigtNotation.h
     src/Elasticity/impl/VonMisesStressContainer.h
 )
 

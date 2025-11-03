@@ -53,7 +53,7 @@ ElementStiffness<DataTypes, ElementType> integrate(
             dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
         const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
-        K += (weight * detJ) * B.transposed() * elasticityTensor * B;
+        K += (weight * detJ) * B.transposed() * (elasticityTensor.toVoigtMatSym() * B);
     }
     return K;
 }

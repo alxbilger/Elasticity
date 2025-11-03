@@ -46,7 +46,7 @@ private:
     using DeformationGradient = PK2HyperelasticMaterial<DataTypes>::DeformationGradient;
     using RightCauchyGreenTensor = PK2HyperelasticMaterial<DataTypes>::RightCauchyGreenTensor;
     using StressTensor = PK2HyperelasticMaterial<DataTypes>::StressTensor;
-    using StressJacobian = PK2HyperelasticMaterial<DataTypes>::StressJacobian;
+    using ElasticityTensor = PK2HyperelasticMaterial<DataTypes>::ElasticityTensor;
 
     using LinearMechanicalParametersComponent<DataTypes>::m_lambda;
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
@@ -56,7 +56,7 @@ private:
 protected:
     StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) override;
 
-    StressJacobian elasticityTensor(const RightCauchyGreenTensor& C) override;
+    ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)
