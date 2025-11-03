@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sofa/core/trait/DataTypes.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/type/MatSym.h>
 
 namespace elasticity
@@ -26,17 +27,23 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
-        for (sofa::Size i = 0; i < spatial_dimension_square; ++i)
+        SCOPED_TIMER_TR("fill");
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
-            const auto a = i / spatial_dimensions;
-            const auto b = i % spatial_dimensions;
-
-            for (sofa::Size j = i; j < spatial_dimension_square; ++j) // the reduced representation is symmetric, that is why j starts at i
+            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
             {
-                const auto c = j / spatial_dimensions;
-                const auto d = j % spatial_dimensions;
-
-                m_matrix(i, j) = callable(a, b, c, d);
+                const auto ij = i * spatial_dimensions + j;
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    for (sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    {
+                        const auto kl = k * spatial_dimensions + l;
+                        if (kl <= ij)
+                        {
+                            m_matrix(ij, kl) = callable(i, j, k, l);
+                        }
+                    }
+                }
             }
         }
     }

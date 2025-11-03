@@ -34,12 +34,6 @@ toLameParameters(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> p
     return std::make_pair(mu, lambda);
 }
 
-// template <class DataTypes>
-// using ElasticityTensor = sofa::type::Mat<
-//     symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>,
-//     symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>,
-//     sofa::Real_t<DataTypes>>;
-
 /**
  * A class to represent the Lagrangian elasticity tensor.
  *
