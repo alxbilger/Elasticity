@@ -13,6 +13,7 @@ extern void registerHyperelasticityFEMForceField(sofa::core::ObjectFactory* fact
 extern void registerLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
 extern void registerStVenantKirchhoffMaterial(sofa::core::ObjectFactory* factory);
 extern void registerNeoHookeanMaterial(sofa::core::ObjectFactory* factory);
+extern void registerMooneyRivlinMaterial(sofa::core::ObjectFactory* factory);
 
 void initializePlugin() 
 {
@@ -63,5 +64,6 @@ extern "C"
         elasticity::registerLinearSmallStrainFEMForceField(factory);
         elasticity::registerStVenantKirchhoffMaterial(factory);
         elasticity::registerNeoHookeanMaterial(factory);
+        elasticity::registerMooneyRivlinMaterial(factory);
     }
 }

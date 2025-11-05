@@ -10,6 +10,7 @@ namespace elasticity
 template<class DataTypes>
 constexpr auto voigtIndices(std::size_t i)
 {
+    assert(i < symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>);
     if constexpr (DataTypes::spatial_dimensions == 3)
     {
         static constexpr std::array voigt3d {
@@ -42,6 +43,8 @@ constexpr auto voigtIndices(std::size_t i)
 template<class DataTypes>
 constexpr std::size_t voigtIndex(std::size_t i, std::size_t j)
 {
+    assert(i < DataTypes::spatial_dimensions);
+    assert(j < DataTypes::spatial_dimensions);
     if (i == j)
         return i;
     return symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions> - i - j;
@@ -61,5 +64,8 @@ static_assert(voigtIndex<sofa::defaulttype::Vec2Types>(0,0) == 0);
 static_assert(voigtIndex<sofa::defaulttype::Vec2Types>(0,1) == 2);
 static_assert(voigtIndex<sofa::defaulttype::Vec2Types>(1,0) == 2);
 static_assert(voigtIndex<sofa::defaulttype::Vec2Types>(1,1) == 1);
+
+static_assert(voigtIndex<sofa::defaulttype::Vec1Types>(0,0) == 0);
+
 
 }
