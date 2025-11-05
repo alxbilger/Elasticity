@@ -4,7 +4,7 @@
 #include <Elasticity/component/PK2HyperelasticMaterial.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 
-#if !defined(ELASTICITY_COMPONENT_MATERIAL_MOONEYRIVLIN_CPP)
+#if !defined(ELASTICITY_COMPONENT_MATERIAL_INCOMPRESSIBLEMOONEYRIVLIN_CPP)
 #include <sofa/defaulttype/VecTypes.h>
 #endif
 
@@ -12,11 +12,11 @@ namespace elasticity
 {
 
 template <class DataTypes>
-class MooneyRivlinMaterial :
+class IncompressibleMooneyRivlinMaterial :
     public PK2HyperelasticMaterial<DataTypes>
 {
 public:
-    SOFA_CLASS(MooneyRivlinMaterial, PK2HyperelasticMaterial<DataTypes>);
+    SOFA_CLASS(IncompressibleMooneyRivlinMaterial, PK2HyperelasticMaterial<DataTypes>);
 
 private:
     using Real = sofa::Real_t<DataTypes>;
@@ -37,13 +37,13 @@ public:
     ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) override;
 
 protected:
-    MooneyRivlinMaterial();
+    IncompressibleMooneyRivlinMaterial();
 };
 
 
-#if !defined(ELASTICITY_COMPONENT_MATERIAL_MOONEYRIVLIN_CPP)
-extern template class ELASTICITY_API MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>;
-extern template class ELASTICITY_API MooneyRivlinMaterial<sofa::defaulttype::Vec2Types>;
-extern template class ELASTICITY_API MooneyRivlinMaterial<sofa::defaulttype::Vec3Types>;
+#if !defined(ELASTICITY_COMPONENT_MATERIAL_INCOMPRESSIBLEMOONEYRIVLIN_CPP)
+extern template class ELASTICITY_API IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>;
+extern template class ELASTICITY_API IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec2Types>;
+extern template class ELASTICITY_API IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec3Types>;
 #endif
 }

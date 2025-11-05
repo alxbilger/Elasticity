@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Elasticity/component/material/MooneyRivlinMaterial.h>
+#include <Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h>
 #include <Elasticity/impl/MatrixTools.h>
 
 #include <Elasticity/component/HyperelasticMaterial.inl>
@@ -9,7 +9,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-MooneyRivlinMaterial<DataTypes>::MooneyRivlinMaterial()
+IncompressibleMooneyRivlinMaterial<DataTypes>::IncompressibleMooneyRivlinMaterial()
     : m_mu10(initData(&m_mu10, static_cast<Real>(1e3), "mu10",
                       "Material constant associated to the first invariant"))
     , m_mu01(initData(&m_mu01, static_cast<Real>(1e3), "mu01",
@@ -17,7 +17,7 @@ MooneyRivlinMaterial<DataTypes>::MooneyRivlinMaterial()
 {}
 
 template <class DataTypes>
-auto MooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) -> StressTensor
+auto IncompressibleMooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) -> StressTensor
 {
     static const auto& I = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>::Identity();
 
@@ -30,7 +30,7 @@ auto MooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(const RightCauc
 }
 
 template <class DataTypes>
-auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> ElasticityTensor
+auto IncompressibleMooneyRivlinMaterial<DataTypes>::elasticityTensor(const RightCauchyGreenTensor& C) -> ElasticityTensor
 {
     return ElasticityTensor(
         [mu01 = m_mu01.getValue()](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
