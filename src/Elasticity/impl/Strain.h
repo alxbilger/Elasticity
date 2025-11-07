@@ -140,7 +140,17 @@ protected:
         if (m_deformationGradient.has_value())
         {
             const auto& F = *m_deformationGradient;
-            m_rightCauchyGreenTensor = F.transposed() * F;
+            auto& C = m_rightCauchyGreenTensor.emplace();
+            for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+            {
+                for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+                {
+                    for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                    {
+                        C(i, j) += F(i, k) * F(j, k);
+                    }
+                }
+            }
         }
         else
         {
