@@ -5,6 +5,7 @@
 #include <Elasticity/impl/TangentModulus.h>
 #include <Elasticity/impl/Tensor.h>
 #include <sofa/core/objectmodel/BaseObject.h>
+#include <Elasticity/impl/Strain.h>
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
 #include <sofa/defaulttype/VecTypes.h>
@@ -45,7 +46,7 @@ public:
      * It corresponds to the derivative of the strain energy density function w.r.t. deformation
      * gradient.
      */
-    virtual StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) = 0;
+    virtual StressTensor firstPiolaKirchhoffStress(Strain<DataTypes>& strain) = 0;
 
     /**
      * Compute the jacobian of the first Piola-Kirchhoff stress tensor with respect to the
@@ -53,7 +54,7 @@ public:
      *
      * It is called the material tangent modulus.
      */
-    virtual TangentModulus materialTangentModulus(const DeformationGradient& F) = 0;
+    virtual TangentModulus materialTangentModulus(Strain<DataTypes>& strain) = 0;
 
 protected:
 

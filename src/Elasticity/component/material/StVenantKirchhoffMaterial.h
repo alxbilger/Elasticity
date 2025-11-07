@@ -54,9 +54,9 @@ private:
     using PK2HyperelasticMaterial<DataTypes>::kroneckerDelta;
 
 protected:
-    StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) override;
+    StressTensor secondPiolaKirchhoffStress(Strain<DataTypes>& strain) override;
 
-    ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) override;
+    ElasticityTensor elasticityTensor(Strain<DataTypes>& strain) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_STVENANTKIRCHHOFFMATERIAL_CPP)

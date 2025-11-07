@@ -37,9 +37,9 @@ private:
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
 
 public:
-    StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) override;
+    StressTensor secondPiolaKirchhoffStress(Strain<DataTypes>& strain) override;
 
-    ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) override;
+    ElasticityTensor elasticityTensor(Strain<DataTypes>& strain) override;
 };
 
 

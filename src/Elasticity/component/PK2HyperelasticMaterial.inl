@@ -8,23 +8,27 @@ namespace elasticity
 {
 
 template <class TDataTypes>
-auto PK2HyperelasticMaterial<TDataTypes>::firstPiolaKirchhoffStress(const DeformationGradient& F) -> StressTensor
+auto PK2HyperelasticMaterial<TDataTypes>::firstPiolaKirchhoffStress(Strain<DataTypes>& strain) -> StressTensor
 {
-    const auto C = F.transposed() * F;
-    const auto S = secondPiolaKirchhoffStress(C);
+    const auto& F = strain.deformationGradient();
+    const auto S = secondPiolaKirchhoffStress(strain);
     return F * S;
 }
 
 template <class TDataTypes>
-auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(const DeformationGradient& F) -> TangentModulus
+auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataTypes>& strain) -> TangentModulus
 {
     SCOPED_TIMER_TR("tangentModulus");
 
-    const auto rightCauchyGreenTensor = F.transposed() * F;
-    const auto C = elasticityTensor(rightCauchyGreenTensor);
-    const auto S = secondPiolaKirchhoffStress(rightCauchyGreenTensor);
+    const auto& F = strain.deformationGradient();
+    const auto C = elasticityTensor(strain);
+    const auto S = secondPiolaKirchhoffStress(strain);
 
     static bool first = true;
+
+    // sofa::type::Mat<> FF;
+
+    // const auto
 
     const auto A = TangentModulus([&F, &C, &S](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
@@ -33,9 +37,10 @@ auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(const Deformati
         {
             for (std::size_t r = 0; r < spatial_dimensions; ++r)
             {
-                // if (first)
-                //     std::cout << "C(" << q << ", " << j << ", " << l << ", " << r << ") = " << C(q, j, l, r) << std::endl;
+                if (first)
+                    std::cout << "C(" << q << ", " << j << ", " << l << ", " << r << ") " << "F(" << i << "," << q << ") F(" << k << "," << r << ")" << std::endl;
                 A_ijkl += F(i, q) * C(q, j, l, r) * F(k, r);
+                // A_ijkl += FF(i, q, k, r) * C(q, j, l, r);
             }
         }
         return A_ijkl;

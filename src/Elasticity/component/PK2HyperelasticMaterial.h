@@ -25,12 +25,12 @@ protected:
     using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
 
 public:
-    StressTensor firstPiolaKirchhoffStress(const DeformationGradient& F) final;
-    TangentModulus materialTangentModulus(const DeformationGradient& F) final;
+    StressTensor firstPiolaKirchhoffStress(Strain<DataTypes>& strain) final;
+    TangentModulus materialTangentModulus(Strain<DataTypes>& strain) final;
 
 protected:
-    virtual StressTensor secondPiolaKirchhoffStress(const RightCauchyGreenTensor& C) = 0;
-    virtual ElasticityTensor elasticityTensor(const RightCauchyGreenTensor& C) = 0;
+    virtual StressTensor secondPiolaKirchhoffStress(Strain<DataTypes>& strain) = 0;
+    virtual ElasticityTensor elasticityTensor(Strain<DataTypes>& strain) = 0;
 };
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)

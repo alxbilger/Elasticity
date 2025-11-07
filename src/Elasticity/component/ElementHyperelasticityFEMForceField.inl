@@ -8,6 +8,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
+#include <Elasticity/impl/Strain.h>
 
 namespace elasticity
 {
@@ -91,7 +92,9 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
-            const auto detF = elasticity::determinant(F);
+            Strain<DataTypes> strain(deformationGradient, F);
+
+            const auto detF = strain.getDeterminantDeformationGradient();
             if (detF < 0)
             {
                 const auto detJ_q = elasticity::determinant(J_q);
@@ -99,7 +102,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
                     " detJ_q = " << detJ_q << ", detJ_Q = " << elasticity::determinant(J_Q) << ")";
             }
 
-            const auto P = l_material->firstPiolaKirchhoffStress(F);
+            const auto P = l_material->firstPiolaKirchhoffStress(strain);
 
             for (sofa::Index i = 0; i < NumberOfNodesInElement; ++i)
             {
@@ -310,11 +313,13 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
+            Strain<DataTypes> strain(deformationGradient, F);
+
             // derivative of first Piola-Kirchhoff stress tensor with respect to deformation gradient
             const auto dPdF = [&]()
             {
                 SCOPED_TIMER_VARNAME_TR(dPdFTimer, "dPdF");
-                return l_material->materialTangentModulus(F);
+                return l_material->materialTangentModulus(strain);
             }();
 
             const auto factor = -detJ_Q * weight;

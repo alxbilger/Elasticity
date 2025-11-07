@@ -34,6 +34,8 @@ set(HEADER_FILES
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.inl
+    src/Elasticity/component/material/MooneyRivlinMaterial.h
+    src/Elasticity/component/material/MooneyRivlinMaterial.inl
     src/Elasticity/component/material/NeoHookeanMaterial.h
     src/Elasticity/component/material/NeoHookeanMaterial.inl
     src/Elasticity/component/material/StVenantKirchhoffMaterial.h
@@ -50,6 +52,7 @@ set(HEADER_FILES
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/MatrixTools.h
+    src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
     src/Elasticity/impl/TangentModulus.h
@@ -73,6 +76,7 @@ set(SOURCE_FILES
     src/Elasticity/component/TopologyAccessor.cpp
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.cpp
+    src/Elasticity/component/material/MooneyRivlinMaterial.cpp
     src/Elasticity/component/material/NeoHookeanMaterial.cpp
     src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
 

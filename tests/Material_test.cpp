@@ -106,9 +106,10 @@ public:
     void testDerivativePK1()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
+        Strain<DataTypes> strain(deformationGradient, F);
 
-        const auto P = material->firstPiolaKirchhoffStress(F);
-        const auto A = material->materialTangentModulus(F);
+        const auto P = material->firstPiolaKirchhoffStress(strain);
+        const auto A = material->materialTangentModulus(strain);
 
         EXPECT_TRUE(std::none_of(P.data(), P.data() + spatial_dimensions * spatial_dimensions, [](Real x) { return x == 0; })) << P;
 
@@ -128,8 +129,12 @@ public:
                 F_perturbed_minus(i,j) -= epsilon;
 
                 // Compute perturbed stress
-                const auto P_perturbed_plus = material->firstPiolaKirchhoffStress(F_perturbed_plus);
-                const auto P_perturbed_minus = material->firstPiolaKirchhoffStress(F_perturbed_minus);
+
+                Strain<DataTypes> strainPerturbed_plus(deformationGradient, F_perturbed_plus);
+                Strain<DataTypes> strainPerturbed_minus(deformationGradient, F_perturbed_minus);
+
+                const auto P_perturbed_plus = material->firstPiolaKirchhoffStress(strainPerturbed_plus);
+                const auto P_perturbed_minus = material->firstPiolaKirchhoffStress(strainPerturbed_minus);
 
                 // Compute numerical derivative
                 const auto dP = (P_perturbed_plus - P_perturbed_minus) / (static_cast<Real>(2) * epsilon);
@@ -152,7 +157,8 @@ public:
     void testMajorSymmetry()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
-        const auto A = material->materialTangentModulus(F);
+        Strain<DataTypes> strain(deformationGradient, F);
+        const auto A = material->materialTangentModulus(strain);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -211,7 +217,8 @@ public:
     void testMinorSymmetryPK2()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
-        const auto S = this->material->secondPiolaKirchhoffStress(F.transposed() * F);
+        Strain<DataTypes> strain(deformationGradient, F);
+        const auto S = this->material->secondPiolaKirchhoffStress(strain);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -225,9 +232,10 @@ public:
     void testPK1PK2()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
+        Strain<DataTypes> strain(deformationGradient, F);
 
-        const auto S = this->material->secondPiolaKirchhoffStress(F.transposed() * F);
-        const auto P = this->material->firstPiolaKirchhoffStress(F);
+        const auto S = this->material->secondPiolaKirchhoffStress(strain);
+        const auto P = this->material->firstPiolaKirchhoffStress(strain);
 
         const auto FS = F * S;
 
@@ -243,7 +251,8 @@ public:
     void testSymmetryElasticityTensor()
     {
         const auto F = this->generatePositiveDefiniteMatrix();
-        const auto C = this->material->elasticityTensor(F.transposed() * F);
+        Strain<DataTypes> strain(deformationGradient, F);
+        const auto C = this->material->elasticityTensor(strain);
 
         for(sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
@@ -264,14 +273,13 @@ public:
 
     void testDerivativePK2()
     {
-        const auto C = [this]()
-        {
-            const auto F = this->generatePositiveDefiniteMatrix();
-            return F.transposed() * F;
-        }();
+        const auto F = this->generatePositiveDefiniteMatrix();
+        Strain<DataTypes> strain(deformationGradient, F);
 
-        const auto S = this->material->secondPiolaKirchhoffStress(C);
-        const auto elasticityTensor = this->material->elasticityTensor(C);
+        const auto& C = strain.getRightCauchyGreenTensor();
+
+        const auto S = this->material->secondPiolaKirchhoffStress(strain);
+        const auto elasticityTensor = this->material->elasticityTensor(strain);
 
         // Small perturbation for finite difference
         constexpr Real epsilon = 1e-8;
@@ -294,8 +302,11 @@ public:
                 }
 
                 // Compute perturbed stress
-                const auto S_perturbed_plus = this->material->secondPiolaKirchhoffStress(C_perturbed_plus);
-                const auto S_perturbed_minus = this->material->secondPiolaKirchhoffStress(C_perturbed_minus);
+                Strain<DataTypes> strainPerturbed_plus(rightCauchyGreenTensor, C_perturbed_plus);
+                const auto S_perturbed_plus = this->material->secondPiolaKirchhoffStress(strainPerturbed_plus);
+
+                Strain<DataTypes> strainPerturbed_minus(rightCauchyGreenTensor, C_perturbed_minus);
+                const auto S_perturbed_minus = this->material->secondPiolaKirchhoffStress(strainPerturbed_minus);
 
                 // Compute numerical derivative
                 const auto dSdC = (S_perturbed_plus - S_perturbed_minus) / (2. * (1. + (i != j)) * epsilon);
