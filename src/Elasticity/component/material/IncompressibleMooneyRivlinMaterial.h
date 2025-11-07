@@ -2,7 +2,6 @@
 
 #include <Elasticity/config.h>
 #include <Elasticity/component/PK2HyperelasticMaterial.h>
-#include <Elasticity/component/LinearMechanicalParametersComponent.h>
 
 #if !defined(ELASTICITY_COMPONENT_MATERIAL_INCOMPRESSIBLEMOONEYRIVLIN_CPP)
 #include <sofa/defaulttype/VecTypes.h>
