@@ -17,7 +17,7 @@ struct Strain
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using RightCauchyGreenTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using GreenLagrangeTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
-    static constexpr IdentityMatrix<spatial_dimensions, Real> identity;
+    static constexpr IdentityMatrix identity;
 
     constexpr Strain(DeformationGradientTag, const DeformationGradient& F) : m_deformationGradient(F) {}
     constexpr Strain(RightCauchyGreenTensorTag, const DeformationGradient& C) : m_rightCauchyGreenTensor(C) {}
