@@ -68,7 +68,7 @@ public:
         for (sofa::Size a = 0; a < NumberOfIndependentElements; ++a)
         {
             const auto [i, j] = voigtIndices<DataTypes>(a);
-            for (sofa::Size b = a; b < NumberOfIndependentElements; ++b) // the Voigt representation is symmetric, that is why j starts at i
+            for (sofa::Size b = a; b < NumberOfIndependentElements; ++b) // the Voigt representation is symmetric, that is why b starts at a
             {
                 const auto [k, l] = voigtIndices<DataTypes>(b);
                 m_matrix(a, b) = callable(i, j, k, l);

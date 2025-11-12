@@ -24,12 +24,6 @@ auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataType
     const auto C = elasticityTensor(strain);
     const auto S = secondPiolaKirchhoffStress(strain);
 
-    static bool first = true;
-
-    // sofa::type::Mat<> FF;
-
-    // const auto
-
     const auto A = TangentModulus([&F, &C, &S](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
         auto A_ijkl = kroneckerDelta(i,k) * S(l, j);
@@ -37,16 +31,12 @@ auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataType
         {
             for (std::size_t r = 0; r < spatial_dimensions; ++r)
             {
-                if (first)
-                    std::cout << "C(" << q << ", " << j << ", " << l << ", " << r << ") " << "F(" << i << "," << q << ") F(" << k << "," << r << ")" << std::endl;
                 A_ijkl += F(i, q) * C(q, j, l, r) * F(k, r);
-                // A_ijkl += FF(i, q, k, r) * C(q, j, l, r);
             }
         }
         return A_ijkl;
     });
 
-    first = false;
     return A;
 }
 
