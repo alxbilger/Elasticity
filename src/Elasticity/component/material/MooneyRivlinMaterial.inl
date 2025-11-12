@@ -75,24 +75,25 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             //derivative of C^{-1} with respect to C
             const auto dC_1dC = -static_cast<Real>(0.5) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j));
 
-            const Real C_mu_10 =
-                -dim_1 * J_2dim * (
-                    kroneckerDelta<Real>(i, j) * C_1(k, l) +
-                    (kroneckerDelta<Real>(k, l) - dim_1 * C_1(k, l) * I1) * C_1(i, j) +
-                    I1 * dC_1dC
-                );
+            // the derivative of S_mu_10 with respect to C
+            const Real dS_mu_10dC = -dim_1 * J_2dim * (
+                kroneckerDelta<Real>(i, j) * C_1(k, l) +
+                (kroneckerDelta<Real>(k, l) - dim_1 * C_1(k, l) * I1) * C_1(i, j) +
+                I1 * dC_1dC
+            );
 
-            const Real C_mu_01 = J_4dim * (
+            // the derivative of S_mu_01 with respect to C
+            const Real dS_mu_01dC = J_4dim * (
                 -static_cast<Real>(2) * dim_1 * C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j) - static_cast<Real>(2) * dim_1 * C_1(i, j) * I2)
                 + kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
                 - kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l)
                 - static_cast<Real>(2) * dim_1 * (dC_1dC * I2 + C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l)))
             );
 
-            const Real C_isochoric = static_cast<Real>(4) * (mu10 * C_mu_10 + mu01 * C_mu_01);
-            const Real C_volumetric = bulk * (C_1(l, k) * C_1(i, j) + static_cast<Real>(2) * logJ * dC_1dC);
+            const Real dS_isochoric_dC = static_cast<Real>(2) * (mu10 * dS_mu_10dC + mu01 * dS_mu_01dC);
+            const Real dS_volumetric_dC = bulk * (C_1(l, k) * C_1(i, j) / 2 + logJ * dC_1dC);
 
-            return C_isochoric + C_volumetric;
+            return 2 * (dS_isochoric_dC + dS_volumetric_dC);
         });
 }
 
