@@ -174,7 +174,7 @@ protected:
     {
         const auto I1 = getInvariant1();
         const auto& C = getRightCauchyGreenTensor();
-        const auto trC2 = elasticity::squaredFrobeniusNorm(C);
+        const auto trC2 = sofa::type::trace(C * C);
         m_invariant2 = static_cast<Real>(0.5) * (I1 * I1 - trC2);
     }
 

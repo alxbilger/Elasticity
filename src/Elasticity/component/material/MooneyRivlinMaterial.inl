@@ -39,7 +39,8 @@ auto MooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(Strain<DataType
 
         const auto S_mu_10 = pow(J, -static_cast<Real>(2) * dim_1) * (I - dim_1 * invariant1 * C_1);
         const auto S_mu_01 = pow(J, -static_cast<Real>(4) * dim_1) * (invariant1 * I - C - static_cast<Real>(2) * dim_1 * invariant2 * C_1);
-        return static_cast<Real>(2) * mu10 * S_mu_10 + static_cast<Real>(2) * mu01 * S_mu_01;
+
+        return static_cast<Real>(2) * (mu10 * S_mu_10 + mu01 * S_mu_01);
     }();
 
     const auto S_volumetric = [this, J, &C_1]()
@@ -48,7 +49,7 @@ auto MooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(Strain<DataType
         return bulk * log(J) * C_1;
     }();
 
-    return S_volumetric;
+    return S_isochoric + S_volumetric;
 }
 
 template <class DataTypes>
@@ -58,6 +59,8 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
     const auto& C = strain.getRightCauchyGreenTensor();
     const auto J = strain.getDeterminantDeformationGradient();
     const auto logJ = log(J);
+    const auto J_2dim = pow(J, -static_cast<Real>(2) * dim_1);
+    const auto J_4dim = pow(J, -static_cast<Real>(4) * dim_1);
     const auto C_1 = elasticity::inverse(C);
     const auto I1 = strain.getInvariant1();
     const auto I2 = strain.getInvariant2();
@@ -69,30 +72,27 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
     return ElasticityTensor(
         [&](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
-            const auto dC_1dC = 0.5 * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j));
+            //derivative of C^{-1} with respect to C
+            const auto dC_1dC = -static_cast<Real>(0.5) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j));
 
-            // const Real C_mu_10 =
-            //     -dim_1 * pow(J, -static_cast<Real>(2)*dim_1) * (
-            //         kroneckerDelta<Real>(i, j) * C_1(k, l) +
-            //         (kroneckerDelta<Real>(k, l) - dim_1 * C_1(k, l) * I1) * C_1(i, j) -
-            //         I1 * dC_1dC
-            //     );
-            const Real C_mu_10 = 0;
+            const Real C_mu_10 =
+                -dim_1 * J_2dim * (
+                    kroneckerDelta<Real>(i, j) * C_1(k, l) +
+                    (kroneckerDelta<Real>(k, l) - dim_1 * C_1(k, l) * I1) * C_1(i, j) +
+                    I1 * dC_1dC
+                );
 
-            // const Real C_mu_01 = pow(J, -4*dim_1) * (
-            //         -2 * dim_1 * C(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j) - 2 * dim_1 * C_1(i, j) * I2)
-            //         + kroneckerDelta<Real>(i, j) - kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l)
-            //         - 2 * dim_1 * (-dC_1dC * I2 + C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l)))
-            //     );
-            const Real C_mu_01 = 0;
+            const Real C_mu_01 = J_4dim * (
+                -static_cast<Real>(2) * dim_1 * C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j) - static_cast<Real>(2) * dim_1 * C_1(i, j) * I2)
+                + kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
+                - kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l)
+                - static_cast<Real>(2) * dim_1 * (dC_1dC * I2 + C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l)))
+            );
 
-            const Real C_k = static_cast<Real>(0.5) * (C_1(l, k) * C_1(i, j)) - logJ * dC_1dC;
-            // const Real C_k = 0;
+            const Real C_isochoric = static_cast<Real>(4) * (mu10 * C_mu_10 + mu01 * C_mu_01);
+            const Real C_volumetric = bulk * (C_1(l, k) * C_1(i, j)) + logJ * dC_1dC;
 
-            return
-                static_cast<Real>(4) * mu10 * C_mu_10
-                + static_cast<Real>(4) * mu01 * C_mu_01
-                + static_cast<Real>(2) * bulk * C_k;
+            return C_isochoric + C_volumetric;
         });
 }
 
