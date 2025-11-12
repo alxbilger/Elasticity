@@ -267,8 +267,8 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
-    m_elementStiffness.resize(elements.size());
     m_elementStiffness.clear();
+    m_elementStiffness.resize(elements.size());
 
     auto elementStiffnessIt = m_elementStiffness.begin();
 
