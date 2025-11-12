@@ -52,7 +52,7 @@ public:
     ElasticityTensor() = default;
 
     template<class Callable>
-    ElasticityTensor(Callable callable) : m_matrix(sofa::type::NOINIT)
+    explicit ElasticityTensor(Callable callable) : m_matrix(sofa::type::NOINIT)
     {
         fill(callable);
     }
@@ -60,13 +60,17 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
-        for (sofa::Size i = 0; i < NumberOfIndependentElements; ++i)
+#ifndef NDEBUG
+        checkSymmetry(callable);
+#endif
+
+        for (sofa::Size a = 0; a < NumberOfIndependentElements; ++a)
         {
-            const auto a = voigtIndices<DataTypes>(i);
-            for (sofa::Size j = i; j < NumberOfIndependentElements; ++j) // the Voigt representation is symmetric, that is why j starts at i
+            const auto [i, j] = voigtIndices<DataTypes>(a);
+            for (sofa::Size b = a; b < NumberOfIndependentElements; ++b) // the Voigt representation is symmetric, that is why j starts at i
             {
-                const auto b = voigtIndices<DataTypes>(j);
-                m_matrix(i, j) = callable(a.first, a.second, b.first, b.second);
+                const auto [k, l] = voigtIndices<DataTypes>(b);
+                m_matrix(a, b) = callable(i, j, k, l);
             }
         }
     }
@@ -92,6 +96,28 @@ public:
 
 private:
     sofa::type::MatSym<NumberOfIndependentElements, Real> m_matrix;
+
+    template<class Callable>
+    static void checkSymmetry(Callable callable)
+    {
+        for (sofa::Size i = 0; i < spatial_dimensions; ++i)
+        {
+            for (sofa::Size j = 0; j < spatial_dimensions; ++j)
+            {
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    for (sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    {
+                        const auto ijkl = callable(i, j, k, l);
+                        const auto klij = callable(k, l, i, j);
+                        const auto ijlk = callable(i, j, l, k);
+                        assert(std::abs(ijkl - klij) < 1e-12 );
+                        assert(std::abs(ijkl - ijlk) < 1e-12 );
+                    }
+                }
+            }
+        }
+    }
 };
 
 
