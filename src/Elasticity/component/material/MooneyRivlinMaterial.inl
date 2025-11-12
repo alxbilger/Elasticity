@@ -86,11 +86,15 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             // The derivative of S_mu_01 with respect to C
             // the terms have been grouped to highlight the minor and major symmetries
             const Real dS_mu_01dC = J_4dim * (
-                - static_cast<Real>(2) * dim_1 * C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j))
-                - static_cast<Real>(2) * dim_1 * C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l))
+                - static_cast<Real>(2) * dim_1 * (
+                    C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j)) +
+                    C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l))
+                    + dC_1dC * I2
+                )
                 + kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
-                - static_cast<Real>(0.5) * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k))
-                - static_cast<Real>(2) * dim_1 * dC_1dC * I2
+                - static_cast<Real>(0.5) * (
+                        kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) +
+                        kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k))
                 + static_cast<Real>(4) * dim_1 * dim_1 * C_1(k, l) * C_1(i, j) * I2
             );
 
