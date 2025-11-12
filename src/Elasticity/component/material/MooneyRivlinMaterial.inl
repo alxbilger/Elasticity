@@ -76,21 +76,28 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             const auto dC_1dC = -static_cast<Real>(0.5) * (C_1(i, k) * C_1(l, j) + C_1(i, l) * C_1(k, j));
 
             // the derivative of S_mu_10 with respect to C
+            // each term has both minor and major symmetries
             const Real dS_mu_10dC = -dim_1 * J_2dim * (
-                kroneckerDelta<Real>(i, j) * C_1(k, l) +
-                (kroneckerDelta<Real>(k, l) - dim_1 * C_1(k, l) * I1) * C_1(i, j) +
-                I1 * dC_1dC
+                kroneckerDelta<Real>(i, j) * C_1(k, l) + kroneckerDelta<Real>(k, l) * C_1(i, j)
+                - dim_1 * C_1(k, l) * I1 * C_1(i, j)
+                + I1 * dC_1dC
             );
 
-            // the derivative of S_mu_01 with respect to C
+            // The derivative of S_mu_01 with respect to C
+            // the terms have been grouped to highlight the minor and major symmetries
             const Real dS_mu_01dC = J_4dim * (
-                -static_cast<Real>(2) * dim_1 * C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j) - static_cast<Real>(2) * dim_1 * C_1(i, j) * I2)
+                - static_cast<Real>(2) * dim_1 * C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j))
+                - static_cast<Real>(2) * dim_1 * C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l))
                 + kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
-                - kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l)
-                - static_cast<Real>(2) * dim_1 * (dC_1dC * I2 + C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l)))
+                - static_cast<Real>(0.5) * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k))
+                - static_cast<Real>(2) * dim_1 * dC_1dC * I2
+                + static_cast<Real>(4) * dim_1 * dim_1 * C_1(k, l) * C_1(i, j) * I2
             );
 
             const Real dS_isochoric_dC = static_cast<Real>(2) * (mu10 * dS_mu_10dC + mu01 * dS_mu_01dC);
+
+            // the derivative of S_volumetric with respect to C
+            // this term has both minor and major symmetries
             const Real dS_volumetric_dC = bulk * (C_1(l, k) * C_1(i, j) / 2 + logJ * dC_1dC);
 
             return 2 * (dS_isochoric_dC + dS_volumetric_dC);

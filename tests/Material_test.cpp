@@ -1,9 +1,10 @@
-#include <Elasticity/component/material/NeoHookeanMaterial.h>
-#include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h>
 #include <Elasticity/component/material/MooneyRivlinMaterial.h>
+#include <Elasticity/component/material/NeoHookeanMaterial.h>
+#include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <gtest/gtest.h>
 #include <sofa/testing/LinearCongruentialRandomGenerator.h>
+#include <sofa/testing/BaseTest.h>
 
 #include <Eigen/Eigenvalues>
 
@@ -43,7 +44,7 @@ TYPED_TEST(SofaClassMaterialTest, parentClass)
 
 
 template <typename T>
-class BaseMaterialTest : public testing::Test
+class BaseMaterialTest : public sofa::testing::BaseTest
 {
 protected:
     using DataTypes = typename T::DataTypes;
@@ -51,7 +52,7 @@ protected:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
-    void SetUp() override
+    void doSetUp() override
     {
         material = sofa::core::objectmodel::New<T>();
         material->init();

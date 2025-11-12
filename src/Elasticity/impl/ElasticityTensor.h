@@ -1,12 +1,13 @@
 #pragma once
 
+#include <Elasticity/impl/KroneckerDelta.h>
 #include <Elasticity/impl/SymmetricTensor.h>
+#include <Elasticity/impl/VoigtNotation.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/type/Mat.h>
 #include <sofa/type/MatSym.h>
 
-#include <Elasticity/impl/KroneckerDelta.h>
-#include <Elasticity/impl/VoigtNotation.h>
+#include <iomanip>
 
 namespace elasticity
 {
@@ -109,10 +110,13 @@ private:
                     for (sofa::Size l = 0; l < spatial_dimensions; ++l)
                     {
                         const auto ijkl = callable(i, j, k, l);
+                        const auto jikl = callable(i, j, k, l);
                         const auto klij = callable(k, l, i, j);
                         const auto ijlk = callable(i, j, l, k);
-                        assert(std::abs(ijkl - klij) < 1e-12 );
-                        assert(std::abs(ijkl - ijlk) < 1e-12 );
+                        constexpr auto max_precision{std::numeric_limits<long double>::digits10 + 1};
+                        msg_error_when(std::abs(ijkl - klij) > 1e-6, "ElasticityTensor") << "No major symmetry (ij) <-> (kl) " << std::setprecision(max_precision) << ijkl << " != " << klij;
+                        msg_error_when(std::abs(ijkl - jikl) > 1e-6, "ElasticityTensor") << "No minor symmetry i <-> j " << std::setprecision(max_precision) << ijkl << " != " << jikl;
+                        msg_error_when(std::abs(ijkl - ijlk) > 1e-6, "ElasticityTensor") << "No minor symmetry k <-> l " << std::setprecision(max_precision) << ijkl << " != " << ijlk;
                     }
                 }
             }
