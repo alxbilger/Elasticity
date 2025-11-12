@@ -1,6 +1,7 @@
 #include <Elasticity/component/material/NeoHookeanMaterial.h>
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h>
+#include <Elasticity/component/material/MooneyRivlinMaterial.h>
 #include <gtest/gtest.h>
 #include <sofa/testing/LinearCongruentialRandomGenerator.h>
 
@@ -28,7 +29,10 @@ using AllSOFAClassMaterials = ::testing::Types<
     NeoHookeanMaterial<sofa::defaulttype::Vec1Types>,
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
-    IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
+    IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(SofaClassMaterialTest, AllSOFAClassMaterials);
 
@@ -62,26 +66,18 @@ protected:
     {
         DeformationGradient F;
 
-        for (int j = 0; j < spatial_dimensions; j++)
+        Real J;
+        do
         {
-            for (int i = 0; i < spatial_dimensions; i++)
+            for (int j = 0; j < spatial_dimensions; j++)
             {
-                F(i, j) = lcg.generateInRange(-1., 1.);
+                for (int i = 0; i < spatial_dimensions; i++)
+                {
+                    F(i, j) = lcg.generateInRange(-1., 1.);
+                }
             }
-        }
-
-        F = 0.5 * (F + F.transposed()); // Ensuring symmetry
-
-        Eigen::Map<Eigen::Matrix<Real, spatial_dimensions, spatial_dimensions, Eigen::RowMajor>> Fmap(const_cast<Real*>(F.data()));
-
-        // Making the matrix positive definite
-        const Eigen::SelfAdjointEigenSolver<Eigen::Matrix<Real, spatial_dimensions, spatial_dimensions> > eigensolver(Fmap);
-        const Eigen::Matrix<Real, spatial_dimensions, 1>& eigenvalues = eigensolver.eigenvalues();
-        const Real min_eigval = eigenvalues.minCoeff();
-        if (min_eigval <= 0)
-        {
-            Fmap += Eigen::Matrix<Real,spatial_dimensions, spatial_dimensions>::Identity() * (-min_eigval + 1e-6); // Adding a small value to ensure positive definiteness
-        }
+            J = determinant(F);
+        } while (J < 0);
 
         return F;
     }
@@ -338,7 +334,10 @@ using PK2Materials = ::testing::Types<
     NeoHookeanMaterial<sofa::defaulttype::Vec1Types>,
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
-    IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
+    IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
+    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(PK2MaterialTest, PK2Materials);
 
