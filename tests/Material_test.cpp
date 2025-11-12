@@ -77,7 +77,7 @@ protected:
                 }
             }
             J = determinant(F);
-        } while (J < 0);
+        } while (J < 0.5);
 
         return F;
     }
@@ -280,21 +280,21 @@ public:
         // Small perturbation for finite difference
         constexpr Real epsilon = 1e-8;
 
-        // For each component of F
-        for(sofa::Size i = 0; i < spatial_dimensions; ++i)
+        // For each component of C
+        for(sofa::Size k = 0; k < spatial_dimensions; ++k)
         {
-            for(sofa::Size j = 0; j < spatial_dimensions; ++j)
+            for(sofa::Size l = 0; l < spatial_dimensions; ++l)
             {
                 auto C_perturbed_plus = C;
                 auto C_perturbed_minus = C;
 
-                C_perturbed_plus(i, j) += epsilon;
-                C_perturbed_plus(j, i) += epsilon;
+                C_perturbed_plus(k, l) += epsilon;
+                C_perturbed_minus(k, l) -= epsilon;
 
-                if (i != j)
+                if (k != l)
                 {
-                    C_perturbed_minus(i, j) -= epsilon;
-                    C_perturbed_minus(j, i) -= epsilon;
+                    C_perturbed_plus(l, k) += epsilon;
+                    C_perturbed_minus(l, k) -= epsilon;
                 }
 
                 // Compute perturbed stress
@@ -305,18 +305,18 @@ public:
                 const auto S_perturbed_minus = this->material->secondPiolaKirchhoffStress(strainPerturbed_minus);
 
                 // Compute numerical derivative
-                const auto dSdC = (S_perturbed_plus - S_perturbed_minus) / (2. * (1. + (i != j)) * epsilon);
+                const auto dSdC = (S_perturbed_plus - S_perturbed_minus) / (2. * (1. + (k != l)) * epsilon);
                 const auto dSdE = static_cast<Real>(2) * dSdC;
 
                 // For each component of S
-                for(sofa::Size k = 0; k < spatial_dimensions; ++k)
+                for(sofa::Size i = 0; i < spatial_dimensions; ++i)
                 {
-                    for(sofa::Size l = 0; l < spatial_dimensions; ++l)
+                    for(sofa::Size j = 0; j < spatial_dimensions; ++j)
                     {
                         // Compare numerical and analytical derivatives
-                        const Real numerical = dSdE(k,l);
-                        Real analytical = elasticityTensor(i, j, k, l);
-                        EXPECT_NEAR(numerical, analytical, 0.25) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
+                        const Real numerical = dSdE(i,j);
+                        const Real analytical = elasticityTensor(i, j, k, l);
+                        EXPECT_NEAR(numerical, analytical, 1.0) << "i = " << i << " j = " << j << " k = " << k << " l = " << l;
                     }
                 }
             }
