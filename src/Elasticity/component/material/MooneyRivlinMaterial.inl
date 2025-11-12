@@ -90,7 +90,7 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             );
 
             const Real C_isochoric = static_cast<Real>(4) * (mu10 * C_mu_10 + mu01 * C_mu_01);
-            const Real C_volumetric = bulk * (C_1(l, k) * C_1(i, j)) + logJ * dC_1dC;
+            const Real C_volumetric = bulk * (C_1(l, k) * C_1(i, j) + static_cast<Real>(2) * logJ * dC_1dC);
 
             return C_isochoric + C_volumetric;
         });
