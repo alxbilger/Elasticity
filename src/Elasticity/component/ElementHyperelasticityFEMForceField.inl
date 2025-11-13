@@ -46,7 +46,6 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
     auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
     auto positionAccessor = sofa::helper::getReadAccessor(x);
-    auto restPositionAccessor = this->mstate->readRestPositions();
 
     if (l_topology == nullptr) return;
     if (l_material == nullptr) return;
@@ -57,7 +56,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
     if (m_precomputedData.size() != elements.size())
     {
-        precomputeData(restPositionAccessor.ref());
+        precomputeData();
     }
 
     std::size_t elementIndex = 0;
@@ -271,8 +270,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
     if (m_precomputedData.size() != elements.size())
     {
-        auto restPositionAccessor = this->mstate->readRestPositions();
-        precomputeData(restPositionAccessor.ref());
+        precomputeData();
     }
 
     m_elementStiffness.clear();
@@ -377,9 +375,12 @@ auto ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeDeforma
 }
 
 template <class TDataTypes, class TElementType>
-void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeData(const VecCoord& restPosition)
+void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeData()
 {
     if (l_topology == nullptr) return;
+
+    auto restPositionAccessor = this->mstate->readRestPositions();
+    const auto& restPosition = restPositionAccessor.ref();
 
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
     m_precomputedData.resize(elements.size());

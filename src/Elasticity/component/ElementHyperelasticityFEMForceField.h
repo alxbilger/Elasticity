@@ -120,7 +120,7 @@ protected:
 
     sofa::type::vector<std::array<PrecomputedData, NumberOfQuadraturePoints>> m_precomputedData;
 
-    void precomputeData(const VecCoord& restPosition);
+    void precomputeData();
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
