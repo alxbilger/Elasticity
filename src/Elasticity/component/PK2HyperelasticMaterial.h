@@ -16,11 +16,11 @@ public:
     using DataTypes = TDataTypes;
 
 protected:
-    using HyperelasticMaterial<TDataTypes>::DeformationGradient;
-    using HyperelasticMaterial<TDataTypes>::RightCauchyGreenTensor;
-    using HyperelasticMaterial<TDataTypes>::StressTensor;
-    using HyperelasticMaterial<TDataTypes>::ElasticityTensor;
-    using HyperelasticMaterial<TDataTypes>::TangentModulus;
+    using DeformationGradient = HyperelasticMaterial<TDataTypes>::DeformationGradient;
+    using RightCauchyGreenTensor = HyperelasticMaterial<TDataTypes>::RightCauchyGreenTensor;
+    using StressTensor = HyperelasticMaterial<TDataTypes>::StressTensor;
+    using ElasticityTensor = HyperelasticMaterial<TDataTypes>::ElasticityTensor;
+    using TangentModulus = HyperelasticMaterial<TDataTypes>::TangentModulus;
     using HyperelasticMaterial<TDataTypes>::spatial_dimensions;
     using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
 
