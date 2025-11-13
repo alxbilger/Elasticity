@@ -4,6 +4,7 @@
 #include <Elasticity/impl/SymmetricTensor.h>
 #include <Elasticity/impl/VoigtNotation.h>
 #include <sofa/core/trait/DataTypes.h>
+#include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/type/Mat.h>
 #include <sofa/type/MatSym.h>
 
@@ -61,6 +62,8 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
+        SCOPED_TIMER_TR("fillElasticityTensor");
+
 #ifndef NDEBUG
         checkSymmetry(callable);
 #endif

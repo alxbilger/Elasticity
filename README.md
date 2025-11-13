@@ -71,6 +71,20 @@ $$
 \mathbb{C}_{ijkl} = (\mu - \lambda \log J)(C^{-1}_{i k} C^{-1}_{l j} + C^{-1}_{i l} C^{-1}_{k j}) + \lambda C^{-1}_{l k} C^{-1}_{i j}
 $$
 
+### Nearly-incompressible Mooney-Rivlin
+
+The strain energy density function is:
+
+$$
+\psi = \mu_{10} (J^{-2/d} I_C - d) + \mu_{01} (J^{-4/d} II_C - d) + \frac{\kappa}{2} (\log J)^2
+$$
+
+The second Piola-Kirchhoff stress tensor is:
+
+$$
+S = 2 \mu_{10} J^{-2/dim}(I - \frac{1}{d} I_C C^{-1}) + 2 \mu_{01} J^{-4/dim}(I_C I - C - \frac{2}{d} II_C C^{-1}) + \kappa (\log J) C^{-1}
+$$
+
 ## Possible Roadmap
 
 - Linear elasticity
@@ -87,7 +101,7 @@ $$
     - [x] Neo-Hookean
     - [ ] Stable Neo-Hookean
     - [ ] Arruda Boyce
-    - [ ] Mooney-Rivlin
+    - [x] Mooney-Rivlin
     - [ ] Ogden
 - Other Features
   - [ ] Support for topological changes

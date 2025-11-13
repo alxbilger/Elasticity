@@ -27,7 +27,7 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
-        SCOPED_TIMER_TR("fill");
+        SCOPED_TIMER_TR("fillTangentModulus");
         for (sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
             for (sofa::Size j = 0; j < spatial_dimensions; ++j)
