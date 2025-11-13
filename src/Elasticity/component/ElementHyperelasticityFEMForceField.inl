@@ -85,7 +85,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ(sofa::type::NOINIT);
             for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                dN_dQ[i] = J_Q_inv.transposed() * dN_dq_ref[i];
+                dN_dQ[i] = J_Q_inv.multTranspose(dN_dq_ref[i]);
 
             // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
