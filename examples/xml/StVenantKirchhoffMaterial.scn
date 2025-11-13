@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<Node name="root" dt="0.01" gravity="0 -9.81 0">
+    <include href="HyperelasticCantileverBeam.xml"/>
+    <StVenantKirchhoffMaterial youngModulus="10000" poissonRatio="0.45"/>
+</Node>
