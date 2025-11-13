@@ -13,7 +13,7 @@ constexpr auto voigtIndices(std::size_t i)
     assert(i < symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>);
     if constexpr (DataTypes::spatial_dimensions == 3)
     {
-        static constexpr std::array voigt3d {
+        constexpr std::array voigt3d {
             std::make_pair(0, 0),
             std::make_pair(1, 1),
             std::make_pair(2, 2),
@@ -26,7 +26,7 @@ constexpr auto voigtIndices(std::size_t i)
     }
     else if constexpr (DataTypes::spatial_dimensions == 2)
     {
-        static constexpr std::array voigt2d {
+        constexpr std::array voigt2d {
             std::make_pair(0, 0),
             std::make_pair(1, 1),
             std::make_pair(0, 1)
