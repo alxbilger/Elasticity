@@ -26,7 +26,7 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         return topology.getHexahedra();
     }
 
-    static sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    static constexpr sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
     {
         const auto [x, y, z] = q;
         sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradient(sofa::type::NOINIT);
@@ -44,14 +44,17 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         return gradient;
     }
 
-    static std::array<QuadraturePointAndWeight, 4> quadraturePoints()
+    static constexpr std::array<QuadraturePointAndWeight, 4> quadraturePoints()
     {
-        static sofa::type::Vec<ElementDimension, Real> q0(0., std::sqrt(2./3.), -1./std::sqrt(3.));
-        static sofa::type::Vec<ElementDimension, Real> q1(0., -std::sqrt(2./3.), -1./std::sqrt(3.));
-        static sofa::type::Vec<ElementDimension, Real> q2(-std::sqrt(2./3.), 0., 1./std::sqrt(3.));
-        static sofa::type::Vec<ElementDimension, Real> q3(std::sqrt(2./3.), 0., 1./std::sqrt(3.));
+        constexpr Real sqrt2_3 = 0.816496580928; //sqrt(2./3.)
+        constexpr Real sqrt3 = 1.73205080757; //sqrt(3.)
 
-        static std::array<QuadraturePointAndWeight, 4> q {
+        constexpr sofa::type::Vec<ElementDimension, Real> q0(0., sqrt2_3, -1./sqrt3);
+        constexpr sofa::type::Vec<ElementDimension, Real> q1(0., -sqrt2_3, -1./sqrt3);
+        constexpr sofa::type::Vec<ElementDimension, Real> q2(-sqrt2_3, 0., 1./sqrt3);
+        constexpr sofa::type::Vec<ElementDimension, Real> q3(sqrt2_3, 0., 1./sqrt3);
+
+        constexpr std::array<QuadraturePointAndWeight, 4> q {
             std::make_pair(q0, static_cast<Real>(2)),
             std::make_pair(q1, static_cast<Real>(2)),
             std::make_pair(q2, static_cast<Real>(2)),

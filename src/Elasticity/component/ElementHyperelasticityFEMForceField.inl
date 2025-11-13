@@ -60,11 +60,15 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
         const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
         const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
-        for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
+        static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
+        static constexpr auto gradients = gradientShapeFunctionAtQuadraturePoints<ElementType, DataTypes>();
+
+        for (sofa::Size q = 0; q < quadraturePoints.size(); ++q)
         {
+            const auto& weight = quadraturePoints[q].second;
+
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
-                FiniteElement::gradientShapeFunctions(quadraturePoint);
+            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>& dN_dq_ref = gradients[q];
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
