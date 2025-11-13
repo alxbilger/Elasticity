@@ -2,8 +2,8 @@
 
 #include <Elasticity/config.h>
 #include <Elasticity/impl/FullySymmetric4Tensor.h>
+#include <Elasticity/impl/MajorSymmetric4Tensor.h>
 #include <Elasticity/impl/Strain.h>
-#include <Elasticity/impl/TangentModulus.h>
 #include <sofa/core/objectmodel/BaseObject.h>
 
 #if !defined(ELASTICITY_COMPONENT_HYPERELASTIC_MATERIAL_CPP)
@@ -29,7 +29,7 @@ protected:
     using RightCauchyGreenTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using ElasticityTensor = elasticity::FullySymmetric4Tensor<DataTypes>;
-    using TangentModulus = elasticity::TangentModulus<DataTypes>;
+    using TangentModulus = elasticity::MajorSymmetric4Tensor<DataTypes>;
 
     constexpr static Real kroneckerDelta(std::size_t i, std::size_t j)
     {

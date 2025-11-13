@@ -52,11 +52,11 @@ set(HEADER_FILES
     src/Elasticity/impl/FullySymmetric4Tensor.h
     src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/LameParameters.h
+    src/Elasticity/impl/MajorSymmetric4Tensor.h
     src/Elasticity/impl/MatrixTools.h
     src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
-    src/Elasticity/impl/TangentModulus.h
     src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VecView.h
     src/Elasticity/impl/VoigtNotation.h

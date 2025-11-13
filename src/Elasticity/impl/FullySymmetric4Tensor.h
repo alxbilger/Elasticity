@@ -41,7 +41,7 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
-        SCOPED_TIMER_TR("fillElasticityTensor");
+        SCOPED_TIMER_TR("fillFullySymmetric4Tensor");
 
 #ifndef NDEBUG
         checkSymmetry(callable);

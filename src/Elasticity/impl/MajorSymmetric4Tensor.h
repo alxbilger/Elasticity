@@ -8,7 +8,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-class TangentModulus
+class MajorSymmetric4Tensor
 {
 private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
@@ -16,10 +16,10 @@ private:
     using Real = sofa::Real_t<DataTypes>;
 
 public:
-    TangentModulus() = delete;
+    MajorSymmetric4Tensor() = delete;
 
     template<class Callable>
-    TangentModulus(Callable callable) : m_matrix(sofa::type::NOINIT)
+    MajorSymmetric4Tensor(Callable callable) : m_matrix(sofa::type::NOINIT)
     {
         fill(callable);
     }
@@ -27,7 +27,7 @@ public:
     template<class Callable>
     void fill(Callable callable)
     {
-        SCOPED_TIMER_TR("fillTangentModulus");
+        SCOPED_TIMER_TR("fillMajorSymmetric4Tensor");
         for (sofa::Size i = 0; i < spatial_dimensions; ++i)
         {
             for (sofa::Size j = 0; j < spatial_dimensions; ++j)
