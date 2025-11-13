@@ -57,8 +57,8 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
     const auto& C = strain.getRightCauchyGreenTensor();
     const auto J = strain.getDeterminantDeformationGradient();
     const auto logJ = log(J);
-    const auto J_2dim = pow(J, -static_cast<Real>(2) * dim_1);
-    const auto J_4dim = pow(J, -static_cast<Real>(4) * dim_1);
+    const auto J_2dim = pow(J, -2 * dim_1);
+    const auto J_4dim = pow(J, -4 * dim_1);
     const auto C_1 = elasticity::inverse(C);
     const auto I1 = strain.getInvariant1();
     const auto I2 = strain.getInvariant2();
@@ -84,7 +84,7 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             // The derivative of S_mu_01 with respect to C
             // the terms have been grouped to highlight the minor and major symmetries
             const Real dS_mu_01dC = J_4dim * (
-                - static_cast<Real>(2) * dim_1 * (
+                - 2 * dim_1 * (
                     C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j)) +
                     C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l))
                     + dC_1dC * I2
@@ -93,10 +93,10 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
                 - static_cast<Real>(0.5) * (
                         kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) +
                         kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k))
-                + static_cast<Real>(4) * dim_1 * dim_1 * C_1(k, l) * C_1(i, j) * I2
+                + 4 * dim_1 * dim_1 * C_1(k, l) * C_1(i, j) * I2
             );
 
-            const Real dS_isochoric_dC = static_cast<Real>(2) * (mu10 * dS_mu_10dC + mu01 * dS_mu_01dC);
+            const Real dS_isochoric_dC = 2 * (mu10 * dS_mu_10dC + mu01 * dS_mu_01dC);
 
             // the derivative of S_volumetric with respect to C
             // this term has both minor and major symmetries
