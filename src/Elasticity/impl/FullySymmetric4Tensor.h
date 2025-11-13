@@ -125,14 +125,12 @@ FullySymmetric4Tensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<Data
     using Real = sofa::Real_t<DataTypes>;
 
     const auto [mu, lambda] = toLameParameters<DataTypes>(youngModulus, poissonRatio);
-    FullySymmetric4Tensor<DataTypes> C(
+    return FullySymmetric4Tensor<DataTypes>{
         [mu, lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
             return mu * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k)) +
                         lambda * kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l);
-        });
-
-    return C;
+        }};
 }
 
 }
