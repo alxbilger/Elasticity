@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
-#include <Elasticity/component/HyperelasticMaterial.inl>
+#include <Elasticity/component/PK2HyperelasticMaterial.inl>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace elasticity
@@ -29,8 +29,8 @@ auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& s
     return ElasticityTensor(
         [mu = m_mu, lambda = m_lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
-            return mu * (kroneckerDelta(i, k) * kroneckerDelta(j, l) + kroneckerDelta(i, l) * kroneckerDelta(j, k)) +
-                        lambda * kroneckerDelta(i, j) * kroneckerDelta(k, l);
+            return mu * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k)) +
+                        lambda * kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l);
         });
 }
 

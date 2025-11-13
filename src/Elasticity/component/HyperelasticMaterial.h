@@ -31,11 +31,6 @@ protected:
     using ElasticityTensor = elasticity::FullySymmetric4Tensor<DataTypes>;
     using TangentModulus = elasticity::MajorSymmetric4Tensor<DataTypes>;
 
-    constexpr static Real kroneckerDelta(std::size_t i, std::size_t j)
-    {
-        return static_cast<Real>(i == j);
-    }
-
 public:
     void init() override;
 
@@ -54,25 +49,6 @@ public:
      * It is called the material tangent modulus.
      */
     virtual TangentModulus materialTangentModulus(Strain<DataTypes>& strain) = 0;
-
-protected:
-
-
-
-    /**
-     * Compute the first Cauchy-Green invariant from the deformation gradient
-     */
-    static Real invariant1(const DeformationGradient& F);
-
-    /**
-     * Compute the second Cauchy-Green invariant from the deformation gradient
-     */
-    static Real invariant2(const DeformationGradient& F);
-
-    /**
-     * Compute the third Cauchy-Green invariant from the deformation gradient
-     */
-    static Real invariant3(const DeformationGradient& F);
 
 };
 

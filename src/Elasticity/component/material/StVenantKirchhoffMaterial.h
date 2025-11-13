@@ -51,8 +51,6 @@ private:
     using LinearMechanicalParametersComponent<DataTypes>::m_lambda;
     using LinearMechanicalParametersComponent<DataTypes>::m_mu;
 
-    using PK2HyperelasticMaterial<DataTypes>::kroneckerDelta;
-
 protected:
     StressTensor secondPiolaKirchhoffStress(Strain<DataTypes>& strain) override;
 

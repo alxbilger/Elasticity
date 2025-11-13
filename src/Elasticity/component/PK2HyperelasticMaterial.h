@@ -22,7 +22,6 @@ protected:
     using ElasticityTensor = HyperelasticMaterial<TDataTypes>::ElasticityTensor;
     using TangentModulus = HyperelasticMaterial<TDataTypes>::TangentModulus;
     using HyperelasticMaterial<TDataTypes>::spatial_dimensions;
-    using HyperelasticMaterial<TDataTypes>::kroneckerDelta;
 
 public:
     StressTensor firstPiolaKirchhoffStress(Strain<DataTypes>& strain) final;

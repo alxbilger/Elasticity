@@ -2,6 +2,7 @@
 
 #include <Elasticity/component/PK2HyperelasticMaterial.h>
 #include <Elasticity/component/HyperelasticMaterial.inl>
+#include <Elasticity/impl/KroneckerDelta.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
 namespace elasticity
@@ -18,6 +19,7 @@ auto PK2HyperelasticMaterial<TDataTypes>::firstPiolaKirchhoffStress(Strain<DataT
 template <class TDataTypes>
 auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataTypes>& strain) -> TangentModulus
 {
+    using Real = sofa::Real_t<TDataTypes>;
     SCOPED_TIMER_TR("tangentModulus");
 
     const auto& F = strain.deformationGradient();
@@ -26,7 +28,7 @@ auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataType
 
     const auto A = TangentModulus([&F, &C, &S](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
-        auto A_ijkl = kroneckerDelta(i,k) * S(l, j);
+        auto A_ijkl = kroneckerDelta<Real>(i,k) * S(l, j);
         for (std::size_t q = 0; q < spatial_dimensions; ++q)
         {
             for (std::size_t r = 0; r < spatial_dimensions; ++r)
