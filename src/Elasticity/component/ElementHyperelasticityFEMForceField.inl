@@ -61,7 +61,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
         const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
         static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
-        static constexpr auto gradients = gradientShapeFunctionAtQuadraturePoints<ElementType, DataTypes>();
+        static constexpr auto gradients = FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
 
         for (sofa::Size q = 0; q < quadraturePoints.size(); ++q)
         {
@@ -72,15 +72,11 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_q;
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                J_q += sofa::type::dyad(elementNodesCoordinates[i], dN_dq_ref[i]);
+            const auto J_q = FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
 
             // jacobian of the mapping from the reference space to the rest physical space, evaluated at the
             // quadrature point
-            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> J_Q;
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                J_Q += sofa::type::dyad(elementNodesRestCoordinates[i], dN_dq_ref[i]);
+            const auto J_Q = FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
 
             const auto detJ_Q = elasticity::determinant(J_Q);
 

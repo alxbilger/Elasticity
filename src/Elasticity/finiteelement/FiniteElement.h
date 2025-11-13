@@ -22,19 +22,42 @@ struct FiniteElement;
 
 
 template <class ElementType, class DataTypes>
-constexpr auto gradientShapeFunctionAtQuadraturePoints()
+struct FiniteElementHelper
 {
     using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
-    using Gradient = sofa::type::Mat<FiniteElement::NumberOfNodesInElement, FiniteElement::ElementDimension, typename FiniteElement::Real>;
+    using Coord = typename FiniteElement::Coord;
+    using Real = typename FiniteElement::Real;
 
-    constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
+    static constexpr sofa::Size spatial_dimensions = FiniteElement::spatial_dimensions;
+    static constexpr sofa::Size NumberOfNodesInElement = FiniteElement::NumberOfNodesInElement;
+    static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
 
-    std::array<Gradient, quadraturePoints.size()> gradients;
-    for (sofa::Size i = 0; i < quadraturePoints.size(); ++i)
+    // gradient of shape functions in the reference element evaluated at the quadrature point
+    static constexpr auto gradientShapeFunctionAtQuadraturePoints()
     {
-        gradients[i] = FiniteElement::gradientShapeFunctions(quadraturePoints[i].first);
+        using Gradient = sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>;
+        constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
+
+        std::array<Gradient, quadraturePoints.size()> gradients;
+        std::transform(quadraturePoints.begin(), quadraturePoints.end(), gradients.begin(),
+            [](const auto& qp) { return FiniteElement::gradientShapeFunctions(qp.first); });
+        return gradients;
     }
-    return gradients;
+
+    // jacobian of the mapping from the reference space to the physical space, evaluated where the
+    // gradient of the shape functions has been evaluated.
+    static constexpr auto jacobianFromReferenceToPhysical(
+        const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
+        const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>& gradientShapeFunctionInReferenceElement)
+    {
+        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            jacobian += sofa::type::dyad(elementNodesCoordinates[i], gradientShapeFunctionInReferenceElement[i]);
+        }
+        return jacobian;
+    }
+
 };
 
 }
