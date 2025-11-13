@@ -122,8 +122,6 @@ private:
 template <class DataTypes>
 FullySymmetric4Tensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
 {
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<spatial_dimensions>;
     using Real = sofa::Real_t<DataTypes>;
 
     const auto [mu, lambda] = toLameParameters<DataTypes>(youngModulus, poissonRatio);
