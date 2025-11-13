@@ -4,7 +4,6 @@
 #include <sofa/type/Mat.h>
 
 #include <Eigen/Geometry>
-#include <boost/math/policies/policy.hpp>
 
 namespace elasticity
 {
