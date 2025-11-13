@@ -60,7 +60,7 @@ private:
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
 
     /// type of 2nd-order tensor for the elasticity tensor for isotropic materials
-    using ElasticityTensor = elasticity::ElasticityTensor<DataTypes>;
+    using ElasticityTensor = elasticity::FullySymmetric4Tensor<DataTypes>;
 
     /// the type of B in e = B d, if e is the strain, and d is the displacement
     using StrainDisplacement = elasticity::StrainDisplacement<DataTypes, ElementType>;

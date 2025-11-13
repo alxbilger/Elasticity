@@ -1,4 +1,4 @@
-#include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <gtest/gtest.h>
 
 namespace elasticity
@@ -8,7 +8,7 @@ template<class DataTypes>
 void generateThenAccess()
 {
     constexpr auto spatial_dimensions = DataTypes::spatial_dimensions;
-    const ElasticityTensor<DataTypes> t([](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
+    const FullySymmetric4Tensor<DataTypes> t([](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
         return kroneckerDelta<SReal>(i, j) * kroneckerDelta<SReal>(k, l);
     });

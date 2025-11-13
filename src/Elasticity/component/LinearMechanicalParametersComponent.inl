@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/impl/LameParameters.h>
 
 namespace elasticity
 {

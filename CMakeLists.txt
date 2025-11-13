@@ -48,9 +48,10 @@ set(HEADER_FILES
     src/Elasticity/component/prefab/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/prefab/LinearSmallStrainFEMForceField.inl
 
-    src/Elasticity/impl/ElasticityTensor.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
+    src/Elasticity/impl/FullySymmetric4Tensor.h
     src/Elasticity/impl/KroneckerDelta.h
+    src/Elasticity/impl/LameParameters.h
     src/Elasticity/impl/MatrixTools.h
     src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h

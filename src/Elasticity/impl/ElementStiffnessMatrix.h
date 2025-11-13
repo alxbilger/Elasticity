@@ -1,11 +1,10 @@
 #pragma once
 
-#include <sofa/type/Mat.h>
-
-#include <Elasticity/impl/ElasticityTensor.h>
+#include <Elasticity/finiteelement/FiniteElement.h>
+#include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/StrainDisplacement.h>
-#include <Elasticity/finiteelement/FiniteElement.h>
+#include <sofa/type/Mat.h>
 
 namespace elasticity
 {
@@ -20,7 +19,7 @@ using ElementStiffness = sofa::type::Mat<
 template <class DataTypes, class ElementType>
 ElementStiffness<DataTypes, ElementType> integrate(
     const std::array<sofa::Coord_t<DataTypes>, ElementType::NumberOfNodes>& nodesCoordinates,
-    const ElasticityTensor<DataTypes>& elasticityTensor)
+    const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
 {
     using Real = sofa::Real_t<DataTypes>;
     using FiniteElement = FiniteElement<ElementType, DataTypes>;

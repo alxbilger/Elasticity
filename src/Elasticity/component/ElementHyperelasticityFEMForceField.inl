@@ -1,14 +1,13 @@
 #pragma once
 
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
-#include <Elasticity/impl/ElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
+#include <Elasticity/impl/Strain.h>
 #include <Elasticity/impl/VecView.h>
 #include <Elasticity/impl/VectorTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
-#include <Elasticity/impl/Strain.h>
 
 namespace elasticity
 {

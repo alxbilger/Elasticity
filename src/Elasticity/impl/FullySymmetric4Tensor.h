@@ -3,9 +3,9 @@
 #include <Elasticity/impl/KroneckerDelta.h>
 #include <Elasticity/impl/SymmetricTensor.h>
 #include <Elasticity/impl/VoigtNotation.h>
+#include <Elasticity/impl/LameParameters.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
-#include <sofa/type/Mat.h>
 #include <sofa/type/MatSym.h>
 
 #include <iomanip>
@@ -14,36 +14,15 @@ namespace elasticity
 {
 
 /**
- * @brief Converts Young's modulus and Poisson's ratio to Lamé parameters.
- *
- * This function calculates and returns the two Lamé parameters, μ (shear modulus)
- * and λ, derived from the given Young’s modulus and Poisson’s ratio of a material.
- * These parameters are fundamental in describing isotropic elastic behavior.
- *
- * @param youngModulus The Young's modulus of the material, representing its stiffness.
- * @param poissonRatio The Poisson's ratio of the material, describing its deformation behavior.
- * @return A pair containing the calculated Lamé parameters:
- *         - First: μ (shear modulus),
- *         - Second: λ.
- */
-template<class DataTypes>
-std::pair<sofa::Real_t<DataTypes>, sofa::Real_t<DataTypes>>
-toLameParameters(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
-{
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    const auto mu = youngModulus / (2 * (1 + poissonRatio));
-    const auto lambda = youngModulus * poissonRatio / ((1 + poissonRatio) * (1 - (spatial_dimensions - 1) * poissonRatio));
-    return std::make_pair(mu, lambda);
-}
-
-/**
  * A class to represent the Lagrangian elasticity tensor.
  *
  * The elasticity tensor is the derivative of the second Piola-Kirchhoff with respect to the
- * Green-Lagrange tensor. It is a 4th-order tensor
+ * Green-Lagrange tensor. It is a 4th-order tensor.
+ *
+ * To be precise, the class represents a 4th-order tensor with both minor and major symmetries.
  */
 template <class DataTypes>
-class ElasticityTensor
+class FullySymmetric4Tensor
 {
 private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
@@ -51,10 +30,10 @@ private:
     using Real = sofa::Real_t<DataTypes>;
 
 public:
-    ElasticityTensor() = default;
+    FullySymmetric4Tensor() = default;
 
     template<class Callable>
-    explicit ElasticityTensor(Callable callable) : m_matrix(sofa::type::NOINIT)
+    explicit FullySymmetric4Tensor(Callable callable) : m_matrix(sofa::type::NOINIT)
     {
         fill(callable);
     }
@@ -141,14 +120,14 @@ private:
  * `ElasticityTensor<DataTypes>`.
  */
 template <class DataTypes>
-ElasticityTensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
+FullySymmetric4Tensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
 {
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<spatial_dimensions>;
     using Real = sofa::Real_t<DataTypes>;
 
     const auto [mu, lambda] = toLameParameters<DataTypes>(youngModulus, poissonRatio);
-    ElasticityTensor<DataTypes> C(
+    FullySymmetric4Tensor<DataTypes> C(
         [mu, lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
             return mu * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k)) +

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
-#include <Elasticity/impl/ElasticityTensor.h>
 #include <Elasticity/component/HyperelasticMaterial.inl>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 
