@@ -57,6 +57,7 @@ private:
     static constexpr sofa::Size NumberOfNodesInElement = TElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
     static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+    static constexpr sofa::Size NumberOfQuadraturePoints = FiniteElement::quadraturePoints().size();
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
@@ -103,6 +104,23 @@ protected:
     DeformationGradient computeDeformationGradient2(
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ);
+
+    struct PrecomputedData
+    {
+        // jacobian of the mapping from the reference space to the rest physical space, evaluated at the
+        // quadrature point
+        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+
+        // inverse of the jacobian of the mapping from the reference space to the rest physical space, evaluated at the
+        // quadrature point
+        sofa::type::Mat<ElementDimension, spatial_dimensions, Real> jacobianInv;
+
+        Real detJacobian;
+    };
+
+    sofa::type::vector<std::array<PrecomputedData, NumberOfQuadraturePoints>> m_precomputedData;
+
+    void precomputeData(const VecCoord& restPosition);
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
