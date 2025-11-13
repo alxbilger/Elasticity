@@ -26,12 +26,7 @@ auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& s
     SCOPED_TIMER_TR("elasticityTensor");
     SOFA_UNUSED(strain);
 
-    return ElasticityTensor(
-        [mu = m_mu, lambda = m_lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
-        {
-            return mu * (kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) + kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k)) +
-                        lambda * kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l);
-        });
+    return makeIsotropicElasticityTensor<DataTypes>(m_mu, m_lambda);
 }
 
 }  // namespace elasticity

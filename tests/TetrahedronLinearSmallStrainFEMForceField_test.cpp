@@ -105,7 +105,8 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
     constexpr auto youngModulus = 1_sreal;
     constexpr auto poissonRatio = 0_sreal;
 
-    const auto C = makeIsotropicElasticityTensor<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio).toVoigtMatSym();
+    const auto [mu, lambda] = toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
+    const auto C = makeIsotropicElasticityTensor<sofa::defaulttype::Vec3Types>(mu, lambda).toVoigtMatSym();
 
     for (std::size_t i = 0; i < 3; ++i)
     {

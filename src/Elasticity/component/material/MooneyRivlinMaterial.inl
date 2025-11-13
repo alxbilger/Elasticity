@@ -1,9 +1,7 @@
 #pragma once
 
 #include <Elasticity/component/material/MooneyRivlinMaterial.h>
-#include <Elasticity/impl/MatrixTools.h>
-
-#include <Elasticity/component/HyperelasticMaterial.inl>
+#include <Elasticity/component/PK2HyperelasticMaterial.inl>
 
 namespace elasticity
 {

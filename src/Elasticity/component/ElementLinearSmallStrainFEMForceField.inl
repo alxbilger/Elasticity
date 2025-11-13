@@ -186,10 +186,11 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
 
     const auto youngModulus = this->d_youngModulus.getValue();
     const auto poissonRatio = this->d_poissonRatio.getValue();
+    const auto [mu, lambda] = toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
 
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(youngModulus, poissonRatio);
+    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
 
     m_elementStiffness.clear();
 

@@ -120,11 +120,10 @@ private:
  * `ElasticityTensor<DataTypes>`.
  */
 template <class DataTypes>
-FullySymmetric4Tensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> youngModulus, sofa::Real_t<DataTypes> poissonRatio)
+FullySymmetric4Tensor<DataTypes> makeIsotropicElasticityTensor(sofa::Real_t<DataTypes> mu, sofa::Real_t<DataTypes> lambda)
 {
     using Real = sofa::Real_t<DataTypes>;
 
-    const auto [mu, lambda] = toLameParameters<DataTypes>(youngModulus, poissonRatio);
     return FullySymmetric4Tensor<DataTypes>{
         [mu, lambda](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
