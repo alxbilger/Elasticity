@@ -3,7 +3,6 @@
 #include <Elasticity/impl/KroneckerDelta.h>
 #include <Elasticity/impl/SymmetricTensor.h>
 #include <Elasticity/impl/VoigtNotation.h>
-#include <Elasticity/impl/LameParameters.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/type/MatSym.h>
@@ -14,12 +13,13 @@ namespace elasticity
 {
 
 /**
- * A class to represent the Lagrangian elasticity tensor.
+ * A class to represent a fully symmetric 4th rank tensor.
  *
- * The elasticity tensor is the derivative of the second Piola-Kirchhoff with respect to the
- * Green-Lagrange tensor. It is a 4th-order tensor.
- *
- * To be precise, the class represents a 4th-order tensor with both minor and major symmetries.
+ * It's a tensor having both minor and major symmetries. Given the indices i,j,k,l, a fully symmetric
+ * tensor C has the following properties:
+ * C(i,j,k,l) = C(k,l,i,j) (major symmetry)
+ * C(i,j,k,l) = C(j,i,k,l) (minor symmetry)
+ * C(i,j,k,l) = C(i,j,l,k) (minor symmetry)
  */
 template <class DataTypes>
 class FullySymmetric4Tensor

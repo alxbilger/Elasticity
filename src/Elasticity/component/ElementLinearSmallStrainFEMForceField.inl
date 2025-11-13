@@ -2,6 +2,7 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/impl/VecView.h>
 #include <Elasticity/impl/VectorTools.h>
+#include <Elasticity/impl/LameParameters.h>
 
 #include <sofa/core/behavior/ForceField.inl>
 
@@ -186,7 +187,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
 
     const auto youngModulus = this->d_youngModulus.getValue();
     const auto poissonRatio = this->d_poissonRatio.getValue();
-    const auto [mu, lambda] = toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
+    const auto [mu, lambda] = elasticity::toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
 
     auto restPositionAccessor = this->mstate->readRestPositions();
 

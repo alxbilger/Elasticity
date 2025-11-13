@@ -7,6 +7,12 @@
 namespace elasticity
 {
 
+/**
+ * A class to represent a major symmetric 4th rank tensor.
+ *
+ * Given the indices i,j,k,l, a major symmetric tensor C has the following properties:
+ * C(i,j,k,l) = C(k,l,i,j) (major symmetry)
+ */
 template <class DataTypes>
 class MajorSymmetric4Tensor
 {
