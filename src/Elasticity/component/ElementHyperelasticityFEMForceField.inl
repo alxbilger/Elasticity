@@ -84,9 +84,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
-            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ(sofa::type::NOINIT);
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                dN_dQ[i] = J_Q_inv.multTranspose(dN_dq_ref[i]);
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
 
             // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
@@ -306,9 +304,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
-            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ(sofa::type::NOINIT);
-            for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-                dN_dQ[i] = J_Q_inv.transposed() * dN_dq_ref[i];
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
 
             // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
@@ -401,6 +397,11 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
             data.jacobian = FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
             data.jacobianInv = elasticity::inverse(data.jacobian);
             data.detJacobian = elasticity::determinant(data.jacobian);
+
+            for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
+            {
+                data.dN_dQ[n] = data.jacobianInv.multTranspose(dN_dq_ref[n]);
+            }
         }
     }
 }

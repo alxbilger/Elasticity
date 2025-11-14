@@ -109,15 +109,23 @@ protected:
     {
         // jacobian of the mapping from the reference space to the rest physical space, evaluated at the
         // quadrature point
-        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian { sofa::type::NOINIT };
 
-        // inverse of the jacobian of the mapping from the reference space to the rest physical space, evaluated at the
-        // quadrature point
-        sofa::type::Mat<ElementDimension, spatial_dimensions, Real> jacobianInv;
+        // inverse of the jacobian of the mapping from the reference space to the rest physical space,
+        // evaluated at the quadrature point
+        sofa::type::Mat<ElementDimension, spatial_dimensions, Real> jacobianInv { sofa::type::NOINIT };
 
-        Real detJacobian;
+        Real detJacobian {};
+
+        // gradient of the shape functions in the physical element evaluated at the quadrature point
+        sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dQ { sofa::type::NOINIT };
     };
 
+    /**
+     * Data can be precomputed from the rest configuration and used later in computations for the
+     * current configuration. A piece of precomputed data is stored for each quadrature point in
+     * each element.
+     */
     sofa::type::vector<std::array<PrecomputedData, NumberOfQuadraturePoints>> m_precomputedData;
 
     void precomputeData();
