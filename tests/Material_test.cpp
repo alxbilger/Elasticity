@@ -1,5 +1,6 @@
 #include <Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h>
 #include <Elasticity/component/material/MooneyRivlinMaterial.h>
+#include <Elasticity/component/material/OgdenMaterial.h>
 #include <Elasticity/component/material/NeoHookeanMaterial.h>
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
 #include <gtest/gtest.h>
@@ -33,7 +34,10 @@ using AllSOFAClassMaterials = ::testing::Types<
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
     MooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
     MooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
-    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
+    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
+    OgdenMaterial<sofa::defaulttype::Vec3Types>,
+    OgdenMaterial<sofa::defaulttype::Vec2Types>,
+    OgdenMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(SofaClassMaterialTest, AllSOFAClassMaterials);
 
@@ -338,7 +342,10 @@ using PK2Materials = ::testing::Types<
     IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
     MooneyRivlinMaterial<sofa::defaulttype::Vec3Types>,
     MooneyRivlinMaterial<sofa::defaulttype::Vec2Types>,
-    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>
+    MooneyRivlinMaterial<sofa::defaulttype::Vec1Types>,
+    OgdenMaterial<sofa::defaulttype::Vec3Types>,
+    OgdenMaterial<sofa::defaulttype::Vec2Types>,
+    OgdenMaterial<sofa::defaulttype::Vec1Types>
 >;
 TYPED_TEST_SUITE(PK2MaterialTest, PK2Materials);
 
