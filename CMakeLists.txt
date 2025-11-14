@@ -38,6 +38,8 @@ set(HEADER_FILES
     src/Elasticity/component/material/MooneyRivlinMaterial.inl
     src/Elasticity/component/material/NeoHookeanMaterial.h
     src/Elasticity/component/material/NeoHookeanMaterial.inl
+    src/Elasticity/component/material/OgdenMaterial.h
+    src/Elasticity/component/material/OgdenMaterial.inl
     src/Elasticity/component/material/StVenantKirchhoffMaterial.h
     src/Elasticity/component/material/StVenantKirchhoffMaterial.inl
 
@@ -77,6 +79,7 @@ set(SOURCE_FILES
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.cpp
     src/Elasticity/component/material/MooneyRivlinMaterial.cpp
+    src/Elasticity/component/material/OgdenMaterial.cpp
     src/Elasticity/component/material/NeoHookeanMaterial.cpp
     src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
 
