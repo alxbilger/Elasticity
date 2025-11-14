@@ -5,7 +5,7 @@ namespace elasticity
 {
 
 /**
- * A hyperelastic material defined by its second Piola-Kirchhoff stress tensosr and its Lagrangian
+ * A hyperelastic material defined by its second Piola-Kirchhoff stress tensor and its Lagrangian
  * elasticity tensor.
  */
 template <class TDataTypes>
