@@ -10,7 +10,7 @@ namespace elasticity
 
 void registerIncompressibleMooneyRivlinMaterial(sofa::core::ObjectFactory* factory)
 {
-    factory->registerObjects(sofa::core::ObjectRegistrationData("Mooney-Rivlin material")
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Incompressible Mooney-Rivlin material")
         .add< IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec1Types> >()
         .add< IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec2Types> >()
         .add< IncompressibleMooneyRivlinMaterial<sofa::defaulttype::Vec3Types> >(true));

@@ -8,6 +8,17 @@
 namespace elasticity
 {
 
+/**
+ * Alias for a sofa::type::Mat
+ * If T is sofa::type::Mat<L,C,real> and L==1 && C==1, the alias is the scalar type.
+ * Otherwise, the alias is T itself.
+ *
+ * Example: static_cast<ScalarOrMatrix<MatType>>(matrix)
+ */
+template <class T>
+using ScalarOrMatrix = std::conditional_t<
+    (T::nbLines==1 && T::nbCols==1), typename T::Real, T>;
+
 template <sofa::Size N, typename real>
 real determinantSquareMatrix(const sofa::type::Mat<N, N, real>& mat)
 {

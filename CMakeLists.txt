@@ -102,3 +102,5 @@ if(ELASTICITY_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+sofa_add_subdirectory(plugin extensions/CUDA Elasticity.CUDA)

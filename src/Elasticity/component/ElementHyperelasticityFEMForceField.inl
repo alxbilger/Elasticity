@@ -213,7 +213,8 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix
         computeHessian(*m_coordinates);
     }
 
-    sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
+    using LocalMatType = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    LocalMatType localMatrix{sofa::type::NOINIT};
 
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
@@ -226,9 +227,10 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
+                const auto value = (-static_cast<Real>(kFact)) * static_cast<ScalarOrMatrix<LocalMatType>>(localMatrix);
                 matrix->add(
-                    offset + element[n1] * spatial_dimensions,
-                    offset + element[n2] * spatial_dimensions, kFact * localMatrix);
+                   offset + element[n1] * spatial_dimensions,
+                   offset + element[n2] * spatial_dimensions, value);
             }
         }
     }

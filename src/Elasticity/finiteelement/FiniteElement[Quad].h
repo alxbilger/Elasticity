@@ -25,10 +25,10 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
     static constexpr sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
     {
         return {
-            {1. / 4. * (-1 + q[1]), 1. / 4. * (-1 + q[0])},
-            {1. / 4. * ( 1 - q[1]), 1. / 4. * (-1 - q[0])},
-            {1. / 4. * ( 1 + q[1]), 1. / 4. * ( 1 + q[0])},
-            {1. / 4. * (-1 - q[1]), 1. / 4. * ( 1 - q[0])}
+            {1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[1]), 1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[0])},
+            {1 / static_cast<Real>(4) * ( static_cast<Real>(1) - q[1]), 1 / static_cast<Real>(4) * (-static_cast<Real>(1) - q[0])},
+            {1 / static_cast<Real>(4) * ( static_cast<Real>(1) + q[1]), 1 / static_cast<Real>(4) * ( static_cast<Real>(1) + q[0])},
+            {1 / static_cast<Real>(4) * (-static_cast<Real>(1) - q[1]), 1 / static_cast<Real>(4) * ( static_cast<Real>(1) - q[0])}
         };
     }
 
