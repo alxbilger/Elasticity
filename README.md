@@ -85,6 +85,10 @@ $$
 S = 2 \mu_{10} J^{-2/dim}(I - \frac{1}{d} I_C C^{-1}) + 2 \mu_{01} J^{-4/dim}(I_C I - C - \frac{2}{d} II_C C^{-1}) + \kappa (\log J) C^{-1}
 $$
 
+## CUDA
+
+The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. For the moment, it only adds compatibility with CUDA types. No computation is performed on the GPU.
+
 ## Possible Roadmap
 
 - Linear elasticity
