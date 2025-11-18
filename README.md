@@ -85,6 +85,45 @@ $$
 S = 2 \mu_{10} J^{-2/dim}(I - \frac{1}{d} I_C C^{-1}) + 2 \mu_{01} J^{-4/dim}(I_C I - C - \frac{2}{d} II_C C^{-1}) + \kappa (\log J) C^{-1}
 $$
 
+### Ogden
+
+The strain energy density function is:
+
+$$
+\psi = F(J) \frac{\mu}{\alpha^2} \sum_{n=1}^3 \left[\lambda_n^{ \frac{\alpha}{2} }\right] - 3 \frac{\mu}{\alpha^2} + \frac{k_0}{2} \ln^2 (J)
+$$
+
+The second Piola-Kirchhoff stress tensor is:
+
+$$
+S_{ij} = \frac{\mu}{\alpha} F(J) \left(C^{\frac{\alpha}{2} - 1}\right)_{ij} - \frac{\mu}{3 \alpha} F(J) tr\left(C^{\frac{\alpha}{2}}\right) \left( C^{-1}\right)_{ji} + k_0 ln(J) \left( C^{-1}\right)_{ji}
+$$
+
+The elasticity tensor is defined in index notation:
+$$
+\mathbb{C}_{ijkl} = 
+    2 \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \left[
+        \left(\frac{\alpha}{2} - 1\right) \lambda_n^{\frac{\alpha}{2} - 2} V_{n,i} V_{n,j} V_{n,k} V_{n,l}
+    \right]\newline
++
+      \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \sum_{m \neq n} \left[
+        \frac{\lambda^{\frac{\alpha}{2} - 1}_{n} - \lambda^{\frac{\alpha}{2} - 1}_{m}}{\lambda_{n} - \lambda_{m}} 
+        \left( V_{n,i} V_{m,j} V_{m,k} V_{n,l} + V_{n,i} V_{m,j} V_{n,k} V_{m,l} \right)
+    \right]\newline
++
+    \frac{\mu}{9} F(J) tr\left(C^{\frac{\alpha}{2}}\right) \left(C^{-1}\right)_{ji} \left(C^{-1}\right)_{lk}
+- 
+     \frac{\mu}{3} F(J) \left[
+     \left( C^{\frac{\alpha}{2} - 1} \right)_{ji} \left(C^{-1}\right)_{lk}
+     + \left( C^{\frac{\alpha}{2} - 1} \right)_{kl} \left(C^{-1}\right)_{ji}
+      \right]\newline
++
+     \frac{\mu}{3 \alpha} F(J) tr \left( C^{\frac{\alpha}{2}} \right) \left[
+         \left(C^{-1}\right)_{jk} \left(C^{-1}\right)_{li} 
+         + \left(C^{-1}\right)_{jl} \left(C^{-1}\right)_{ki} 
+     \right]
+$$
+
 ## CUDA
 
 The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. For the moment, it only adds compatibility with CUDA types. No computation is performed on the GPU.
@@ -106,7 +145,7 @@ The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. 
     - [ ] Stable Neo-Hookean
     - [ ] Arruda Boyce
     - [x] Mooney-Rivlin
-    - [ ] Ogden
+    - [x] Ogden
 - Other Features
   - [ ] Support for topological changes
   - [ ] Support for computation of the potential energy
