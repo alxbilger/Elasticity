@@ -184,7 +184,7 @@ auto OgdenMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain) -> El
                         / static_cast<Real>(6) +
                         // Contribution from derivative of C^(-1) 
                         trCaBy2 / (static_cast<Real>(6) * alpha) 
-                        * (C_1(k,i) * C_1(l,j) + C_1(l,i) * C_1(k,j))
+                        * (C_1(j,k) * C_1(l,i) + C_1(j,l) * C_1(k,i))
                 );
 
                 return sum;
@@ -193,7 +193,7 @@ auto OgdenMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain) -> El
             // Derivative of S_volumetric with respect to C
             const Real T_volumetric = static_cast<Real>(0.5) * kappa * C_1(l,k) * C_1(j,i) 
                 - static_cast<Real>(0.5) * kappa * log(J) 
-                    * (C_1(k,i) * C_1(l,j) + C_1(l,i) * C_1(k,j));
+                    * (C_1(j,k) * C_1(l,i) + C_1(j,l) * C_1(k,i));
 
             return static_cast<Real>(2) * (T_isochoric + T_volumetric);
         });
