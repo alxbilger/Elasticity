@@ -100,29 +100,15 @@ S_{ij} = \frac{\mu}{\alpha} F(J) \left(C^{\frac{\alpha}{2} - 1}\right)_{ij} - \f
 $$
 
 The elasticity tensor is defined in index notation:
-$$
-\mathbb{C}_{ijkl} = 
-    2 \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \left[
-        \left(\frac{\alpha}{2} - 1\right) \lambda_n^{\frac{\alpha}{2} - 2} V_{n,i} V_{n,j} V_{n,k} V_{n,l}
-    \right]\newline
-+
-      \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \sum_{m \neq n} \left[
-        \frac{\lambda^{\frac{\alpha}{2} - 1}_{n} - \lambda^{\frac{\alpha}{2} - 1}_{m}}{\lambda_{n} - \lambda_{m}} 
-        \left( V_{n,i} V_{m,j} V_{m,k} V_{n,l} + V_{n,i} V_{m,j} V_{n,k} V_{m,l} \right)
-    \right]\newline
-+
-    \frac{\mu}{9} F(J) tr\left(C^{\frac{\alpha}{2}}\right) \left(C^{-1}\right)_{ji} \left(C^{-1}\right)_{lk}
-- 
-     \frac{\mu}{3} F(J) \left[
-     \left( C^{\frac{\alpha}{2} - 1} \right)_{ji} \left(C^{-1}\right)_{lk}
-     + \left( C^{\frac{\alpha}{2} - 1} \right)_{kl} \left(C^{-1}\right)_{ji}
-      \right]\newline
-+
-     \frac{\mu}{3 \alpha} F(J) tr \left( C^{\frac{\alpha}{2}} \right) \left[
-         \left(C^{-1}\right)_{jk} \left(C^{-1}\right)_{li} 
-         + \left(C^{-1}\right)_{jl} \left(C^{-1}\right)_{ki} 
-     \right]
-$$
+
+```math
+\begin{aligned}
+\mathbb{C}_{ijkl} &= 2 \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \left[\left(\frac{\alpha}{2} - 1\right) \lambda_n^{\frac{\alpha}{2} - 2} V_{n,i} V_{n,j} V_{n,k} V_{n,l} \right] \\
+&+ \frac{\mu}{\alpha} F(J) \sum_{n=1}^3 \sum_{m \neq n} \left[\frac{\lambda^{\frac{\alpha}{2} - 1}_{n} - \lambda^{\frac{\alpha}{2} - 1}_{m}}{\lambda_{n} - \lambda_{m}} \left( V_{n,i} V_{m,j} V_{m,k} V_{n,l} + V_{n,i} V_{m,j} V_{n,k} V_{m,l} \right) \right] \\ 
+&+ \frac{\mu}{9} F(J) tr\left(C^{\frac{\alpha}{2}}\right) \left(C^{-1}\right)_{ji} \left(C^{-1}\right)_{lk} - \frac{\mu}{3} F(J) \left[\left( C^{\frac{\alpha}{2} - 1} \right)_{ji} \left(C^{-1}\right)_{lk} + \left( C^{\frac{\alpha}{2} - 1} \right)_{kl} \left(C^{-1}\right)_{ji} \right] \\
+&+ \frac{\mu}{3 \alpha} F(J) tr \left( C^{\frac{\alpha}{2}} \right) \left[\left(C^{-1}\right)_{jk} \left(C^{-1}\right)_{li} + \left(C^{-1}\right)_{jl} \left(C^{-1}\right)_{ki} \right]
+\end{aligned}
+```
 
 ## CUDA
 
