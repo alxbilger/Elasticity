@@ -116,6 +116,7 @@ The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. 
 
 ## Possible Roadmap
 
+- Integration in SOFA
 - Linear elasticity
   - [x] A unique linear formulation for any type of element in any dimension
   - [x] A unique corotational formulation for any type of element in any dimension
@@ -132,11 +133,15 @@ The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. 
     - [ ] Arruda Boyce
     - [x] Mooney-Rivlin
     - [x] Ogden
+  - [ ] Viscosity
+  - [ ] Plasticity
+  - [ ] Anisotropy
 - Other Features
   - [ ] Support for topological changes
   - [ ] Support for computation of the potential energy
+  - [ ] Mass
 - Performances
-  - [x] Benchmark: compare to the existing SOFA force fields
+  - [ ] Benchmark: compare to the existing SOFA force fields
   - [ ] Micro-benchmarking to improve performances
   - [ ] Vectorization
   - [ ] CPU parallelization
