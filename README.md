@@ -133,6 +133,7 @@ The plugin has an extension called `Elaticity.CUDA`. It is another SOFA plugin. 
     - [ ] Arruda Boyce
     - [x] Mooney-Rivlin
     - [x] Ogden
+    - [ ] Yeoh
   - [ ] Viscosity
   - [ ] Plasticity
   - [ ] Anisotropy
