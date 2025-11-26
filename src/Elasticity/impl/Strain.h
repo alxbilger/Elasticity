@@ -6,21 +6,79 @@
 namespace elasticity
 {
 
+/**
+ * @struct DeformationGradientTag
+ * @brief Tag for deformation gradient initialization
+ */
 inline struct DeformationGradientTag {} deformationGradient;
+
+/**
+ * @struct RightCauchyGreenTensorTag
+ * @brief Tag for right Cauchy-Green tensor initialization
+ */
 inline struct RightCauchyGreenTensorTag {} rightCauchyGreenTensor;
 
+/**
+ * @class Strain
+ * @brief Class to compute and manage strain measures in elasticity simulations
+ *
+ * This class handles the computation of strain measures (deformation gradient, right Cauchy-Green tensor, Green-Lagrange tensor, and strain invariants)
+ * using an optional pattern for lazy computation. It supports initialization from either the deformation gradient (F) or the right Cauchy-Green tensor (C).
+ *
+ * @tparam DataTypes The data type of the simulation. Must provide:
+ *   - `spatial_dimensions`: Spatial dimension of the problem (2 or 3)
+ *   - `Real_t`: Scalar type for numerical operations
+ *
+ * @note The class follows the following invariant rules:
+ *   - When initialized with F: Right Cauchy-Green tensor (C) is computed as C = F^T * F
+ *   - When initialized with C: Deformation gradient (F) is not computed
+ *   - All computed values are stored in `std::optional` to avoid unnecessary computations
+ *   - Invariants are defined as:
+ *      I1 = tr(C)
+ *      I2 = (I1^2 - tr(C^2)) / 2
+ *      I3 = det(C) = (det(F))^2
+ */
 template <class DataTypes>
 struct Strain
 {
+    /**
+     * @brief Spatial dimension of the problem (2 or 3)
+     */
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     using Real = sofa::Real_t<DataTypes>;
+
+    /**
+     * @brief Type for deformation gradient tensor (spatial x spatial)
+     */
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
+    /**
+     * @brief Type for right Cauchy-Green tensor (spatial x spatial)
+     */
     using RightCauchyGreenTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
+    /**
+     * @brief Type for Green-Lagrange tensor (spatial x spatial)
+     */
     using GreenLagrangeTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+
     static constexpr elasticity::IdentityMatrix identity {};
 
+    /**
+     * @brief Constructor initializing from deformation gradient
+     *
+     * @param tag Tag for deformation gradient initialization
+     * @param F Deformation gradient tensor (F)
+     */
     constexpr Strain(DeformationGradientTag, const DeformationGradient& F) : m_deformationGradient(F) {}
-    constexpr Strain(RightCauchyGreenTensorTag, const DeformationGradient& C) : m_rightCauchyGreenTensor(C) {}
+
+    /**
+     * @brief Constructor initializing from right Cauchy-Green tensor
+     *
+     * @param tag Tag for right Cauchy-Green tensor initialization
+     * @param C Right Cauchy-Green tensor (C)
+     */
+    constexpr Strain(RightCauchyGreenTensorTag, const RightCauchyGreenTensor& C) : m_rightCauchyGreenTensor(C) {}
 
     const DeformationGradient& deformationGradient() const
     {
@@ -97,6 +155,11 @@ struct Strain
         return *m_invariant3;
     }
 
+    /**
+     * @brief Reset all computed values
+     *
+     * Clears all optional values (deformation gradient, C, invariants, tensors)
+     */
     void reset()
     {
         m_deformationGradient.reset();
