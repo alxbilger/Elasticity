@@ -91,7 +91,7 @@ template <class ElementClass>
 template <class ComponentType>
 void ElementPrefab<ElementClass>::addComponent()
 {
-    BaseObject::SPtr component = sofa::core::objectmodel::New<ComponentType>();
+    sofa::core::objectmodel::BaseObject::SPtr component = sofa::core::objectmodel::New<ComponentType>();
     assert(component);
 
     this->getContext()->addObject(component);

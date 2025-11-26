@@ -7,7 +7,7 @@ namespace elasticity
 template <class DataTypes>
 void HyperelasticMaterial<DataTypes>::init()
 {
-    BaseObject::init();
+    sofa::core::objectmodel::BaseObject::init();
 
     if (!this->isComponentStateInvalid())
     {
