@@ -22,7 +22,7 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         return topology.getQuads();
     }
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         return {
             {1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[1]), 1 / static_cast<Real>(4) * (-static_cast<Real>(1) + q[0])},
@@ -38,9 +38,9 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         constexpr Real sqrt6 = 2.44948974278; //sqrt(6.)
         constexpr Real sqrt2 = 1.41421356237; //sqrt(2.)
 
-        constexpr sofa::type::Vec<ElementDimension, Real> q0(sqrt2_3, 0.);
-        constexpr sofa::type::Vec<ElementDimension, Real> q1(-1/sqrt6, -1./sqrt2);
-        constexpr sofa::type::Vec<ElementDimension, Real> q2(-1/sqrt6, 1./sqrt2);
+        constexpr sofa::type::Vec<TopologicalDimension, Real> q0(sqrt2_3, 0.);
+        constexpr sofa::type::Vec<TopologicalDimension, Real> q1(-1/sqrt6, -1./sqrt2);
+        constexpr sofa::type::Vec<TopologicalDimension, Real> q2(-1/sqrt6, 1./sqrt2);
 
         return {
             std::make_pair(q0, 4./3.),

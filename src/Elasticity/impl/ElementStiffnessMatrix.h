@@ -26,24 +26,24 @@ ElementStiffness<DataTypes, ElementType> integrate(
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+    static constexpr sofa::Size TopologicalDimension = FiniteElement::TopologicalDimension;
 
     ElementStiffness<DataTypes, ElementType> K;
 
     for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
     {
         // gradient of shape functions in the reference element evaluated at the quadrature point
-        const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
+        const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> dN_dq_ref =
             FiniteElement::gradientShapeFunctions(quadraturePoint);
 
         // jacobian of the mapping from the reference space to the physical space, evaluated at the
         // quadrature point
-        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+        sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian;
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
 
         const auto detJ = elasticity::determinant(jacobian);
-        const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
+        const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
             elasticity::inverse(jacobian);
 
         // gradient of the shape functions in the physical element evaluated at the quadrature point

@@ -65,10 +65,10 @@ TEST(FiniteElement, hexa3dWeights)
 
 
 template <class ElementType, class DataTypes>
-void testGradientShapeFunctions(const sofa::type::Vec<FiniteElement<ElementType, DataTypes>::ElementDimension, sofa::Real_t<DataTypes>>& evaluationPoint)
+void testGradientShapeFunctions(const sofa::type::Vec<FiniteElement<ElementType, DataTypes>::TopologicalDimension, sofa::Real_t<DataTypes>>& evaluationPoint)
 {
     using FE = FiniteElement<ElementType, DataTypes>;
-    static constexpr sofa::type::Vec<FE::ElementDimension, sofa::Real_t<DataTypes>> zero;
+    static constexpr sofa::type::Vec<FE::TopologicalDimension, sofa::Real_t<DataTypes>> zero;
 
     const auto N = FE::gradientShapeFunctions(evaluationPoint);
 

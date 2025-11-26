@@ -16,7 +16,7 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         return topology.getEdges();
     }
 
-    static constexpr sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> gradientShapeFunctions(const sofa::type::Vec<ElementDimension, Real>& q)
+    static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);
         return {{-static_cast<Real>(0.5)}, {static_cast<Real>(0.5)}};
@@ -24,7 +24,7 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
 
     static constexpr std::array<QuadraturePointAndWeight, 1> quadraturePoints()
     {
-        constexpr sofa::type::Vec<ElementDimension, Real> q0(static_cast<Real>(0));
+        constexpr sofa::type::Vec<TopologicalDimension, Real> q0(static_cast<Real>(0));
         return {
             std::make_pair(q0, static_cast<Real>(2))
         };

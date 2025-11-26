@@ -48,7 +48,7 @@ private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
-    static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+    static constexpr sofa::Size TopologicalDimension = FiniteElement::TopologicalDimension;
 
     /// the concatenation of the displacement of the element nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;

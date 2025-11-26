@@ -73,7 +73,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
             const PrecomputedData& precomputedData = m_precomputedData[elementIndex][q];
 
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>& dN_dq_ref = gradients[q];
+            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[q];
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
@@ -81,7 +81,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
             const auto detJ_Q = precomputedData.detJacobian;
 
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
+            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
@@ -295,7 +295,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
             const PrecomputedData& precomputedData = m_precomputedData[elementIndex][q];
 
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>& dN_dq_ref = gradients[q];
+            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[q];
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
@@ -303,7 +303,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
             const auto detJ_Q = precomputedData.detJacobian;
 
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
+            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
@@ -353,8 +353,8 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
 template <class DataTypes, class ElementType>
 auto ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeDeformationGradient(
-    const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& J_q,
-    const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv) -> DeformationGradient
+    const sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real>& J_q,
+    const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv) -> DeformationGradient
 {
     return J_q * J_Q_inv;
 }
@@ -393,7 +393,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
         for (std::size_t j = 0; j < NumberOfQuadraturePoints; ++j)
         {
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real>& dN_dq_ref = gradients[j];
+            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[j];
 
             PrecomputedData& data = m_precomputedData[i][j];
             data.jacobian = FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);

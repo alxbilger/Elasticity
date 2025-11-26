@@ -56,7 +56,7 @@ private:
     static constexpr sofa::Size spatial_dimensions = TDataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = TElementType::NumberOfNodes;
     static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
-    static constexpr sofa::Size ElementDimension = FiniteElement::ElementDimension;
+    static constexpr sofa::Size TopologicalDimension = FiniteElement::TopologicalDimension;
     static constexpr sofa::Size NumberOfQuadraturePoints = FiniteElement::quadraturePoints().size();
 
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
@@ -99,8 +99,8 @@ protected:
     const VecCoord* m_coordinates{ nullptr };
 
     DeformationGradient computeDeformationGradient(
-        const sofa::type::Mat<spatial_dimensions, ElementDimension, Real>& J_q,
-        const sofa::type::Mat<ElementDimension, spatial_dimensions, Real>& J_Q_inv);
+        const sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real>& J_q,
+        const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv);
     DeformationGradient computeDeformationGradient2(
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ);
@@ -109,11 +109,11 @@ protected:
     {
         // jacobian of the mapping from the reference space to the rest physical space, evaluated at the
         // quadrature point
-        sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian { sofa::type::NOINIT };
+        sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian { sofa::type::NOINIT };
 
         // inverse of the jacobian of the mapping from the reference space to the rest physical space,
         // evaluated at the quadrature point
-        sofa::type::Mat<ElementDimension, spatial_dimensions, Real> jacobianInv { sofa::type::NOINIT };
+        sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> jacobianInv { sofa::type::NOINIT };
 
         Real detJacobian {};
 

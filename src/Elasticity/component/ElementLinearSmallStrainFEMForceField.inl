@@ -224,16 +224,16 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
             const ReferenceCoord& x = referenceElementNodes[j];
 
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, ElementDimension, Real> dN_dq_ref =
+            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> dN_dq_ref =
                 FiniteElement::gradientShapeFunctions(x);
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            sofa::type::Mat<spatial_dimensions, ElementDimension, Real> jacobian;
+            sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian;
             for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
                 jacobian += sofa::type::dyad(nodesCoordinates[n], dN_dq_ref[n]);
 
-            const sofa::type::Mat<ElementDimension, spatial_dimensions, Real> J_inv =
+            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
                 elasticity::inverse(jacobian);
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
