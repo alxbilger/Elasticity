@@ -49,10 +49,10 @@ public:
 
         for (sofa::Size a = 0; a < NumberOfIndependentElements; ++a)
         {
-            const auto [i, j] = voigtIndices<DataTypes>(a);
+            const auto [i, j] = toTensorIndices<DataTypes>(a);
             for (sofa::Size b = a; b < NumberOfIndependentElements; ++b) // the Voigt representation is symmetric, that is why b starts at a
             {
-                const auto [k, l] = voigtIndices<DataTypes>(b);
+                const auto [k, l] = toTensorIndices<DataTypes>(b);
                 m_matrix(a, b) = callable(i, j, k, l);
             }
         }
@@ -60,15 +60,15 @@ public:
 
     Real& operator()(sofa::Size i, sofa::Size j, sofa::Size k, sofa::Size l)
     {
-        const auto a = voigtIndex<DataTypes>(i, j);
-        const auto b = voigtIndex<DataTypes>(k, l);
+        const auto a = tensorToVoigtIndex<DataTypes>(i, j);
+        const auto b = tensorToVoigtIndex<DataTypes>(k, l);
         return m_matrix(a, b);
     }
 
     Real operator()(sofa::Size i, sofa::Size j, sofa::Size k, sofa::Size l) const
     {
-        const auto a = voigtIndex<DataTypes>(i, j);
-        const auto b = voigtIndex<DataTypes>(k, l);
+        const auto a = tensorToVoigtIndex<DataTypes>(i, j);
+        const auto b = tensorToVoigtIndex<DataTypes>(k, l);
         return m_matrix(a, b);
     }
 
