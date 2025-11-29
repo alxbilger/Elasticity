@@ -10,8 +10,7 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-using ElementStiffness = sofa::type::Mat<
-    ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+using ElementStiffness = sofa::type::MatSym<
     ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
     sofa::Real_t<DataTypes>
 >;
@@ -52,7 +51,11 @@ ElementStiffness<DataTypes, ElementType> integrate(
             dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
         const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
-        K += (weight * detJ) * B.transposed() * (elasticityTensor.toVoigtMatSym() * B);
+
+        const auto K_i = (weight * detJ) * B.transposed() * (elasticityTensor.toVoigtMatSym() * B);
+        ElementStiffness<DataTypes, ElementType> K_i_sym;
+        ElementStiffness<DataTypes, ElementType>::Mat2Sym(K_i, K_i_sym);
+        K += K_i_sym;
     }
     return K;
 }
