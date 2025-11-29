@@ -93,7 +93,7 @@ maxScaleFactor = 4
 def benchmark_beam_tetra_linear_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('LinearSmallStrainFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@Tetra_topo")
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -123,7 +123,7 @@ def benchmark_beam_tetra_linear_assembled_sofa_simulation(state):
 def benchmark_beam_tetra_corotational_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@Tetra_topo")
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -153,7 +153,7 @@ def benchmark_beam_tetra_corotational_assembled_sofa_simulation(state):
 def benchmark_beam_tetra_corotational_matrixfree_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@Tetra_topo")
 
     def linear_solver(root):
         root.addObject('CGLinearSolver', iterations=25, tolerance=1.0e-9, threshold=1.0e-9)

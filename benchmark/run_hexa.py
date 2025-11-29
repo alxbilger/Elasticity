@@ -88,7 +88,7 @@ maxScaleFactor = 4
 def benchmark_beam_hexa_linear_assembled_elasticity_simulation(state):
     def hexahedron_force_field(node):
         node.addObject('LinearSmallStrainFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@grid", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@grid")
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -118,7 +118,7 @@ def benchmark_beam_hexa_linear_assembled_sofa_simulation(state):
 def benchmark_beam_hexa_corotational_assembled_elasticity_simulation(state):
     def hexahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@grid", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@grid")
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -148,7 +148,7 @@ def benchmark_beam_hexa_corotational_assembled_sofa_simulation(state):
 def benchmark_beam_hexa_corotational_matrixfree_elasticity_simulation(state):
     def hexahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@grid", computeVonMisesStress=False)
+                        poissonRatio="0.45", topology="@grid")
 
     def linear_solver(root):
         root.addObject('CGLinearSolver', iterations=25, tolerance=1.0e-9, threshold=1.0e-9)
