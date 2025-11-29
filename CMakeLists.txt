@@ -107,3 +107,4 @@ if(ELASTICITY_BUILD_TESTS)
 endif()
 
 sofa_add_subdirectory(plugin extensions/CUDA Elasticity.CUDA)
+sofa_add_subdirectory(application benchmark/cpp ElasticityBenchmark)
