@@ -24,7 +24,14 @@ enum class ComponentType : bool
     Elasticity
 };
 
-static void BM_TetrahedronCorotationalAddForce(benchmark::State& state, ComponentType componentType)
+enum class Method : bool
+{
+    Linear,
+    Corotational
+};
+
+static void BM_TetrahedronCorotationalAddForce(
+    benchmark::State& state, ComponentType componentType, Method method)
 {
     sofa::simulation::graph::init();
     sofa::component::init();
@@ -35,6 +42,7 @@ static void BM_TetrahedronCorotationalAddForce(benchmark::State& state, Componen
 
     auto hexaTopology = sofa::core::objectmodel::New<sofa::component::topology::container::grid::RegularGridTopology>();
     hexaTopology->setSize(10, 10, 10);
+    hexaTopology->setPos({{0,0,0}, {1,1,1}});
     rootNode->addObject(hexaTopology);
 
     auto tetraNode = rootNode->createChild("tetra");
@@ -59,14 +67,37 @@ static void BM_TetrahedronCorotationalAddForce(benchmark::State& state, Componen
     if (componentType == ComponentType::SOFA)
     {
         auto tetraForceField = sofa::core::objectmodel::New<sofa::component::solidmechanics::fem::elastic::TetrahedronFEMForceField<sofa::defaulttype::Vec3Types>>();
-        tetraForceField->setMethod("large");
+        if (method == Method::Corotational)
+        {
+            tetraForceField->setMethod("large");
+        }
+        else
+        {
+            tetraForceField->setMethod("small");
+        }
+        tetraForceField->setYoungModulus(1e6);
+        tetraForceField->setPoissonRatio(0.45);
         tetraNode->addObject(tetraForceField);
         forceField = tetraForceField;
     }
     else
     {
-        forceField = sofa::core::objectmodel::New<elasticity::ElementCorotationalFEMForceField<
-           sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
+        if (method == Method::Corotational)
+        {
+            auto elementForceField = sofa::core::objectmodel::New<elasticity::ElementCorotationalFEMForceField<
+               sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
+            elementForceField->d_poissonRatio.setValue(0.45);
+            elementForceField->d_youngModulus.setValue(1e6);
+            forceField = elementForceField;
+        }
+        else
+        {
+            auto elementForceField = sofa::core::objectmodel::New<elasticity::ElementLinearSmallStrainFEMForceField<
+               sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
+            elementForceField->d_poissonRatio.setValue(0.45);
+            elementForceField->d_youngModulus.setValue(1e6);
+            forceField = elementForceField;
+        }
         tetraNode->addObject(forceField);
     }
 
@@ -82,17 +113,28 @@ static void BM_TetrahedronCorotationalAddForce(benchmark::State& state, Componen
     sofa::simulation::graph::cleanup();
 }
 
+static void BM_TetrahedronLinearAddForce_SOFA(benchmark::State& state)
+{
+    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear);
+}
+
+static void BM_TetrahedronLinearAddForce_Elasticity(benchmark::State& state)
+{
+    BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Linear);
+}
 
 static void BM_TetrahedronCorotationalAddForce_SOFA(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA);
+    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Corotational);
 }
 
 static void BM_TetrahedronCorotationalAddForce_Elasticity(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity);
+    BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Corotational);
 }
 
+BENCHMARK(BM_TetrahedronLinearAddForce_SOFA)->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_TetrahedronLinearAddForce_Elasticity)->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFA)->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_TetrahedronCorotationalAddForce_Elasticity)->Unit(benchmark::kMillisecond);
 
