@@ -62,8 +62,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
         const auto& element = elements[i];
         const ElementStiffness& stiffnessMatrix = m_elementStiffness[i];
 
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
-        const std::array<Coord, NumberOfNodesInElement> restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
+        const auto elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
+        const auto restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
         const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
 
@@ -72,7 +72,11 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
             VecView<spatial_dimensions, Real> nodeForce(elementForce, j * spatial_dimensions);
-            forceAccessor[element[j]] += -nodeForce;
+            auto& f_j = forceAccessor[element[j]];
+            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+            {
+                f_j[k] -= nodeForce[k];
+            }
         }
     }
 }
