@@ -151,7 +151,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementRot
         Q[j] = nodesRestPosition[j] - t0;
     }
 
-    const auto H = P.transposed() * Q;
+    const auto H = P.multTranspose(Q);
 
     sofa::helper::Decompose<Real>::polarDecomposition_stable(H, rotationMatrix);
 }
