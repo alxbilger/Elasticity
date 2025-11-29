@@ -22,7 +22,7 @@ namespace elasticity
 template<class DataTypes>
 constexpr auto toTensorIndices(std::size_t voigtIndex)
 {
-    assert(i < symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>);
+    assert(voigtIndex < symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>);
     if constexpr (DataTypes::spatial_dimensions == 3)
     {
         constexpr std::array voigt3d {
@@ -33,7 +33,7 @@ constexpr auto toTensorIndices(std::size_t voigtIndex)
             std::make_pair(0, 2),
             std::make_pair(0, 1)
         };
-        assert(i < voigt3d.size());
+        assert(voigtIndex < voigt3d.size());
         return voigt3d[voigtIndex];
     }
     else if constexpr (DataTypes::spatial_dimensions == 2)
@@ -43,7 +43,7 @@ constexpr auto toTensorIndices(std::size_t voigtIndex)
             std::make_pair(1, 1),
             std::make_pair(0, 1)
         };
-        assert(i < voigt2d.size());
+        assert(voigtIndex < voigt2d.size());
         return voigt2d[voigtIndex];
     }
     else
