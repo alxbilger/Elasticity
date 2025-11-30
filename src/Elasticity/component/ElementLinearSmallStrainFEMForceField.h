@@ -1,11 +1,11 @@
 #pragma once
 
+#include <Elasticity/component/LinearMechanicalParametersComponent.h>
+#include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
 #include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
-
-#include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/TopologyAccessor.h>
+#include <sofa/helper/OptionsGroup.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -13,6 +13,13 @@
 
 namespace elasticity
 {
+
+template <class DataTypes, class ElementType>
+struct ComputeElementForceStrategy;
+
+template <class DataTypes, class ElementType>
+struct StiffnessDisplacementStrategy;
+
 
 template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField :
@@ -41,6 +48,8 @@ public:
     }
 
     static const std::string GetCustomTemplateName() { return DataTypes::Name(); }
+
+    sofa::Data<sofa::helper::OptionsGroup> d_computeStrategy;
 
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
@@ -109,6 +118,34 @@ protected:
     static ElementDisplacement computeElementDisplacement(
         const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
         const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates);
+
+    void selectStrategy();
+
+    std::unique_ptr<ComputeElementForceStrategy<DataTypes, ElementType>> m_computeElementForceStrategy;
+
+    sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>> m_elementForce;
+};
+
+template <class DataTypes, class ElementType>
+struct ComputeElementForceStrategy
+{
+    using Real = sofa::Real_t<DataTypes>;
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
+    using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
+    using TopologyElement = sofa::topology::Element<ElementType>;
+    using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
+
+    virtual ~ComputeElementForceStrategy() = default;
+    virtual void compute(
+        const sofa::type::vector<TopologyElement>& elements,
+        const VecCoord& position,
+        const VecCoord& restPosition,
+        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) = 0;
+
+    virtual void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) = 0;
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)

@@ -9,13 +9,28 @@
 namespace elasticity
 {
 
+constexpr std::string_view sequentialComputeStrategy = "sequential";
+constexpr std::string_view parallelComputeStrategy = "parallel";
+
 template <class DataTypes, class ElementType>
 ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
+    : d_computeStrategy(initData(&d_computeStrategy, "computeStrategy", "The compute strategy used to compute the forces"))
 {
+    sofa::helper::OptionsGroup computeStrategyOptions{sequentialComputeStrategy, parallelComputeStrategy};
+    computeStrategyOptions.setSelectedItem(std::string(sequentialComputeStrategy));
+    d_computeStrategy.setValue(computeStrategyOptions);
+
     this->addUpdateCallback("precomputeStiffness", {&this->d_youngModulus, &this->d_poissonRatio},
     [this](const sofa::core::DataTracker& )
     {
         precomputeElementStiffness();
+        return this->getComponentState();
+    }, {});
+
+    this->addUpdateCallback("selectStrategy", {&this->d_computeStrategy},
+    [this](const sofa::core::DataTracker& )
+    {
+        selectStrategy();
         return this->getComponentState();
     }, {});
 }
@@ -32,6 +47,11 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 
     if (!this->isComponentStateInvalid())
     {
+        selectStrategy();
+    }
+
+    if (!this->isComponentStateInvalid())
+    {
         precomputeElementStiffness();
     }
 
@@ -40,6 +60,63 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
         this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
     }
 }
+
+template <class DataTypes, class ElementType>
+struct SequentialComputeDisplacementStrategy : public ComputeElementForceStrategy<DataTypes, ElementType>
+{
+    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
+    using TopologyElement = ComputeElementForceStrategy<DataTypes, ElementType>::TopologyElement;
+    using ElementDisplacement = ComputeElementForceStrategy<DataTypes, ElementType>::ElementDisplacement;
+    using Real = sofa::Real_t<DataTypes>;
+    using VecCoord = sofa::VecCoord_t<DataTypes>;
+    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
+
+    void compute(
+        const sofa::type::vector<TopologyElement>& elements,
+        const VecCoord& position,
+        const VecCoord& restPosition,
+        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) override
+    {
+        if (m_elementStiffnesses->size() != elements.size())
+        {
+            msg_error("Compute force") << "The number of element stiffness matrices is different from the number of elements";
+            return;
+        }
+
+        for (sofa::Size i = 0; i < elements.size(); ++i)
+        {
+            const auto& element = elements[i];
+            const auto& stiffnessMatrix = (*m_elementStiffnesses)[i];
+
+            ElementDisplacement displacement{ sofa::type::NOINIT };
+
+            for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+            {
+                for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                {
+                    displacement[j * spatial_dimensions + k] = position[element[j]][k] - restPosition[element[j]][k];
+                }
+            }
+
+            elementForces[i] = stiffnessMatrix * displacement;
+        }
+    }
+
+    void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) override
+    {
+        m_elementStiffnesses = &m_elementStiffness;
+    }
+
+    sofa::type::vector<ElementStiffness> const* m_elementStiffnesses { nullptr };
+};
+
+template <class DataTypes, class ElementType>
+struct ParallelComputeDisplacementStrategy : public SequentialComputeDisplacementStrategy<DataTypes, ElementType>
+{
+
+};
 
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
@@ -57,25 +134,23 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
 
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
 
+    m_elementForce.resize(elements.size());
+
+    if (m_computeElementForceStrategy)
+        m_computeElementForceStrategy->compute(elements, positionAccessor.ref(), restPositionAccessor.ref(), m_elementForce);
+
+    // dispatch the element force to the degrees of freedom
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
-        const ElementStiffness& stiffnessMatrix = m_elementStiffness[i];
-
-        const auto elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
-        const auto restElementNodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-
-        const ElementDisplacement displacement = computeElementDisplacement(elementNodesCoordinates, restElementNodesCoordinates);
-
-        sofa::type::Vec<NumberOfDofsInElement, Real> elementForce = stiffnessMatrix * displacement;
+        const auto& elementForce = m_elementForce[i];
 
         for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
         {
-            VecView<spatial_dimensions, Real> nodeForce(elementForce, j * spatial_dimensions);
             auto& f_j = forceAccessor[element[j]];
             for (sofa::Size k = 0; k < spatial_dimensions; ++k)
             {
-                f_j[k] -= nodeForce[k];
+                f_j[k] -= elementForce[j * spatial_dimensions + k];
             }
         }
     }
@@ -192,6 +267,9 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
     if (!l_topology)
         return;
 
+    if (this->isComponentStateInvalid())
+        return;
+
     const auto youngModulus = this->d_youngModulus.getValue();
     const auto poissonRatio = this->d_poissonRatio.getValue();
     const auto [mu, lambda] = elasticity::toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
@@ -211,6 +289,11 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
         ElementStiffness K = integrate<DataTypes, ElementType>(nodesCoordinates, m_elasticityTensor);
         m_elementStiffness.push_back(K);
     }
+
+    if (m_computeElementForceStrategy)
+        m_computeElementForceStrategy->setElementStiffnessMatrices(m_elementStiffness);
+    else
+        dmsg_error() << "The compute strategy is not yet defined";
 
     // precompute strain-displacement tensors at the nodes positions
     m_strainDisplacement.clear();
@@ -266,6 +349,26 @@ auto ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
         }
     }
     return displacement;
+}
+
+template <class DataTypes, class ElementType>
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectStrategy()
+{
+    const std::string& computeStrategy = d_computeStrategy.getValue().getSelectedItem();
+
+    if (computeStrategy == sequentialComputeStrategy)
+    {
+        m_computeElementForceStrategy = std::make_unique<SequentialComputeDisplacementStrategy<DataTypes, ElementType>>();
+    }
+    else if (computeStrategy == parallelComputeStrategy)
+    {
+        m_computeElementForceStrategy = std::make_unique<ParallelComputeDisplacementStrategy<DataTypes, ElementType>>();
+    }
+    else
+    {
+        msg_error() << "Unknown compute strategy '" + computeStrategy + "'";
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+    }
 }
 
 }  // namespace elasticity
