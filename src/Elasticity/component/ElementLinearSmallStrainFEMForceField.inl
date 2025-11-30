@@ -10,14 +10,22 @@
 namespace elasticity
 {
 
-constexpr std::string_view sequentialComputeStrategy = "sequential";
+constexpr std::string_view sequencedComputeStrategy = "sequenced";
+constexpr std::string_view unsequencedComputeStrategy = "unsequenced";
 constexpr std::string_view parallelComputeStrategy = "parallel";
+constexpr std::string_view parallelUnsequencedComputeStrategy = "parallel_unsequenced";
+
 
 template <class DataTypes, class ElementType>
 ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
     : d_computeStrategy(initData(&d_computeStrategy, "computeStrategy", "The compute strategy used to compute the forces"))
 {
-    sofa::helper::OptionsGroup computeStrategyOptions{sequentialComputeStrategy, parallelComputeStrategy};
+    sofa::helper::OptionsGroup computeStrategyOptions{
+        sequencedComputeStrategy,
+        unsequencedComputeStrategy,
+        parallelComputeStrategy,
+        parallelUnsequencedComputeStrategy
+    };
     computeStrategyOptions.setSelectedItem(std::string(parallelComputeStrategy));
     d_computeStrategy.setValue(computeStrategyOptions);
 
@@ -62,8 +70,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
     }
 }
 
-template <class DataTypes, class ElementType>
-struct SequentialComputeDisplacementStrategy : public ComputeElementForceStrategy<DataTypes, ElementType>
+template <class DataTypes, class ElementType, class ExecutionPolicy>
+struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrategy<DataTypes, ElementType>
 {
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
@@ -78,18 +86,7 @@ struct SequentialComputeDisplacementStrategy : public ComputeElementForceStrateg
         const sofa::type::vector<TopologyElement>& elements,
         const VecCoord& position,
         const VecCoord& restPosition,
-        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) override
-    {
-        computeElementForceLoop(std::execution::unseq, elements, position, restPosition, elementForces);
-    }
-
-    template <class ExecutionPolicy>
-    void computeElementForceLoop(
-        ExecutionPolicy policy,
-        const sofa::type::vector<TopologyElement>& elements,
-        const VecCoord& position,
-        const VecCoord& restPosition,
-        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces)
+        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) final
     {
         if (this->m_elementStiffnesses->size() != elements.size())
         {
@@ -97,36 +94,26 @@ struct SequentialComputeDisplacementStrategy : public ComputeElementForceStrateg
             return;
         }
 
-        std::ranges::iota_view indices { static_cast<decltype(elements.size())>(0), elements.size()};
+        std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
 
-        std::for_each(policy, indices.begin(), indices.end(),
-            [&](const auto& id)
+        std::for_each(ExecutionPolicy{}, indices.begin(), indices.end(),
+            [&](const auto& elementId)
             {
-                this->computeElementForce(id, elements, position, restPosition, elementForces);
+                const auto& element = elements[elementId];
+                const auto& stiffnessMatrix = (*this->m_elementStiffnesses)[elementId];
+
+                ElementDisplacement displacement{ sofa::type::NOINIT };
+
+                for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+                {
+                    for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                    {
+                        displacement[j * spatial_dimensions + k] = position[element[j]][k] - restPosition[element[j]][k];
+                    }
+                }
+
+                elementForces[elementId] = stiffnessMatrix * displacement;
             });
-    }
-
-    void computeElementForce(
-        sofa::Size elementId,
-        const sofa::type::vector<TopologyElement>& elements,
-        const VecCoord& position,
-        const VecCoord& restPosition,
-        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces)
-    {
-        const auto& element = elements[elementId];
-        const auto& stiffnessMatrix = (*this->m_elementStiffnesses)[elementId];
-
-        ElementDisplacement displacement{ sofa::type::NOINIT };
-
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
-        {
-            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
-            {
-                displacement[j * spatial_dimensions + k] = position[element[j]][k] - restPosition[element[j]][k];
-            }
-        }
-
-        elementForces[elementId] = stiffnessMatrix * displacement;
     }
 
     void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) override
@@ -135,26 +122,6 @@ struct SequentialComputeDisplacementStrategy : public ComputeElementForceStrateg
     }
 
     sofa::type::vector<ElementStiffness> const* m_elementStiffnesses { nullptr };
-};
-
-template <class DataTypes, class ElementType>
-struct ParallelComputeDisplacementStrategy : public SequentialComputeDisplacementStrategy<DataTypes, ElementType>
-{
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
-    using TopologyElement = ComputeElementForceStrategy<DataTypes, ElementType>::TopologyElement;
-    using Real = sofa::Real_t<DataTypes>;
-    using VecCoord = sofa::VecCoord_t<DataTypes>;
-
-    void compute(
-        const sofa::type::vector<TopologyElement>& elements,
-        const VecCoord& position,
-        const VecCoord& restPosition,
-        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) override
-    {
-        this->computeElementForceLoop(std::execution::par_unseq, elements, position, restPosition, elementForces);
-    }
 };
 
 template <class DataTypes, class ElementType>
@@ -395,13 +362,29 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectStrate
 {
     const std::string& computeStrategy = d_computeStrategy.getValue().getSelectedItem();
 
-    if (computeStrategy == sequentialComputeStrategy)
+    if (computeStrategy == sequencedComputeStrategy)
     {
-        m_computeElementForceStrategy = std::make_unique<SequentialComputeDisplacementStrategy<DataTypes, ElementType>>();
+        m_computeElementForceStrategy = std::make_unique<
+            ExecPolicyComputeDisplacementStrategy<DataTypes, ElementType,
+        std::execution::sequenced_policy>>();
+    }
+    else if (computeStrategy == unsequencedComputeStrategy)
+    {
+        m_computeElementForceStrategy = std::make_unique<
+            ExecPolicyComputeDisplacementStrategy<DataTypes, ElementType,
+        std::execution::unsequenced_policy>>();
     }
     else if (computeStrategy == parallelComputeStrategy)
     {
-        m_computeElementForceStrategy = std::make_unique<ParallelComputeDisplacementStrategy<DataTypes, ElementType>>();
+        m_computeElementForceStrategy = std::make_unique<
+            ExecPolicyComputeDisplacementStrategy<DataTypes, ElementType,
+        std::execution::parallel_policy>>();
+    }
+    else if (computeStrategy == parallelUnsequencedComputeStrategy)
+    {
+        m_computeElementForceStrategy = std::make_unique<
+            ExecPolicyComputeDisplacementStrategy<DataTypes, ElementType,
+        std::execution::unsequenced_policy>>();
     }
     else
     {
