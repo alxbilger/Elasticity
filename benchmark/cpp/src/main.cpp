@@ -96,6 +96,8 @@ static void BM_TetrahedronCorotationalAddForce(
                sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
+            auto computeStrategy = sofa::helper::getWriteAccessor(elementForceField->d_computeStrategy);
+            computeStrategy->setSelectedItem("sequential");
             forceField = elementForceField;
         }
         tetraNode->addObject(forceField);
