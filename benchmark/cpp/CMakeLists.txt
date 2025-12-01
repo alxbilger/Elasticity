@@ -19,6 +19,7 @@ FetchContent_MakeAvailable(googlebenchmark)
 
 find_package(Sofa.Component REQUIRED)
 find_package(Sofa.Simulation.Graph REQUIRED)
+sofa_find_package(MultiThreading REQUIRED)
 sofa_find_package(Elasticity REQUIRED)
 
 set(SOFABENCHMARK_SRC "src")
@@ -27,5 +28,5 @@ set(SOURCE_FILES ${SOFABENCHMARK_SRC}/main.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC benchmark::benchmark)
-target_link_libraries(${PROJECT_NAME} PUBLIC Elasticity Sofa.Component Sofa.Simulation.Graph)
+target_link_libraries(${PROJECT_NAME} PUBLIC Elasticity Sofa.Component Sofa.Simulation.Graph MultiThreading)
 target_include_directories(${PROJECT_NAME} PUBLIC ${SOFABENCHMARK_SRC})

@@ -97,7 +97,7 @@ struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrateg
         std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
 
         std::for_each(ExecutionPolicy{}, indices.begin(), indices.end(),
-            [&](const auto& elementId)
+            [&](const auto elementId)
             {
                 const auto& element = elements[elementId];
                 const auto& stiffnessMatrix = (*this->m_elementStiffnesses)[elementId];
