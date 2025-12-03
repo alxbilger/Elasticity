@@ -34,54 +34,37 @@ public:
     static const std::string GetCustomTemplateName() { return DataTypes::Name(); }
 
 private:
-    using DataVecCoord = sofa::DataVecDeriv_t<DataTypes>;
-    using DataVecDeriv = sofa::DataVecDeriv_t<DataTypes>;
-    using VecCoord = sofa::VecCoord_t<DataTypes>;
-    using VecDeriv = sofa::VecDeriv_t<DataTypes>;
-    using Coord = sofa::Coord_t<DataTypes>;
-    using Deriv = sofa::Deriv_t<DataTypes>;
-    using Real = sofa::Real_t<DataTypes>;
-
-    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
-    using ReferenceCoord = typename FiniteElement::ReferenceCoord;
-
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
-    static constexpr sofa::Size TopologicalDimension = FiniteElement::TopologicalDimension;
-
-    /// the concatenation of the displacement of the element nodes in a single vector
-    using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
-
-    /// the type of the element stiffness matrix
-    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
+    using trait = elasticity::trait<DataTypes, ElementType>;
 
     using TopologyAccessor::l_topology;
 
 public:
 
-    void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f,
-              const DataVecCoord& x, const DataVecDeriv& v) override;
+    void addForce(const sofa::core::MechanicalParams* mparams,
+        sofa::DataVecDeriv_t<DataTypes>& f,
+        const sofa::DataVecCoord_t<DataTypes>& x,
+        const sofa::DataVecDeriv_t<DataTypes>& v) override;
 
-    void addDForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& df,
-                   const DataVecDeriv& dx) override;
+    void addDForce(const sofa::core::MechanicalParams* mparams,
+        sofa::DataVecDeriv_t<DataTypes>& df,
+        const sofa::DataVecDeriv_t<DataTypes>& dx) override;
 
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
-    SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const DataVecCoord& x) const override;
+    SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const sofa::DataVecCoord_t<DataTypes>& x) const override;
 
 protected:
 
-    using RotationMatrix = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    using RotationMatrix = sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>>;
     sofa::type::vector<RotationMatrix> m_rotations;
 
     void computeElementRotation(
-        const std::array<Coord, NumberOfNodesInElement>& nodesPosition,
-        const std::array<Coord, NumberOfNodesInElement>& nodesRestPosition,
+        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesPosition,
+        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesRestPosition,
         RotationMatrix& rotationMatrix);
 
-    Coord translation(const std::array<Coord, NumberOfNodesInElement>& nodes) const;
-    static Coord computeCentroid(const std::array<Coord, NumberOfNodesInElement>& nodes);
+    sofa::Coord_t<DataTypes> translation(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes) const;
+    static sofa::Coord_t<DataTypes> computeCentroid(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes);
 };
 
 

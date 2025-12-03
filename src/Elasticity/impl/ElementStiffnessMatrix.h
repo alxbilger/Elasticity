@@ -15,8 +15,63 @@ using ElementStiffness = sofa::type::MatSym<
     sofa::Real_t<DataTypes>
 >;
 
-template <class DataTypes, class ElementType>
-ElementStiffness<DataTypes, ElementType> integrate(
+enum class MatrixVectorProductType
+{
+    Factorization,
+    Dense
+};
+
+template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType>
+struct FactorizedElementStiffness
+{
+    using Real = sofa::Real_t<DataTypes>;
+    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
+    static constexpr auto NbQuadraturePoints = FiniteElement::quadraturePoints().size();
+
+    std::array<StrainDisplacement<DataTypes, ElementType>, NbQuadraturePoints> B;
+    FullySymmetric4Tensor<DataTypes> elasticityTensor;
+    std::array<Real, NbQuadraturePoints> factors;
+
+    sofa::type::MatSym<
+        ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+        sofa::Real_t<DataTypes>> stiffnessMatrix;
+
+    void add(std::size_t quadraturePointIndex,
+        const Real factor,
+        const StrainDisplacement<DataTypes, ElementType>& B_)
+    {
+        this->factors[quadraturePointIndex] = factor;
+        this->B[quadraturePointIndex] = B_;
+
+        const auto K_i = factor * B_.transposed() * (elasticityTensor.toVoigtMatSym() * B_);
+        ElementStiffness<DataTypes, ElementType> K_i_sym;
+        ElementStiffness<DataTypes, ElementType>::Mat2Sym(K_i, K_i_sym);
+        stiffnessMatrix += K_i_sym;
+    }
+
+    using Vec = sofa::type::Vec<
+        ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+        sofa::Real_t<DataTypes>>;
+    Vec operator*(const Vec& v) const
+    {
+        if constexpr (matrixVectorProductType == MatrixVectorProductType::Factorization)
+        {
+            Vec result;
+            for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
+            {
+                result += factors[i] * B[i].multTranspose(elasticityTensor.toVoigtMatSym() * (B[i] * v));
+            }
+            return result;
+        }
+        else
+        {
+            return stiffnessMatrix * v;
+        }
+    }
+};
+
+template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType = MatrixVectorProductType::Dense>
+FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> integrate(
     const std::array<sofa::Coord_t<DataTypes>, ElementType::NumberOfNodes>& nodesCoordinates,
     const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
 {
@@ -27,8 +82,10 @@ ElementStiffness<DataTypes, ElementType> integrate(
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
     static constexpr sofa::Size TopologicalDimension = FiniteElement::TopologicalDimension;
 
-    ElementStiffness<DataTypes, ElementType> K;
+    FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> K;
+    K.elasticityTensor = elasticityTensor;
 
+    std::size_t quadraturePointIndex = 0;
     for (const auto& [quadraturePoint, weight] : FiniteElement::quadraturePoints())
     {
         // gradient of shape functions in the reference element evaluated at the quadrature point
@@ -51,11 +108,9 @@ ElementStiffness<DataTypes, ElementType> integrate(
             dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
         const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
+        K.add(quadraturePointIndex, weight * detJ, B);
 
-        const auto K_i = (weight * detJ) * B.transposed() * (elasticityTensor.toVoigtMatSym() * B);
-        ElementStiffness<DataTypes, ElementType> K_i_sym;
-        ElementStiffness<DataTypes, ElementType>::Mat2Sym(K_i, K_i_sym);
-        K += K_i_sym;
+        ++quadraturePointIndex;
     }
     return K;
 }

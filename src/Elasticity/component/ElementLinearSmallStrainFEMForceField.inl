@@ -73,20 +73,16 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 template <class DataTypes, class ElementType, class ExecutionPolicy>
 struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrategy<DataTypes, ElementType>
 {
-    static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
-    static constexpr sofa::Size NumberOfDofsInElement = NumberOfNodesInElement * spatial_dimensions;
-    using TopologyElement = ComputeElementForceStrategy<DataTypes, ElementType>::TopologyElement;
-    using ElementDisplacement = ComputeElementForceStrategy<DataTypes, ElementType>::ElementDisplacement;
+    using trait = elasticity::trait<DataTypes, ElementType>;
+    using TopologyElement = typename trait::TopologyElement;
+    using ElementStiffness = typename trait::ElementStiffness;
     using Real = sofa::Real_t<DataTypes>;
-    using VecCoord = sofa::VecCoord_t<DataTypes>;
-    using ElementStiffness = elasticity::ElementStiffness<DataTypes, ElementType>;
 
     void compute(
         const sofa::type::vector<TopologyElement>& elements,
-        const VecCoord& position,
-        const VecCoord& restPosition,
-        sofa::type::vector<sofa::type::Vec<NumberOfDofsInElement, Real>>& elementForces) final
+        const sofa::VecCoord_t<DataTypes>& position,
+        const sofa::VecCoord_t<DataTypes>& restPosition,
+        sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementForces) final
     {
         if (this->m_elementStiffnesses->size() != elements.size())
         {
@@ -102,13 +98,13 @@ struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrateg
                 const auto& element = elements[elementId];
                 const auto& stiffnessMatrix = (*this->m_elementStiffnesses)[elementId];
 
-                ElementDisplacement displacement{ sofa::type::NOINIT };
+                typename trait::ElementDisplacement displacement{ sofa::type::NOINIT };
 
-                for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+                for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
                 {
-                    for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+                    for (sofa::Size k = 0; k < trait::spatial_dimensions; ++k)
                     {
-                        displacement[j * spatial_dimensions + k] = position[element[j]][k] - restPosition[element[j]][k];
+                        displacement[j * trait::spatial_dimensions + k] = position[element[j]][k] - restPosition[element[j]][k];
                     }
                 }
 
@@ -126,8 +122,10 @@ struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrateg
 
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x,
-    const DataVecDeriv& v)
+    const sofa::core::MechanicalParams* mparams,
+    sofa::DataVecDeriv_t<DataTypes>& f,
+    const sofa::DataVecCoord_t<DataTypes>& x,
+    const sofa::DataVecDeriv_t<DataTypes>& v)
 {
     SOFA_UNUSED(mparams);
     SOFA_UNUSED(v);
@@ -138,7 +136,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
 
     if (l_topology == nullptr) return;
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
 
     m_elementForce.resize(elements.size());
 
@@ -151,12 +149,12 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
         const auto& element = elements[i];
         const auto& elementForce = m_elementForce[i];
 
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
         {
             auto& f_j = forceAccessor[element[j]];
-            for (sofa::Size k = 0; k < spatial_dimensions; ++k)
+            for (sofa::Size k = 0; k < trait::spatial_dimensions; ++k)
             {
-                f_j[k] -= elementForce[j * spatial_dimensions + k];
+                f_j[k] -= elementForce[j * trait::spatial_dimensions + k];
             }
         }
     }
@@ -164,7 +162,9 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
 
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
+    const sofa::core::MechanicalParams* mparams,
+    sofa::DataVecDeriv_t<DataTypes>& df,
+    const sofa::DataVecDeriv_t<DataTypes>& dx)
 {
     if (this->isComponentStateInvalid())
         return;
@@ -173,28 +173,28 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     auto dxAccessor = sofa::helper::getReadAccessor(dx);
     dfAccessor.resize(dxAccessor.size());
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
 
-    const Real kFactor = static_cast<Real>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
+    const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
             mparams, this->rayleighStiffness.getValue()));
 
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
-        sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
+        sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
 
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
         {
-            VecView<spatial_dimensions, Real> node_dx(element_dx, i * spatial_dimensions);
+            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
             node_dx = dxAccessor[element[i]];
         }
 
         const auto& stiffnessMatrix = *elementStiffnessIt++;
         auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
 
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
         {
-            VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
+            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(dForce, i * trait::spatial_dimensions);
             dfAccessor[element[i]] += nodedForce.toVec();
         }
     }
@@ -210,20 +210,20 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffne
     auto dfdx = matrix->getForceDerivativeIn(this->mstate)
         .withRespectToPositionsIn(this->mstate);
 
-    sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
+    sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
 
-        for (sofa::Index n1 = 0; n1 < NumberOfNodesInElement; ++n1)
+        for (sofa::Index n1 = 0; n1 < trait::NumberOfNodesInElement; ++n1)
         {
-            for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
+            for (sofa::Index n2 = 0; n2 < trait::NumberOfNodesInElement; ++n2)
             {
-                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += -localMatrix;
+                stiffnessMatrix.stiffnessMatrix.getsub(trait::spatial_dimensions * n1, trait::spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
+                dfdx(element[n1] * trait::spatial_dimensions, element[n2] * trait::spatial_dimensions) += -localMatrix;
             }
         }
     }
@@ -231,7 +231,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffne
 
 template <class DataTypes, class ElementType>
 SReal ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::getPotentialEnergy(
-    const sofa::core::MechanicalParams*, const DataVecCoord& x) const
+    const sofa::core::MechanicalParams*,
+    const sofa::DataVecCoord_t<DataTypes>& x) const
 {
     return 0;
 }
@@ -243,25 +244,25 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
     if (this->isComponentStateInvalid())
         return;
 
-    using LocalMatType = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
+    using LocalMatType = sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>>;
     LocalMatType localMatrix{sofa::type::NOINIT};
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
 
-        for (sofa::Index n1 = 0; n1 < NumberOfNodesInElement; ++n1)
+        for (sofa::Index n1 = 0; n1 < trait::NumberOfNodesInElement; ++n1)
         {
-            for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
+            for (sofa::Index n2 = 0; n2 < trait::NumberOfNodesInElement; ++n2)
             {
-                stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
+                stiffnessMatrix.stiffnessMatrix.getsub(trait::spatial_dimensions * n1, trait::spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
 
-                const auto value = (-static_cast<Real>(kFact)) * static_cast<ScalarOrMatrix<LocalMatType>>(localMatrix);
+                const auto value = (-static_cast<sofa::Real_t<DataTypes>>(kFact)) * static_cast<ScalarOrMatrix<LocalMatType>>(localMatrix);
                 matrix->add(
-                   offset + element[n1] * spatial_dimensions,
-                   offset + element[n2] * spatial_dimensions, value);
+                   offset + element[n1] * trait::spatial_dimensions,
+                   offset + element[n2] * trait::spatial_dimensions, value);
             }
         }
     }
@@ -286,13 +287,13 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
 
     m_elementStiffness.clear();
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
     m_elementStiffness.reserve(elements.size());
 
     for (const auto& element : elements)
     {
-        const std::array<Coord, NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-        ElementStiffness K = integrate<DataTypes, ElementType>(nodesCoordinates, m_elasticityTensor);
+        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
+        ElementStiffness K = integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, m_elasticityTensor);
         m_elementStiffness.push_back(K);
     }
 
@@ -305,33 +306,33 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
     m_strainDisplacement.clear();
     m_strainDisplacement.resize(elements.size());
 
-    static const std::array<ReferenceCoord, NumberOfNodesInElement>& referenceElementNodes =
-        FiniteElement::referenceElementNodes;
+    static const std::array<typename trait::ReferenceCoord, trait::NumberOfNodesInElement>& referenceElementNodes =
+        trait::FiniteElement::referenceElementNodes;
 
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
         const auto nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-        for (sofa::Size j = 0; j < NumberOfNodesInElement; ++j)
+        for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
         {
-            const ReferenceCoord& x = referenceElementNodes[j];
+            const auto& x = referenceElementNodes[j];
 
             // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> dN_dq_ref =
-                FiniteElement::gradientShapeFunctions(x);
+            const sofa::type::Mat<trait::NumberOfNodesInElement, trait::TopologicalDimension, sofa::Real_t<DataTypes>> dN_dq_ref =
+                trait::FiniteElement::gradientShapeFunctions(x);
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real> jacobian;
-            for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
+            sofa::type::Mat<trait::spatial_dimensions, trait::TopologicalDimension, sofa::Real_t<DataTypes>> jacobian;
+            for (sofa::Size n = 0; n < trait::NumberOfNodesInElement; ++n)
                 jacobian += sofa::type::dyad(nodesCoordinates[n], dN_dq_ref[n]);
 
-            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
+            const sofa::type::Mat<trait::TopologicalDimension, trait::spatial_dimensions, sofa::Real_t<DataTypes>> J_inv =
                 elasticity::inverse(jacobian);
 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
-            sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real> dN_dq(sofa::type::NOINIT);
-            for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
+            sofa::type::Mat<trait::NumberOfNodesInElement, trait::spatial_dimensions, sofa::Real_t<DataTypes>> dN_dq(sofa::type::NOINIT);
+            for (sofa::Size n = 0; n < trait::NumberOfNodesInElement; ++n)
                 dN_dq[n] = J_inv.transposed() * dN_dq_ref[n];
 
             const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
@@ -339,22 +340,6 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeEl
             m_strainDisplacement[i][j] = B;
         }
     }
-}
-
-template <class DataTypes, class ElementType>
-auto ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementDisplacement(
-    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-    const std::array<Coord, NumberOfNodesInElement>& restElementNodesCoordinates) -> ElementDisplacement
-{
-    ElementDisplacement displacement(sofa::type::NOINIT);
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-    {
-        for (sofa::Size j = 0; j < spatial_dimensions; ++j)
-        {
-            displacement[i * spatial_dimensions + j] = elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
-        }
-    }
-    return displacement;
 }
 
 template <class DataTypes, class ElementType>
