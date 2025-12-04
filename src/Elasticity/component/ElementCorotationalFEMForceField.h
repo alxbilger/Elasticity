@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
+#include <Elasticity/component/BaseElementLinearFEMForceField.h>
+#include <sofa/core/behavior/ForceField.h>
 #include <sofa/helper/decompose.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_COROTATIONAL_FEM_FORCE_FIELD_CPP)
@@ -11,12 +12,13 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-class ElementCorotationalFEMForceField : public ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>
+class ElementCorotationalFEMForceField :
+    public BaseElementLinearFEMForceField<DataTypes, ElementType>
 {
 public:
     SOFA_CLASS(
         SOFA_TEMPLATE2(ElementCorotationalFEMForceField, DataTypes, ElementType),
-        SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType));
+        SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType));
 
     /**
      * The purpose of this function is to register the name of this class according to the provided
@@ -39,6 +41,7 @@ private:
     using TopologyAccessor::l_topology;
 
 public:
+    void init() override;
 
     void addForce(const sofa::core::MechanicalParams* mparams,
         sofa::DataVecDeriv_t<DataTypes>& f,

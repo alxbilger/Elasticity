@@ -8,6 +8,8 @@
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/helper/OptionsGroup.h>
 
+#include "BaseElementLinearFEMForceField.h"
+
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
 #endif
@@ -20,16 +22,12 @@ struct ComputeElementForceStrategy;
 
 template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField :
-    public TopologyAccessor,
-    public LinearMechanicalParametersComponent<DataTypes>,
-    public sofa::core::behavior::ForceField<DataTypes>
+    public BaseElementLinearFEMForceField<DataTypes, ElementType>
 {
 public:
-    SOFA_CLASS3(
+    SOFA_CLASS(
         SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType),
-            TopologyAccessor,
-            LinearMechanicalParametersComponent<DataTypes>,
-            sofa::core::behavior::ForceField<DataTypes>);
+            SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType));
 
     /**
      * The purpose of this function is to register the name of this class according to the provided
@@ -55,6 +53,8 @@ private:
     using ElementDisplacement = typename trait::ElementDisplacement;
     using StrainDisplacement = typename trait::StrainDisplacement;
 
+    using BaseElementLinearFEMForceField<DataTypes, ElementType>::l_topology;
+
 public:
     void init() override;
 
@@ -76,19 +76,8 @@ protected:
 
     ElementLinearSmallStrainFEMForceField();
 
-    /**
-     * With linear small strain, the element stiffness matrix is constant, so it can be precomputed.
-     */
-    void precomputeElementStiffness();
 
-    /**
-     * List of precomputed element stiffness matrices
-     */
-    sofa::type::vector<ElementStiffness> m_elementStiffness;
 
-    ElasticityTensor m_elasticityTensor;
-
-    sofa::type::vector<std::array<StrainDisplacement, trait::NumberOfNodesInElement>> m_strainDisplacement;
 
     template <typename TCoord>
     static ElementDisplacement computeElementDisplacement(

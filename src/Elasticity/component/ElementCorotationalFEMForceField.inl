@@ -1,9 +1,20 @@
 #pragma once
 #include <Elasticity/component/ElementCorotationalFEMForceField.h>
-#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.inl>
+#include <Elasticity/impl/VecView.h>
+#include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
+
+#include <Elasticity/component/BaseElementLinearFEMForceField.inl>
+#include <Elasticity/impl/VectorTools.h>
 
 namespace elasticity
 {
+
+template <class DataTypes, class ElementType>
+void ElementCorotationalFEMForceField<DataTypes, ElementType>::init()
+{
+    BaseElementLinearFEMForceField<DataTypes, ElementType>::init();
+    sofa::core::behavior::ForceField<DataTypes>::init();
+}
 
 template <class DataTypes, class ElementType>
 void ElementCorotationalFEMForceField<DataTypes, ElementType>::addForce(

@@ -1,5 +1,6 @@
 #pragma once
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
+#include <Elasticity/component/BaseElementLinearFEMForceField.inl>
 #include <Elasticity/impl/LameParameters.h>
 #include <Elasticity/impl/VecView.h>
 #include <Elasticity/impl/VectorTools.h>
@@ -29,13 +30,6 @@ ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmal
     computeStrategyOptions.setSelectedItem(std::string(parallelComputeStrategy));
     d_computeStrategy.setValue(computeStrategyOptions);
 
-    this->addUpdateCallback("precomputeStiffness", {&this->d_youngModulus, &this->d_poissonRatio},
-    [this](const sofa::core::DataTracker& )
-    {
-        precomputeElementStiffness();
-        return this->getComponentState();
-    }, {});
-
     this->addUpdateCallback("selectStrategy", {&this->d_computeStrategy},
     [this](const sofa::core::DataTracker& )
     {
@@ -47,21 +41,12 @@ ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmal
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 {
+    BaseElementLinearFEMForceField<DataTypes, ElementType>::init();
     sofa::core::behavior::ForceField<DataTypes>::init();
 
     if (!this->isComponentStateInvalid())
     {
-        this->validateTopology();
-    }
-
-    if (!this->isComponentStateInvalid())
-    {
         selectStrategy();
-    }
-
-    if (!this->isComponentStateInvalid())
-    {
-        precomputeElementStiffness();
     }
 
     if (!this->isComponentStateInvalid())
@@ -84,6 +69,12 @@ struct ExecPolicyComputeDisplacementStrategy : public ComputeElementForceStrateg
         const sofa::VecCoord_t<DataTypes>& restPosition,
         sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementForces) final
     {
+        if (!m_elementStiffnesses)
+        {
+            dmsg_error("Compute force") << "Invalid stiffness matrix vector.";
+            return;
+        }
+
         if (this->m_elementStiffnesses->size() != elements.size())
         {
             msg_error("Compute force") << "The number of element stiffness matrices is different from the number of elements";
@@ -141,7 +132,10 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     m_elementForce.resize(elements.size());
 
     if (m_computeElementForceStrategy)
+    {
+        m_computeElementForceStrategy->setElementStiffnessMatrices(this->m_elementStiffness);
         m_computeElementForceStrategy->compute(elements, positionAccessor.ref(), restPositionAccessor.ref(), m_elementForce);
+    }
 
     // dispatch the element force to the degrees of freedom
     for (sofa::Size i = 0; i < elements.size(); ++i)
@@ -178,7 +172,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
             mparams, this->rayleighStiffness.getValue()));
 
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    auto elementStiffnessIt = this->m_elementStiffness.begin();
     for (const auto& element : elements)
     {
         sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
@@ -213,7 +207,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffne
     sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
     const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    auto elementStiffnessIt = this->m_elementStiffness.begin();
     for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
@@ -248,7 +242,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
     LocalMatType localMatrix{sofa::type::NOINIT};
 
     const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
-    auto elementStiffnessIt = m_elementStiffness.begin();
+    auto elementStiffnessIt = this->m_elementStiffness.begin();
     for (const auto& element : elements)
     {
         const auto& stiffnessMatrix = *elementStiffnessIt++;
@@ -264,80 +258,6 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
                    offset + element[n1] * trait::spatial_dimensions,
                    offset + element[n2] * trait::spatial_dimensions, value);
             }
-        }
-    }
-}
-
-template <class DataTypes, class ElementType>
-void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
-{
-    if (!l_topology)
-        return;
-
-    if (this->isComponentStateInvalid())
-        return;
-
-    const auto youngModulus = this->d_youngModulus.getValue();
-    const auto poissonRatio = this->d_poissonRatio.getValue();
-    const auto [mu, lambda] = elasticity::toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
-
-    auto restPositionAccessor = this->mstate->readRestPositions();
-
-    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
-
-    m_elementStiffness.clear();
-
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
-    m_elementStiffness.reserve(elements.size());
-
-    for (const auto& element : elements)
-    {
-        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-        ElementStiffness K = integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, m_elasticityTensor);
-        m_elementStiffness.push_back(K);
-    }
-
-    if (m_computeElementForceStrategy)
-        m_computeElementForceStrategy->setElementStiffnessMatrices(m_elementStiffness);
-    else
-        dmsg_error() << "The compute strategy is not yet defined";
-
-    // precompute strain-displacement tensors at the nodes positions
-    m_strainDisplacement.clear();
-    m_strainDisplacement.resize(elements.size());
-
-    static const std::array<typename trait::ReferenceCoord, trait::NumberOfNodesInElement>& referenceElementNodes =
-        trait::FiniteElement::referenceElementNodes;
-
-    for (sofa::Size i = 0; i < elements.size(); ++i)
-    {
-        const auto& element = elements[i];
-        const auto nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-        for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
-        {
-            const auto& x = referenceElementNodes[j];
-
-            // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<trait::NumberOfNodesInElement, trait::TopologicalDimension, sofa::Real_t<DataTypes>> dN_dq_ref =
-                trait::FiniteElement::gradientShapeFunctions(x);
-
-            // jacobian of the mapping from the reference space to the physical space, evaluated at the
-            // quadrature point
-            sofa::type::Mat<trait::spatial_dimensions, trait::TopologicalDimension, sofa::Real_t<DataTypes>> jacobian;
-            for (sofa::Size n = 0; n < trait::NumberOfNodesInElement; ++n)
-                jacobian += sofa::type::dyad(nodesCoordinates[n], dN_dq_ref[n]);
-
-            const sofa::type::Mat<trait::TopologicalDimension, trait::spatial_dimensions, sofa::Real_t<DataTypes>> J_inv =
-                elasticity::inverse(jacobian);
-
-            // gradient of the shape functions in the physical element evaluated at the quadrature point
-            sofa::type::Mat<trait::NumberOfNodesInElement, trait::spatial_dimensions, sofa::Real_t<DataTypes>> dN_dq(sofa::type::NOINIT);
-            for (sofa::Size n = 0; n < trait::NumberOfNodesInElement; ++n)
-                dN_dq[n] = J_inv.transposed() * dN_dq_ref[n];
-
-            const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
-
-            m_strainDisplacement[i][j] = B;
         }
     }
 }

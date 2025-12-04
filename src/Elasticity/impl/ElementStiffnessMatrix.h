@@ -34,7 +34,6 @@ private:
     /// The factors of the stiffness matrix
     /// @{
     std::array<StrainDisplacement<DataTypes, ElementType>, NbQuadraturePoints> B;
-    FullySymmetric4Tensor<DataTypes> elasticityTensor;
     static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
     sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> elasticityTensorMat;
     std::array<Real, NbQuadraturePoints> factors;
@@ -55,7 +54,6 @@ private:
 public:
     void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
     {
-        this->elasticityTensor = elasticityTensor;
         for (std::size_t i = 0; i < NumberOfIndependentElements; ++i)
         {
             for (std::size_t j = 0; j < NumberOfIndependentElements; ++j)
@@ -77,7 +75,7 @@ public:
     }
 
 
-    Vec operator*(const Vec& v) const
+    inline Vec operator*(const Vec& v) const
     {
         if constexpr (matrixVectorProductType == MatrixVectorProductType::Factorization)
         {
