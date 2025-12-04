@@ -162,12 +162,12 @@ static void BM_TetrahedronCorotationalAddForce_ElasticitySeq(benchmark::State& s
     BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential);
 }
 
-BENCHMARK(BM_TetrahedronLinearAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
-BENCHMARK(BM_TetrahedronLinearAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
-BENCHMARK(BM_TetrahedronLinearAddForce_SOFAPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
-BENCHMARK(BM_TetrahedronLinearAddForce_ElasticityPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
-BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
-BENCHMARK(BM_TetrahedronCorotationalAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 4} });
+BENCHMARK(BM_TetrahedronLinearAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronLinearAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronLinearAddForce_SOFAPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronLinearAddForce_ElasticityPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronCorotationalAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 
 int main(int argc, char** argv)
 {
