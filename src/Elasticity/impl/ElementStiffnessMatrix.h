@@ -22,10 +22,10 @@ enum class MatrixVectorProductType
     Dense
 };
 
-template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType>
-struct FactorizedElementStiffness
+template <class DataTypes, class ElementType>
+struct BaseFactorizedElementStiffness
 {
-private:
+protected:
     using Real = sofa::Real_t<DataTypes>;
     using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
     static constexpr auto NbQuadraturePoints = FiniteElement::quadraturePoints().size();
@@ -46,10 +46,6 @@ private:
         ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
         ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
         sofa::Real_t<DataTypes>> stiffnessMatrix;
-
-    using Vec = sofa::type::Vec<
-        ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
-        sofa::Real_t<DataTypes>>;
 
 public:
     void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
@@ -74,28 +70,42 @@ public:
         stiffnessMatrix += K_i;
     }
 
+    const auto& getAssembledMatrix() const { return stiffnessMatrix; }
+};
+
+template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType>
+struct FactorizedElementStiffness : public BaseFactorizedElementStiffness<DataTypes, ElementType>
+{
+    static constexpr auto NbQuadraturePoints = BaseFactorizedElementStiffness<DataTypes, ElementType>::NbQuadraturePoints;
+    using Vec = sofa::type::Vec<
+        ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+        sofa::Real_t<DataTypes>>;
 
     inline Vec operator*(const Vec& v) const
     {
         if constexpr (matrixVectorProductType == MatrixVectorProductType::Factorization)
         {
-            Vec result;
-            for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
+            if constexpr (NbQuadraturePoints > 1)
             {
-                const auto Bv = B[i] * v;
-                const auto CBv = elasticityTensorMat * Bv;
-                const auto BTCBv = B[i].multTranspose(CBv);
-                result += factors[i] * BTCBv;
+                Vec result;
+                for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
+                {
+                    const auto& B = this->B[i];
+                    const auto& C = this->elasticityTensorMat;
+                    result += this->factors[i] * B.multTranspose(C * (B * v));
+                }
+                return result;
             }
-            return result;
+            else
+            {
+                return this->factors[0] * this->B[0].multTranspose(this->elasticityTensorMat * (this->B[0] * v));
+            }
         }
         else
         {
-            return stiffnessMatrix * v;
+            return this->stiffnessMatrix * v;
         }
     }
-
-    const auto& getAssembledMatrix() const { return stiffnessMatrix; }
 };
 
 template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType = MatrixVectorProductType::Dense>
