@@ -54,6 +54,7 @@ set(HEADER_FILES
 
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/FullySymmetric4Tensor.h
+    src/Elasticity/impl/IsotropicElasticityTensor.h
     src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/LameParameters.h
     src/Elasticity/impl/MajorSymmetric4Tensor.h
