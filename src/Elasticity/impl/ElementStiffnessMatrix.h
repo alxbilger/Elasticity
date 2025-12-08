@@ -2,6 +2,7 @@
 
 #include <Elasticity/finiteelement/FiniteElement.h>
 #include <Elasticity/impl/FullySymmetric4Tensor.h>
+#include <Elasticity/impl/IsotropicElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/StrainDisplacement.h>
 #include <sofa/helper/MatEigen.h>
@@ -29,13 +30,12 @@ protected:
     using Real = sofa::Real_t<DataTypes>;
     using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
     static constexpr auto NbQuadraturePoints = FiniteElement::quadraturePoints().size();
-
+    static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
 
     /// The factors of the stiffness matrix
     /// @{
     std::array<StrainDisplacement<DataTypes, ElementType>, NbQuadraturePoints> B;
-    static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
-    sofa::type::Mat<NumberOfIndependentElements, NumberOfIndependentElements, Real> elasticityTensorMat;
+    IsotropicElasticityTensor<DataTypes> elasticityTensor;
     std::array<Real, NbQuadraturePoints> factors;
     /// @}
 
@@ -48,25 +48,25 @@ protected:
         sofa::Real_t<DataTypes>> stiffnessMatrix;
 
 public:
-    void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
+    void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor_)
     {
         for (std::size_t i = 0; i < NumberOfIndependentElements; ++i)
         {
             for (std::size_t j = 0; j < NumberOfIndependentElements; ++j)
             {
-                elasticityTensorMat(i, j) = elasticityTensor.toVoigtMatSym()(i, j);
+                this->elasticityTensor(i, j) = elasticityTensor_.toVoigtMatSym()(i, j);
             }
         }
     }
 
-    void add(std::size_t quadraturePointIndex,
+    void addFactor(std::size_t quadraturePointIndex,
         const Real factor,
         const StrainDisplacement<DataTypes, ElementType>& B_)
     {
         this->factors[quadraturePointIndex] = factor;
         this->B[quadraturePointIndex] = B_;
 
-        const auto K_i = factor * B_.multTranspose(elasticityTensorMat * B_);
+        const auto K_i = factor * B_.multTranspose(elasticityTensor.toMat() * B_.B);
         stiffnessMatrix += K_i;
     }
 
@@ -91,14 +91,14 @@ struct FactorizedElementStiffness : public BaseFactorizedElementStiffness<DataTy
                 for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
                 {
                     const auto& B = this->B[i];
-                    const auto& C = this->elasticityTensorMat;
+                    const auto& C = this->elasticityTensor.toMat();
                     result += this->factors[i] * B.multTranspose(C * (B * v));
                 }
                 return result;
             }
             else
             {
-                return this->factors[0] * this->B[0].multTranspose(this->elasticityTensorMat * (this->B[0] * v));
+                return this->factors[0] * this->B[0].multTranspose(this->elasticityTensor * (this->B[0] * v));
             }
         }
         else
@@ -146,7 +146,7 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
             dN_dq[i] = J_inv.transposed() * dN_dq_ref[i];
 
         const auto B = makeStrainDisplacement<DataTypes, ElementType>(dN_dq);
-        K.add(quadraturePointIndex, weight * detJ, B);
+        K.addFactor(quadraturePointIndex, weight * detJ, B);
 
         ++quadraturePointIndex;
     }
