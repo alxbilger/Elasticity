@@ -6,13 +6,17 @@ namespace elasticity
 {
 
 template <sofa::Size N, class real>
-sofa::type::Vec<N, real> isotropicElasticityTensorProduct(const sofa::type::Mat<N, N, real>& tensor, const sofa::type::Vec<N, real>& v)
+constexpr sofa::type::Vec<N, real> isotropicElasticityTensorProduct(const sofa::type::Mat<N, N, real>& tensor, const sofa::type::Vec<N, real>& v)
 {
     return tensor * v;
 }
 
+/**
+ * Specialization for 3D where the operations containing known zeros in the elasticity tensor are
+ * omitted.
+ */
 template <class real>
-sofa::type::Vec<6, real> isotropicElasticityTensorProduct(const sofa::type::Mat<6, 6, real>& tensor, const sofa::type::Vec<6, real>& v)
+constexpr sofa::type::Vec<6, real> isotropicElasticityTensorProduct(const sofa::type::Mat<6, 6, real>& tensor, const sofa::type::Vec<6, real>& v)
 {
     sofa::type::Vec<6, real> result { sofa::type::NOINIT };
 
@@ -34,8 +38,6 @@ struct IsotropicElasticityTensor
 
     explicit IsotropicElasticityTensor(const sofa::type::Mat<NbIndependentElements, NbIndependentElements, sofa::Real_t<DataType>>& mat) : C(mat) {}
     IsotropicElasticityTensor() = default;
-
-
 
     sofa::type::Vec<NbIndependentElements, sofa::Real_t<DataType>> operator*(const sofa::type::Vec<NbIndependentElements, sofa::Real_t<DataType>>& v) const
     {
