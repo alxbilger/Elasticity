@@ -130,7 +130,7 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(
     return forceField;
 }
 
-static void BM_TetrahedronCorotationalAddForce(
+static void BM_TetrahedronAddForce(
 benchmark::State& state, ComponentType componentType, Method method, ComputeStrategy computeStrategy)
 {
     auto forcefield = createScene(state, componentType, method, computeStrategy);
@@ -142,7 +142,7 @@ benchmark::State& state, ComponentType componentType, Method method, ComputeStra
     }
 }
 
-static void BM_TetrahedronCorotationalAddDForce(
+static void BM_TetrahedronAddDForce(
 benchmark::State& state, ComponentType componentType, Method method, ComputeStrategy computeStrategy)
 {
     auto forcefield = createScene(state, componentType, method, computeStrategy);
@@ -156,36 +156,36 @@ benchmark::State& state, ComponentType componentType, Method method, ComputeStra
 
 static void BM_TetrahedronLinearAddForce_SOFASeq(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
+    BM_TetrahedronAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
 }
 
 static void BM_TetrahedronLinearAddDForce_SOFASeq(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddDForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
+    BM_TetrahedronAddDForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
 }
 
 
 
 static void BM_TetrahedronLinearAddForce_ElasticitySeq(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
+    BM_TetrahedronAddForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
 }
 
 static void BM_TetrahedronLinearAddDForce_ElasticitySeq(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddDForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
+    BM_TetrahedronAddDForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
 }
 
 
 
 static void BM_TetrahedronLinearAddForce_SOFAPar(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel);
+    BM_TetrahedronAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel);
 }
 
 static void BM_TetrahedronLinearAddForce_ElasticityPar(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel);
+    BM_TetrahedronAddForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel);
 }
 
 // static void BM_TetrahedronCorotationalAddForce_SOFASeq(benchmark::State& state)
