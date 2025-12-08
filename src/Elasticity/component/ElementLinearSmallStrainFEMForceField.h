@@ -76,25 +76,6 @@ protected:
 
     ElementLinearSmallStrainFEMForceField();
 
-
-
-
-    template <typename TCoord>
-    static ElementDisplacement computeElementDisplacement(
-        const std::array<TCoord, trait::NumberOfNodesInElement>& elementNodesCoordinates,
-        const std::array<TCoord, trait::NumberOfNodesInElement>& restElementNodesCoordinates)
-    {
-        ElementDisplacement displacement(sofa::type::NOINIT);
-        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
-        {
-            for (sofa::Size j = 0; j < trait::spatial_dimensions; ++j)
-            {
-                displacement[i * trait::spatial_dimensions + j] = elementNodesCoordinates[i][j] - restElementNodesCoordinates[i][j];
-            }
-        }
-        return displacement;
-    }
-
     void selectStrategy();
 
     std::unique_ptr<ComputeElementForceStrategy<DataTypes, ElementType>> m_computeElementForceStrategy;
