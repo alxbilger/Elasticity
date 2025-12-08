@@ -21,6 +21,9 @@ template <class DataTypes, class ElementType>
 struct ComputeElementForceStrategy;
 
 template <class DataTypes, class ElementType>
+struct ComputeElementForceDerivStrategy;
+
+template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField :
     public BaseElementLinearFEMForceField<DataTypes, ElementType>
 {
@@ -44,7 +47,8 @@ public:
 
     static const std::string GetCustomTemplateName() { return DataTypes::Name(); }
 
-    sofa::Data<sofa::helper::OptionsGroup> d_computeStrategy;
+    sofa::Data<sofa::helper::OptionsGroup> d_computeForceStrategy;
+    sofa::Data<sofa::helper::OptionsGroup> d_computeForceDerivStrategy;
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
@@ -76,9 +80,11 @@ protected:
 
     ElementLinearSmallStrainFEMForceField();
 
-    void selectStrategy();
+    void selectForceStrategy();
+    void selectForceDerivStrategy();
 
     std::unique_ptr<ComputeElementForceStrategy<DataTypes, ElementType>> m_computeElementForceStrategy;
+    std::unique_ptr<ComputeElementForceDerivStrategy<DataTypes, ElementType>> m_computeElementForceDerivStrategy;
 
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
@@ -98,6 +104,24 @@ struct ComputeElementForceStrategy
         const sofa::VecCoord_t<DataTypes>& position,
         const sofa::VecCoord_t<DataTypes>& restPosition,
         sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementForces) = 0;
+
+    virtual void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) = 0;
+};
+
+template <class DataTypes, class ElementType>
+struct ComputeElementForceDerivStrategy
+{
+    using trait = elasticity::trait<DataTypes, ElementType>;
+    using TopologyElement = typename trait::TopologyElement;
+    using ElementStiffness = typename trait::ElementStiffness;
+    using Real = sofa::Real_t<DataTypes>;
+
+    virtual ~ComputeElementForceDerivStrategy() = default;
+    virtual void compute(
+        const sofa::type::vector<TopologyElement>& elements,
+        const sofa::VecCoord_t<DataTypes>& dx,
+        sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementDForces,
+        Real kFactor) = 0;
 
     virtual void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) = 0;
 };

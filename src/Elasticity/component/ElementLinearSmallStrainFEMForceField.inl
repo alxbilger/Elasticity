@@ -19,7 +19,8 @@ constexpr std::string_view parallelUnsequencedComputeStrategy = "parallel_unsequ
 
 template <class DataTypes, class ElementType>
 ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmallStrainFEMForceField()
-    : d_computeStrategy(initData(&d_computeStrategy, "computeStrategy", "The compute strategy used to compute the forces"))
+    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeStrategy", "The compute strategy used to compute the forces"))
+    , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", "The compute strategy used to compute the forces derivatives"))
 {
     sofa::helper::OptionsGroup computeStrategyOptions{
         sequencedComputeStrategy,
@@ -28,12 +29,14 @@ ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::ElementLinearSmal
         parallelUnsequencedComputeStrategy
     };
     computeStrategyOptions.setSelectedItem(std::string(parallelComputeStrategy));
-    d_computeStrategy.setValue(computeStrategyOptions);
 
-    this->addUpdateCallback("selectStrategy", {&this->d_computeStrategy},
+    d_computeForceStrategy.setValue(computeStrategyOptions);
+    d_computeForceDerivStrategy.setValue(computeStrategyOptions);
+
+    this->addUpdateCallback("selectStrategy", {&this->d_computeForceStrategy},
     [this](const sofa::core::DataTracker& )
     {
-        selectStrategy();
+        selectForceStrategy();
         return this->getComponentState();
     }, {});
 }
@@ -46,7 +49,12 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 
     if (!this->isComponentStateInvalid())
     {
-        selectStrategy();
+        selectForceStrategy();
+    }
+
+    if (!this->isComponentStateInvalid())
+    {
+        selectForceDerivStrategy();
     }
 
     if (!this->isComponentStateInvalid())
@@ -155,6 +163,60 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
     }
 }
 
+
+template <class DataTypes, class ElementType, class ExecutionPolicy>
+struct ExecPolicyComputeForceDerivStrategy : public ComputeElementForceDerivStrategy<DataTypes, ElementType>
+{
+    using trait = elasticity::trait<DataTypes, ElementType>;
+    using TopologyElement = typename trait::TopologyElement;
+    using ElementStiffness = typename trait::ElementStiffness;
+    using Real = sofa::Real_t<DataTypes>;
+
+    void compute(
+        const sofa::type::vector<TopologyElement>& elements,
+        const sofa::VecCoord_t<DataTypes>& dx,
+        sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementDForces,
+        Real kFactor) final
+    {
+        if (!m_elementStiffnesses)
+        {
+            dmsg_error("Compute force deriv") << "Invalid stiffness matrix vector.";
+            return;
+        }
+
+        if (this->m_elementStiffnesses->size() != elements.size())
+        {
+            msg_error("Compute force") << "The number of element stiffness matrices is different from the number of elements";
+            return;
+        }
+
+        std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
+
+        std::for_each(ExecutionPolicy{}, indices.begin(), indices.end(),
+            [&](const auto elementId)
+            {
+                const auto& element = elements[elementId];
+
+                sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
+                for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+                {
+                    VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
+                    node_dx = dx[element[i]];
+                }
+
+                const auto& stiffnessMatrix = (*this->m_elementStiffnesses)[elementId];
+                elementDForces[elementId] = (-kFactor) * (stiffnessMatrix * element_dx);
+            });
+    }
+
+    void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) override
+    {
+        m_elementStiffnesses = &m_elementStiffness;
+    }
+
+    sofa::type::vector<ElementStiffness> const* m_elementStiffnesses { nullptr };
+};
+
 template <class DataTypes, class ElementType>
 void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const sofa::core::MechanicalParams* mparams,
@@ -175,22 +237,11 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
 
     m_elementDForce.resize(elements.size());
 
-    std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
-    std::for_each(std::execution::par, indices.begin(), indices.end(),
-        [&](const auto elementId)
-        {
-            const auto& element = elements[elementId];
-            const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
-
-            sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
-            for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
-            {
-                VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
-                node_dx = dxAccessor[element[i]];
-            }
-
-            m_elementDForce[elementId] = (-kFactor) * (stiffnessMatrix * element_dx);
-        });
+    if (m_computeElementForceDerivStrategy)
+    {
+        m_computeElementForceDerivStrategy->setElementStiffnessMatrices(this->m_elementStiffness);
+        m_computeElementForceDerivStrategy->compute(elements, dxAccessor.ref(), m_elementDForce, kFactor);
+    }
 
     // dispatch the element dforce to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
@@ -275,9 +326,9 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
 }
 
 template <class DataTypes, class ElementType>
-void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectStrategy()
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectForceStrategy()
 {
-    const std::string& computeStrategy = d_computeStrategy.getValue().getSelectedItem();
+    const std::string& computeStrategy = d_computeForceStrategy.getValue().getSelectedItem();
 
     if (computeStrategy == sequencedComputeStrategy)
     {
@@ -301,6 +352,41 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectStrate
     {
         m_computeElementForceStrategy = std::make_unique<
             ExecPolicyComputeDisplacementStrategy<DataTypes, ElementType,
+        std::execution::unsequenced_policy>>();
+    }
+    else
+    {
+        msg_error() << "Unknown compute strategy '" + computeStrategy + "'";
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Invalid);
+    }
+}
+template <class DataTypes, class ElementType>
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::selectForceDerivStrategy()
+{
+    const std::string& computeStrategy = d_computeForceDerivStrategy.getValue().getSelectedItem();
+
+    if (computeStrategy == sequencedComputeStrategy)
+    {
+        m_computeElementForceDerivStrategy = std::make_unique<
+            ExecPolicyComputeForceDerivStrategy<DataTypes, ElementType,
+        std::execution::sequenced_policy>>();
+    }
+    else if (computeStrategy == unsequencedComputeStrategy)
+    {
+        m_computeElementForceDerivStrategy = std::make_unique<
+            ExecPolicyComputeForceDerivStrategy<DataTypes, ElementType,
+        std::execution::unsequenced_policy>>();
+    }
+    else if (computeStrategy == parallelComputeStrategy)
+    {
+        m_computeElementForceDerivStrategy = std::make_unique<
+            ExecPolicyComputeForceDerivStrategy<DataTypes, ElementType,
+        std::execution::parallel_policy>>();
+    }
+    else if (computeStrategy == parallelUnsequencedComputeStrategy)
+    {
+        m_computeElementForceDerivStrategy = std::make_unique<
+            ExecPolicyComputeForceDerivStrategy<DataTypes, ElementType,
         std::execution::unsequenced_policy>>();
     }
     else

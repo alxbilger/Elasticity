@@ -110,7 +110,7 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(
                sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
-            auto computeStrategyAccessor = sofa::helper::getWriteAccessor(elementForceField->d_computeStrategy);
+            auto computeStrategyAccessor = sofa::helper::getWriteAccessor(elementForceField->d_computeForceStrategy);
             if (computeStrategy == ComputeStrategy::Sequential)
             {
                 computeStrategyAccessor->setSelectedItem("sequenced");
