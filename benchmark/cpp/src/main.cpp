@@ -37,7 +37,7 @@ enum class ComputeStrategy : bool
     Sequential
 };
 
-static void BM_TetrahedronCorotationalAddForce(
+static sofa::core::behavior::BaseForceField::SPtr createScene(
     benchmark::State& state, ComponentType componentType, Method method, ComputeStrategy computeStrategy)
 {
     sofa::simulation::Node::SPtr rootNode = sofa::simulation::getSimulation()->createNewGraph("root");
@@ -64,6 +64,7 @@ static void BM_TetrahedronCorotationalAddForce(
 
     auto mstate = sofa::core::objectmodel::New<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types>>();
     auto* topologyPositionData = hexaTopology->findData("position");
+    mstate->writeOnlyDx().resize(hexaTopology->getNbPoints());
     mstate->findData("position")->setParent(topologyPositionData);
     tetraNode->addObject(mstate);
 
@@ -126,10 +127,30 @@ static void BM_TetrahedronCorotationalAddForce(
     sofa::simulation::node::initRoot(rootNode.get());
     state.counters["NbTetras"] = tetraTopology->getNbTetrahedra();
 
+    return forceField;
+}
+
+static void BM_TetrahedronCorotationalAddForce(
+benchmark::State& state, ComponentType componentType, Method method, ComputeStrategy computeStrategy)
+{
+    auto forcefield = createScene(state, componentType, method, computeStrategy);
+
     for (auto _ : state)
     {
-        forceField->addForce(
-            sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+        forcefield->addForce(
+           sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+    }
+}
+
+static void BM_TetrahedronCorotationalAddDForce(
+benchmark::State& state, ComponentType componentType, Method method, ComputeStrategy computeStrategy)
+{
+    auto forcefield = createScene(state, componentType, method, computeStrategy);
+
+    for (auto _ : state)
+    {
+        forcefield->addDForce(
+        sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::dforce);
     }
 }
 
@@ -138,14 +159,28 @@ static void BM_TetrahedronLinearAddForce_SOFASeq(benchmark::State& state)
     BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
 }
 
-static void BM_TetrahedronLinearAddForce_SOFAPar(benchmark::State& state)
+static void BM_TetrahedronLinearAddDForce_SOFASeq(benchmark::State& state)
 {
-    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel);
+    BM_TetrahedronCorotationalAddDForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential);
 }
+
+
 
 static void BM_TetrahedronLinearAddForce_ElasticitySeq(benchmark::State& state)
 {
     BM_TetrahedronCorotationalAddForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
+}
+
+static void BM_TetrahedronLinearAddDForce_ElasticitySeq(benchmark::State& state)
+{
+    BM_TetrahedronCorotationalAddDForce(state, ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential);
+}
+
+
+
+static void BM_TetrahedronLinearAddForce_SOFAPar(benchmark::State& state)
+{
+    BM_TetrahedronCorotationalAddForce(state, ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel);
 }
 
 static void BM_TetrahedronLinearAddForce_ElasticityPar(benchmark::State& state)
@@ -169,6 +204,9 @@ BENCHMARK(BM_TetrahedronLinearAddForce_SOFAPar)->Unit(benchmark::kMillisecond)->
 BENCHMARK(BM_TetrahedronLinearAddForce_ElasticityPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 // BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 // BENCHMARK(BM_TetrahedronCorotationalAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+
+BENCHMARK(BM_TetrahedronLinearAddDForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronLinearAddDForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 
 int main(int argc, char** argv)
 {
