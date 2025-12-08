@@ -17,16 +17,32 @@ using ElementStiffness = sofa::type::MatSym<
     sofa::Real_t<DataTypes>
 >;
 
+/**
+ * Specifies the type of matrix-vector product to be used with the stiffness matrix.
+ */
 enum class MatrixVectorProductType
 {
+    /**
+     * The matrix-vector product is computed using the factorization of the matrix
+     */
     Factorization,
+
+    /**
+     * The matrix-vector product is computed using the dense matrix representation
+     */
     Dense
 };
 
-template <class DataTypes, class ElementType>
-struct BaseFactorizedElementStiffness
+/**
+ * Represents an element stiffness matrix. It contains the dense matrix representation, but also
+ * its factorization. Both the factorization or the dense matrix can be used for the product of the
+ * stiffness matrix with a vector. Although it gives the same result, it has an impact on the
+ * performances.
+ */
+template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType>
+struct FactorizedElementStiffness
 {
-protected:
+private:
     using Real = sofa::Real_t<DataTypes>;
     using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
     static constexpr auto NbQuadraturePoints = FiniteElement::quadraturePoints().size();
@@ -71,12 +87,7 @@ public:
     }
 
     const auto& getAssembledMatrix() const { return stiffnessMatrix; }
-};
 
-template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType>
-struct FactorizedElementStiffness : public BaseFactorizedElementStiffness<DataTypes, ElementType>
-{
-    static constexpr auto NbQuadraturePoints = BaseFactorizedElementStiffness<DataTypes, ElementType>::NbQuadraturePoints;
     using Vec = sofa::type::Vec<
         ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
         sofa::Real_t<DataTypes>>;
