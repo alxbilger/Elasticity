@@ -137,7 +137,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
         m_computeElementForceStrategy->compute(elements, positionAccessor.ref(), restPositionAccessor.ref(), m_elementForce);
     }
 
-    // dispatch the element force to the degrees of freedom
+    // dispatch the element force to the degrees of freedom.
+    // this operation is done outside the compute strategy because it is not thread-safe.
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
@@ -172,23 +173,32 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
     const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
             mparams, this->rayleighStiffness.getValue()));
 
-    auto elementStiffnessIt = this->m_elementStiffness.begin();
-    for (const auto& element : elements)
+    m_elementDForce.resize(elements.size());
+
+    std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+        [&](const auto elementId)
+        {
+            const auto& element = elements[elementId];
+            const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
+
+            sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
+            for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+            {
+                VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
+                node_dx = dxAccessor[element[i]];
+            }
+
+            m_elementDForce[elementId] = (-kFactor) * (stiffnessMatrix * element_dx);
+        });
+
+    for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
     {
-        sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
+        const auto& element = elements[elementId];
 
         for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
         {
-            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
-            node_dx = dxAccessor[element[i]];
-        }
-
-        const auto& stiffnessMatrix = *elementStiffnessIt++;
-        auto dForce = (-kFactor) * (stiffnessMatrix * element_dx);
-
-        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
-        {
-            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(dForce, i * trait::spatial_dimensions);
+            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(m_elementDForce[elementId], i * trait::spatial_dimensions);
             dfAccessor[element[i]] += nodedForce.toVec();
         }
     }

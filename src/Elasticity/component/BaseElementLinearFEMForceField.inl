@@ -51,8 +51,6 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
 
-    m_elementStiffness.clear();
-
     const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
     m_elementStiffness.resize(elements.size());
 

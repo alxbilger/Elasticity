@@ -100,6 +100,7 @@ protected:
     std::unique_ptr<ComputeElementForceStrategy<DataTypes, ElementType>> m_computeElementForceStrategy;
 
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
+    sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
 };
 
 template <class DataTypes, class ElementType>
