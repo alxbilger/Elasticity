@@ -146,10 +146,10 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addForce(
 
         for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
         {
-            auto& f_j = forceAccessor[element[j]];
+            auto& nodeForce = forceAccessor[element[j]];
             for (sofa::Size k = 0; k < trait::spatial_dimensions; ++k)
             {
-                f_j[k] -= elementForce[j * trait::spatial_dimensions + k];
+                nodeForce[k] -= elementForce[j * trait::spatial_dimensions + k];
             }
         }
     }
@@ -192,6 +192,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addDForce(
             m_elementDForce[elementId] = (-kFactor) * (stiffnessMatrix * element_dx);
         });
 
+    // dispatch the element dforce to the degrees of freedom.
+    // this operation is done outside the compute strategy because it is not thread-safe.
     for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
     {
         const auto& element = elements[elementId];
