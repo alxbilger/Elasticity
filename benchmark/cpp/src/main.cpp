@@ -102,14 +102,27 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
                sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
-            auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
-            if (computeStrategy == ComputeStrategy::Sequential)
             {
-                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
+                if (computeStrategy == ComputeStrategy::Sequential)
+                {
+                    computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                }
+                else
+                {
+                    computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                }
             }
-            else
             {
-                computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceDerivStrategy);
+                if (computeStrategy == ComputeStrategy::Sequential)
+                {
+                    computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                }
+                else
+                {
+                    computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                }
             }
             forceField = elementForceField;
         }
@@ -119,14 +132,27 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
                 = sofa::core::objectmodel::New<elasticity::ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
-            auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
-            if (computeStrategy == ComputeStrategy::Sequential)
             {
-                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
+                if (computeStrategy == ComputeStrategy::Sequential)
+                {
+                    computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                }
+                else
+                {
+                    computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                }
             }
-            else
             {
-                computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceDerivStrategy);
+                if (computeStrategy == ComputeStrategy::Sequential)
+                {
+                    computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+                }
+                else
+                {
+                    computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+                }
             }
             forceField = elementForceField;
         }
@@ -183,9 +209,9 @@ BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeSt
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
+// BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
+// BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
 
 int main(int argc, char** argv)
