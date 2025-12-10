@@ -1,14 +1,16 @@
 #pragma once
 
+#include <Elasticity/component/BaseElementLinearFEMForceField.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
+#include <Elasticity/impl/ComputeStrategy.h>
 #include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <Elasticity/impl/trait.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/helper/OptionsGroup.h>
 
-#include "BaseElementLinearFEMForceField.h"
+#include <Elasticity/component/FEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -18,19 +20,15 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-struct ComputeElementForceStrategy;
-
-template <class DataTypes, class ElementType>
-struct ComputeElementForceDerivStrategy;
-
-template <class DataTypes, class ElementType>
 class ElementLinearSmallStrainFEMForceField :
-    public BaseElementLinearFEMForceField<DataTypes, ElementType>
+    public BaseElementLinearFEMForceField<DataTypes, ElementType>,
+    public FEMForceField<DataTypes, ElementType>
 {
 public:
-    SOFA_CLASS(
+    SOFA_CLASS2(
         SOFA_TEMPLATE2(ElementLinearSmallStrainFEMForceField, DataTypes, ElementType),
-            SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType));
+            SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
+            SOFA_TEMPLATE2(FEMForceField, DataTypes, ElementType));
 
     /**
      * The purpose of this function is to register the name of this class according to the provided
@@ -47,26 +45,17 @@ public:
 
     static const std::string GetCustomTemplateName() { return DataTypes::Name(); }
 
-    sofa::Data<sofa::helper::OptionsGroup> d_computeForceStrategy;
-    sofa::Data<sofa::helper::OptionsGroup> d_computeForceDerivStrategy;
-
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
     using ElementStiffness = typename trait::ElementStiffness;
     using ElasticityTensor = typename trait::ElasticityTensor;
     using ElementDisplacement = typename trait::ElementDisplacement;
     using StrainDisplacement = typename trait::StrainDisplacement;
-
-    using BaseElementLinearFEMForceField<DataTypes, ElementType>::l_topology;
+    using ElementForce = typename trait::ElementForce;
+    using TopologyAccessor::l_topology;
 
 public:
     void init() override;
-
-    void addForce(const sofa::core::MechanicalParams* mparams, sofa::DataVecDeriv_t<DataTypes>& f,
-              const sofa::DataVecCoord_t<DataTypes>& x, const sofa::DataVecDeriv_t<DataTypes>& v) override;
-
-    void addDForce(const sofa::core::MechanicalParams* mparams, sofa::DataVecDeriv_t<DataTypes>& df,
-                   const sofa::DataVecDeriv_t<DataTypes>& dx) override;
 
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
@@ -78,53 +67,19 @@ public:
 
 protected:
 
-    ElementLinearSmallStrainFEMForceField();
+    template<class ExecutionPolicy>
+    void computeElementForce(
+        sofa::type::vector<ElementForce>& elementForces,
+        const sofa::VecCoord_t<DataTypes>& nodePositions);
 
-    void selectForceStrategy();
-    void selectForceDerivStrategy();
+    template<class ExecutionPolicy>
+    void computeElementForceDeriv(
+        sofa::type::vector<ElementForce>& elementForcesDeriv,
+        const sofa::VecCoord_t<DataTypes>& nodeDx,
+        sofa::Real_t<DataTypes> kFactor);
 
-    std::unique_ptr<ComputeElementForceStrategy<DataTypes, ElementType>> m_computeElementForceStrategy;
-    std::unique_ptr<ComputeElementForceDerivStrategy<DataTypes, ElementType>> m_computeElementForceDerivStrategy;
-
-    sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
-    sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
 };
 
-template <class DataTypes, class ElementType>
-struct ComputeElementForceStrategy
-{
-    using trait = elasticity::trait<DataTypes, ElementType>;
-    using TopologyElement = typename trait::TopologyElement;
-    using ElementStiffness = typename trait::ElementStiffness;
-    using Real = sofa::Real_t<DataTypes>;
-
-    virtual ~ComputeElementForceStrategy() = default;
-    virtual void compute(
-        const sofa::type::vector<TopologyElement>& elements,
-        const sofa::VecCoord_t<DataTypes>& position,
-        const sofa::VecCoord_t<DataTypes>& restPosition,
-        sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementForces) = 0;
-
-    virtual void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) = 0;
-};
-
-template <class DataTypes, class ElementType>
-struct ComputeElementForceDerivStrategy
-{
-    using trait = elasticity::trait<DataTypes, ElementType>;
-    using TopologyElement = typename trait::TopologyElement;
-    using ElementStiffness = typename trait::ElementStiffness;
-    using Real = sofa::Real_t<DataTypes>;
-
-    virtual ~ComputeElementForceDerivStrategy() = default;
-    virtual void compute(
-        const sofa::type::vector<TopologyElement>& elements,
-        const sofa::VecCoord_t<DataTypes>& dx,
-        sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, Real>>& elementDForces,
-        Real kFactor) = 0;
-
-    virtual void setElementStiffnessMatrices(const sofa::type::vector<ElementStiffness>& m_elementStiffness) = 0;
-};
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)
 extern template class ELASTICITY_API ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;

@@ -83,7 +83,7 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(
 
         if (method == Method::Corotational)
         {
-            tetraForceField->setMethod("large");
+            tetraForceField->setMethod("svd");
         }
         else
         {
@@ -102,22 +102,31 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(
                sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
+            auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
+            if (computeStrategy == ComputeStrategy::Sequential)
+            {
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+            }
+            else
+            {
+                computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
+            }
             forceField = elementForceField;
         }
         else
         {
-            auto elementForceField = sofa::core::objectmodel::New<elasticity::ElementLinearSmallStrainFEMForceField<
-               sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
+            elasticity::ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>::SPtr elementForceField
+                = sofa::core::objectmodel::New<elasticity::ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
             elementForceField->d_poissonRatio.setValue(0.45);
             elementForceField->d_youngModulus.setValue(1e6);
-            auto computeStrategyAccessor = sofa::helper::getWriteAccessor(elementForceField->d_computeForceStrategy);
+            auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
             if (computeStrategy == ComputeStrategy::Sequential)
             {
-                computeStrategyAccessor->setSelectedItem("sequenced");
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
             }
             else
             {
-                computeStrategyAccessor->setSelectedItem("parallel");
+                computeStrategyAccessor.wref() = elasticity::parallelComputeStrategy;
             }
             forceField = elementForceField;
         }
@@ -198,6 +207,16 @@ static void BM_TetrahedronCorotationalAddForce_ElasticitySeq(benchmark::State& s
     BM_TetrahedronAddForce(state, ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential);
 }
 
+static void BM_TetrahedronCorotationalAddForce_SOFAPar(benchmark::State& state)
+{
+    BM_TetrahedronAddForce(state, ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel);
+}
+
+static void BM_TetrahedronCorotationalAddForce_ElasticityPar(benchmark::State& state)
+{
+    BM_TetrahedronAddForce(state, ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Parallel);
+}
+
 BENCHMARK(BM_TetrahedronLinearAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 BENCHMARK(BM_TetrahedronLinearAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 BENCHMARK(BM_TetrahedronLinearAddForce_SOFAPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
@@ -208,6 +227,8 @@ BENCHMARK(BM_TetrahedronLinearAddDForce_ElasticitySeq)->Unit(benchmark::kMillise
 
 BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFASeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 BENCHMARK(BM_TetrahedronCorotationalAddForce_ElasticitySeq)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronCorotationalAddForce_SOFAPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
+BENCHMARK(BM_TetrahedronCorotationalAddForce_ElasticityPar)->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {1, 8} });
 
 int main(int argc, char** argv)
 {

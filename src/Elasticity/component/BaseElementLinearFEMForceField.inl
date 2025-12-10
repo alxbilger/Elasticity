@@ -7,6 +7,8 @@
 #include <execution>
 #include <ranges>
 
+#include "FEMForceField.h"
+
 namespace elasticity
 {
 
@@ -14,8 +16,8 @@ template <class DataTypes, class ElementType>
 void BaseElementLinearFEMForceField<DataTypes, ElementType>::init()
 {
     LinearMechanicalParametersComponent<DataTypes>::init();
-    sofa::core::behavior::ForceField<DataTypes>::init();
     TopologyAccessor::init();
+    sofa::core::behavior::SingleStateAccessor<DataTypes>::init();
 
     if (!this->isComponentStateInvalid())
     {

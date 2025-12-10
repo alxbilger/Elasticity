@@ -3,34 +3,42 @@
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <Elasticity/impl/ComputeStrategy.h>
 #include <Elasticity/impl/trait.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/behavior/SingleStateAccessor.h>
-#include <Elasticity/finiteelement/FiniteElement[all].h>
 
 namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
 class BaseElementLinearFEMForceField :
-    public TopologyAccessor,
+    public virtual TopologyAccessor,
     public LinearMechanicalParametersComponent<DataTypes>,
-    public sofa::core::behavior::ForceField<DataTypes>
+    public virtual sofa::core::behavior::SingleStateAccessor<DataTypes>
 {
 public:
     SOFA_CLASS3(
     SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
         TopologyAccessor,
         LinearMechanicalParametersComponent<DataTypes>,
-        sofa::core::behavior::ForceField<DataTypes>);
+        sofa::core::behavior::SingleStateAccessor<DataTypes>);
 
     void init() override;
+
+
+
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
     using ElementStiffness = typename trait::ElementStiffness;
     using ElasticityTensor = typename trait::ElasticityTensor;
     using StrainDisplacement = typename trait::StrainDisplacement;
+    using TopologyAccessor::l_topology;
+
+public:
+    const sofa::type::vector<ElementStiffness>& getElementStiffness() const { return m_elementStiffness; }
 
 protected:
 

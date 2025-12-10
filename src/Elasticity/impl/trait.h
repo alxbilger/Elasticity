@@ -47,6 +47,8 @@ struct trait
 
     /// the type of the element stiffness matrix
     using ElementStiffness = elasticity::FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType>;
+
+    using ElementForce = sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>;
 };
 
 }

@@ -26,6 +26,8 @@ set(HEADER_FILES
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.inl
     src/Elasticity/component/ElementPrefab.h
     src/Elasticity/component/ElementPrefab.inl
+    src/Elasticity/component/FEMForceField.h
+    src/Elasticity/component/FEMForceField.inl
     src/Elasticity/component/HyperelasticMaterial.h
     src/Elasticity/component/HyperelasticMaterial.inl
     src/Elasticity/component/LinearMechanicalParametersComponent.h
@@ -52,6 +54,7 @@ set(HEADER_FILES
     src/Elasticity/component/prefab/LinearSmallStrainFEMForceField.h
     src/Elasticity/component/prefab/LinearSmallStrainFEMForceField.inl
 
+    src/Elasticity/impl/ComputeStrategy.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/FullySymmetric4Tensor.h
     src/Elasticity/impl/IsotropicElasticityTensor.h
@@ -78,6 +81,7 @@ set(SOURCE_FILES
     src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp
+    src/Elasticity/component/FEMForceField.cpp
     src/Elasticity/component/HyperelasticMaterial.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/PK2HyperelasticMaterial.cpp

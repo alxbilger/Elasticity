@@ -1,0 +1,153 @@
+#pragma once
+#include <Elasticity/component/FEMForceField.h>
+#include <Elasticity/impl/VecView.h>
+
+namespace elasticity
+{
+
+template <class DataTypes, class ElementType>
+FEMForceField<DataTypes, ElementType>::FEMForceField()
+    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeStrategy", std::string("The compute strategy used to compute the forces.\n" + ComputeStrategy::dataDescription()).c_str()))
+    , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", std::string("The compute strategy used to compute the forces derivatives.\n" + ComputeStrategy::dataDescription()).c_str()))
+{
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::init()
+{
+    sofa::core::behavior::ForceField<DataTypes>::init();
+
+    if (!this->isComponentStateInvalid())
+    {
+        TopologyAccessor::init();
+    }
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::addForce(
+    const sofa::core::MechanicalParams* mparams,
+    sofa::DataVecDeriv_t<DataTypes>& f,
+    const sofa::DataVecCoord_t<DataTypes>& x,
+    const sofa::DataVecDeriv_t<DataTypes>& v)
+{
+    SOFA_UNUSED(mparams);
+    SOFA_UNUSED(v);
+
+    auto positionAccessor = sofa::helper::getReadAccessor(x);
+    auto restPositionAccessor = this->mstate->readRestPositions();
+
+    if (l_topology == nullptr) return;
+
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    m_elementForce.resize(elements.size());
+
+    this->addElementForce(mparams, m_elementForce, positionAccessor.ref());
+
+    auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
+
+    // dispatch the element force to the degrees of freedom.
+    // this operation is done outside the compute strategy because it is not thread-safe.
+    dispatchElementForcesToNodes(elements, forceAccessor.wref());
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::addElementForce(
+    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& f,
+    const sofa::VecCoord_t<DataTypes>& x)
+{
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+
+    auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
+    const auto& computeForceStrategy = computeForceStrategyAccessor->key();
+
+    const auto it = m_computeElementForceMap.find(computeForceStrategy);
+    if (it != m_computeElementForceMap.end())
+    {
+        it->second(f, x);
+    }
+    else
+    {
+        msg_error() << "Unknown compute strategy: '" << computeForceStrategy << "'";
+    }
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::dispatchElementForcesToNodes(
+    const sofa::type::vector<typename trait::TopologyElement>& elements,
+    sofa::VecDeriv_t<DataTypes>& nodeForces)
+{
+    for (sofa::Size i = 0; i < elements.size(); ++i)
+    {
+        const auto& element = elements[i];
+        const auto& elementForce = m_elementForce[i];
+
+        for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
+        {
+            auto& nodeForce = nodeForces[element[j]];
+            for (sofa::Size k = 0; k < trait::spatial_dimensions; ++k)
+            {
+                nodeForce[k] -= elementForce[j * trait::spatial_dimensions + k];
+            }
+        }
+    }
+}
+
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::addDForce(
+    const sofa::core::MechanicalParams* mparams,
+    sofa::DataVecDeriv_t<DataTypes>& df,
+    const sofa::DataVecDeriv_t<DataTypes>& dx)
+{
+    if (this->isComponentStateInvalid())
+        return;
+
+    auto dfAccessor = sofa::helper::getWriteAccessor(df);
+    auto dxAccessor = sofa::helper::getReadAccessor(dx);
+    dfAccessor.resize(dxAccessor.size());
+
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+
+    const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
+            mparams, this->rayleighStiffness.getValue()));
+
+    m_elementDForce.resize(elements.size());
+
+    this->addElementDForce(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
+
+    // dispatch the element dforce to the degrees of freedom.
+    // this operation is done outside the compute strategy because it is not thread-safe.
+    for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
+    {
+        const auto& element = elements[elementId];
+
+        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+        {
+            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(m_elementDForce[elementId], i * trait::spatial_dimensions);
+            dfAccessor[element[i]] -= nodedForce.toVec();
+        }
+    }
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::addElementDForce(
+    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& df,
+    const sofa::VecDeriv_t<DataTypes>& dx, sofa::Real_t<DataTypes> kFactor)
+{
+    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+
+    auto computeForceDerivStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceDerivStrategy);
+    const auto& computeForceDerivStrategy = computeForceDerivStrategyAccessor->key();
+
+    const auto it = m_computeElementForceDerivMap.find(computeForceDerivStrategy);
+    if (it != m_computeElementForceDerivMap.end())
+    {
+        it->second(df, dx, kFactor);
+    }
+    else
+    {
+        msg_error() << "Unknown compute strategy: '" << computeForceDerivStrategy << "'";
+    }
+}
+
+}  // namespace elasticity
