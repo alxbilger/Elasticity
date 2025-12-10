@@ -110,6 +110,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementFor
     sofa::Real_t<DataTypes> kFactor)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    m_rotations.resize(elements.size(), RotationMatrix::Identity());
 
     std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
 
