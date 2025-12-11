@@ -61,7 +61,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementFor
     sofa::type::vector<ElementForce>& elementForces, const sofa::VecCoord_t<DataTypes>& nodePositions)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
-    auto restPositionAccessor = this->mstate->readRestPositions();
+    auto restPositionAccessor = this->sofa::core::behavior::ForceField<DataTypes>::mstate->readRestPositions();
     m_rotations.resize(elements.size(), RotationMatrix::Identity());
 
     std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
@@ -145,8 +145,8 @@ template <class DataTypes, class ElementType>
 void ElementCorotationalFEMForceField<DataTypes, ElementType>::buildStiffnessMatrix(
     sofa::core::behavior::StiffnessMatrix* matrix)
 {
-    auto dfdx = matrix->getForceDerivativeIn(this->mstate)
-        .withRespectToPositionsIn(this->mstate);
+    auto dfdx = matrix->getForceDerivativeIn(this->sofa::core::behavior::ForceField<DataTypes>::mstate)
+        .withRespectToPositionsIn(this->sofa::core::behavior::ForceField<DataTypes>::mstate);
 
     sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
