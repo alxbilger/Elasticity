@@ -12,7 +12,8 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-using ElementStiffness = sofa::type::MatSym<
+using ElementStiffness = sofa::type::Mat<
+    ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
     ElementType::NumberOfNodes * DataTypes::spatial_dimensions,
     sofa::Real_t<DataTypes>
 >;
