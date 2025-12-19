@@ -24,7 +24,7 @@
     </Node>
 
     <FreeMotionAnimationLoop computeBoundingBox="false"/>
-    <GenericConstraintSolver maxIterations="50" tolerance="1.0e-6"/>
+    <BlockGaussSeidelConstraintSolver maxIterations="50" tolerance="1.0e-6"/>
 
     <CollisionPipeline name="Pipeline" />
     <BruteForceBroadPhase name="BroadPhase" />
@@ -70,12 +70,6 @@
 
             <BarycentricMapping input="@../state" output="@mappedState" input_topology="@../Quad_topo" output_topology="@Container"/>
             <TriangleCollisionModel name="Collision" contactDistance="0.001" />
-        </Node>
-
-        <Node name="Data">
-            <DataDisplay pointData="@../FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <LinearSolverConstraintCorrection linearSolver="@ldl"/>
