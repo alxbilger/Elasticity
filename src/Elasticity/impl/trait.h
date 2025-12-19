@@ -19,7 +19,7 @@ struct trait
     using Deriv = sofa::Deriv_t<DataTypes>;
     using Real = sofa::Real_t<DataTypes>;
 
-    using FiniteElement = FiniteElement<ElementType, DataTypes>;
+    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
     using TopologyElement = typename FiniteElement::TopologyElement;
     using ReferenceCoord = typename FiniteElement::ReferenceCoord;
 
