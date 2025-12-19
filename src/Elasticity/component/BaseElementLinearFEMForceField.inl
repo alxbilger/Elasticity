@@ -45,6 +45,9 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
     if (this->isComponentStateInvalid())
         return;
 
+    if (!this->mstate)
+        return;
+
     const auto youngModulus = this->d_youngModulus.getValue();
     const auto poissonRatio = this->d_poissonRatio.getValue();
     const auto [mu, lambda] = elasticity::toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
