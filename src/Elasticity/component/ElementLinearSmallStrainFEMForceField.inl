@@ -61,7 +61,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
     sofa::type::vector<ElementForce>& elementForces,
     const sofa::VecCoord_t<DataTypes>& nodePositions)
 {
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     auto restPositionAccessor = this->sofa::core::behavior::ForceField<DataTypes>::mstate->readRestPositions();
 
     std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
@@ -91,7 +91,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
     sofa::type::vector<ElementForce>& elementForcesDeriv, const sofa::VecCoord_t<DataTypes>& nodeDx,
     sofa::Real_t<DataTypes> kFactor)
 {
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
 
@@ -124,7 +124,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffne
 
     sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     auto elementStiffnessIt = this->m_elementStiffness.begin();
     for (const auto& element : elements)
     {
@@ -159,7 +159,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addKToMatrix
     using LocalMatType = sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>>;
     LocalMatType localMatrix{sofa::type::NOINIT};
 
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     auto elementStiffnessIt = this->m_elementStiffness.begin();
     for (const auto& element : elements)
     {

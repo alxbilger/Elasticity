@@ -52,7 +52,6 @@ private:
     using ElementDisplacement = typename trait::ElementDisplacement;
     using StrainDisplacement = typename trait::StrainDisplacement;
     using ElementForce = typename trait::ElementForce;
-    using TopologyAccessor::l_topology;
 
 public:
     void init() override;

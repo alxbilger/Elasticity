@@ -36,9 +36,9 @@ void FEMForceField<DataTypes, ElementType>::addForce(
     auto positionAccessor = sofa::helper::getReadAccessor(x);
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    if (l_topology == nullptr) return;
+    if (this->l_topology == nullptr) return;
 
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     m_elementForce.resize(elements.size());
 
     this->addElementForce(mparams, m_elementForce, positionAccessor.ref());
@@ -55,7 +55,7 @@ void FEMForceField<DataTypes, ElementType>::addElementForce(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& f,
     const sofa::VecCoord_t<DataTypes>& x)
 {
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
     const auto& computeForceStrategy = computeForceStrategyAccessor->key();
@@ -106,7 +106,7 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
     auto dxAccessor = sofa::helper::getReadAccessor(dx);
     dfAccessor.resize(dxAccessor.size());
 
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
             mparams, this->rayleighStiffness.getValue()));
@@ -134,7 +134,7 @@ void FEMForceField<DataTypes, ElementType>::addElementDForce(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& df,
     const sofa::VecDeriv_t<DataTypes>& dx, sofa::Real_t<DataTypes> kFactor)
 {
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     auto computeForceDerivStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceDerivStrategy);
     const auto& computeForceDerivStrategy = computeForceDerivStrategyAccessor->key();

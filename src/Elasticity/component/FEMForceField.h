@@ -16,7 +16,6 @@ public:
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
-    using TopologyAccessor::l_topology;
     using ElementForce = trait::ElementForce;
 
 public:

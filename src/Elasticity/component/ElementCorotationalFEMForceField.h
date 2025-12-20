@@ -43,7 +43,6 @@ public:
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
-    using TopologyAccessor::l_topology;
     using ElementForce = trait::ElementForce;
     using RotationMatrix = sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>>;
 

@@ -7,7 +7,7 @@
 #include <execution>
 #include <ranges>
 
-#include "FEMForceField.h"
+#include <Elasticity/component/FEMForceField.h>
 
 namespace elasticity
 {
@@ -39,7 +39,7 @@ BaseElementLinearFEMForceField<DataTypes, ElementType>::BaseElementLinearFEMForc
 template <class DataTypes, class ElementType>
 void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementStiffness()
 {
-    if (!l_topology)
+    if (!this->l_topology)
         return;
 
     if (this->isComponentStateInvalid())
@@ -56,7 +56,7 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
 
-    const auto& elements = trait::FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     m_elementStiffness.resize(elements.size());
 
     SCOPED_TIMER("precomputeStiffness");

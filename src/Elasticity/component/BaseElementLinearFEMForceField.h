@@ -35,7 +35,6 @@ private:
     using ElementStiffness = typename trait::ElementStiffness;
     using ElasticityTensor = typename trait::ElasticityTensor;
     using StrainDisplacement = typename trait::StrainDisplacement;
-    using TopologyAccessor::l_topology;
 
 public:
     const sofa::type::vector<ElementStiffness>& getElementStiffness() const { return m_elementStiffness; }
