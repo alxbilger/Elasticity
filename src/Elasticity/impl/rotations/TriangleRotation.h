@@ -26,7 +26,7 @@ struct TriangleRotation
 
     static constexpr sofa::helper::Item getItem()
     {
-        return {"triangle", "Compute the rotation based on 3 points"};
+        return {"triangle", "Compute the rotation based on the Gram-Schmidt frame alignment"};
     }
 
 private:
