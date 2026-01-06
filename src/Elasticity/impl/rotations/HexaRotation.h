@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sofa/core/trait/DataTypes.h>
 #include <sofa/helper/SelectableItem.h>
 #include <sofa/type/Mat.h>
 
@@ -7,7 +8,7 @@ namespace elasticity
 {
 
 template <class DataTypes>
-struct TriangleRotation
+struct HexaRotation
 {
     using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
 
@@ -17,27 +18,32 @@ struct TriangleRotation
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
         RotationMatrix currentRotation, restRotation;
-        computeRotationFrom3Points(currentRotation, {nodesPosition[0], nodesPosition[1], nodesPosition[2]});
-        computeRotationFrom3Points(restRotation, {nodesRestPosition[0], nodesRestPosition[1], nodesRestPosition[2]});
+        computeRotationFromHexa(currentRotation, nodesPosition);
+        computeRotationFromHexa(restRotation, nodesRestPosition);
 
         rotationMatrix = currentRotation.transposed() * restRotation;
     }
 
     static constexpr sofa::helper::Item getItem()
     {
-        return {"triangle", "Compute the rotation based on 3 points"};
+        return {"hexa", "Compute the rotation based on two average edges in the hexahedron"};
     }
 
 private:
 
-    void computeRotationFrom3Points(RotationMatrix& rotationMatrix,
-        const std::array<sofa::Coord_t<DataTypes>, 3>& nodesPosition)
+    template<sofa::Size NumberOfNodesInElement>
+    void computeRotationFromHexa(RotationMatrix& rotationMatrix,
+        const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodes)
     {
         using Coord = sofa::Coord_t<DataTypes>;
 
-        const Coord edgex = (nodesPosition[1] - nodesPosition[0]).normalized();
-        Coord edgey = nodesPosition[2] - nodesPosition[0];
+        Coord edgex = (nodes[1]-nodes[0] + nodes[2]-nodes[3] + nodes[5]-nodes[4] + nodes[6]-nodes[7])*.25;
+        Coord edgey = (nodes[3]-nodes[0] + nodes[2]-nodes[1] + nodes[7]-nodes[4] + nodes[6]-nodes[5])*.25;
+
+        edgex.normalize();
+
         const Coord edgez = cross( edgex, edgey ).normalized();
+
         edgey = cross( edgez, edgex ); //edgey is unit vector because edgez and edgex are orthogonal unit vectors
 
         rotationMatrix(0,0) = edgex[0];

@@ -6,6 +6,7 @@
 #include <Elasticity/impl/rotations/PolarDecomposition.h>
 #include <Elasticity/impl/rotations/StablePolarDecomposition.h>
 #include <Elasticity/impl/rotations/TriangleRotation.h>
+#include <Elasticity/impl/rotations/HexaRotation.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/helper/OptionsGroup.h>
 
@@ -96,6 +97,21 @@ struct RotationMethods<DataTypes, sofa::geometry::Tetrahedron> : RotationMethods
     explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
     {
         this->d_rotationMethod.setValue(TriangleRotation<DataTypes>::getItem().key);
+    }
+};
+
+//partial specialization for linear hexahedron
+template <class DataTypes>
+struct RotationMethods<DataTypes, sofa::geometry::Hexahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexaRotation<DataTypes>
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
+        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexaRotation<DataTypes> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(HexaRotation<DataTypes>::getItem().key);
     }
 };
 

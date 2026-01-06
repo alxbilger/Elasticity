@@ -71,6 +71,7 @@ set(HEADER_FILES
     src/Elasticity/impl/VoigtNotation.h
     src/Elasticity/impl/VonMisesStressContainer.h
 
+    src/Elasticity/impl/rotations/HexaRotation.h
     src/Elasticity/impl/rotations/IdentityRotation.h
     src/Elasticity/impl/rotations/PolarDecomposition.h
     src/Elasticity/impl/rotations/StablePolarDecomposition.h
