@@ -31,14 +31,14 @@ struct RotationMethodsContainer
     using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
 
-    void computeRotation(RotationMatrix& rotationMatrix,
+    void computeRotation(RotationMatrix& rotationMatrix, RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
         std::visit(
             [&](auto& rotationComputer)
             {
-                rotationComputer.computeRotation(rotationMatrix, nodesPosition, nodesRestPosition);
+                rotationComputer.computeRotation(rotationMatrix, initialRotationMatrix, nodesPosition, nodesRestPosition);
             },
             m_rotationComputer);
     }
@@ -170,7 +170,7 @@ public:
 
     ElementCorotationalFEMForceField();
 
- void init() override;
+    void init() override;
 
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
@@ -192,11 +192,17 @@ protected:
         sofa::Real_t<DataTypes> kFactor);
 
     sofa::type::vector<RotationMatrix> m_rotations;
+    sofa::type::vector<RotationMatrix> m_initialRotationsTransposed;
 
     sofa::Coord_t<DataTypes> translation(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes) const;
     static sofa::Coord_t<DataTypes> computeCentroid(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes);
 
     RotationMethods<DataTypes, ElementType> m_rotationMethods;
+
+    void computeRotations(sofa::type::vector<RotationMatrix>& rotations,
+        const sofa::VecCoord_t<DataTypes>& nodePositions,
+        const sofa::VecCoord_t<DataTypes>& nodeRestPositions);
+    void computeInitialRotations();
 };
 
 

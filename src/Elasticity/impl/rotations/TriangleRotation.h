@@ -12,15 +12,16 @@ struct TriangleRotation
     using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
 
     template<sofa::Size NumberOfNodesInElement>
-    void computeRotation(RotationMatrix& rotationMatrix,
+    void computeRotation(RotationMatrix& rotationMatrix, RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
-        RotationMatrix currentRotation, restRotation;
-        computeRotationFrom3Points(currentRotation, {nodesPosition[0], nodesPosition[1], nodesPosition[2]});
-        computeRotationFrom3Points(restRotation, {nodesRestPosition[0], nodesRestPosition[1], nodesRestPosition[2]});
+        SOFA_UNUSED(nodesRestPosition);
 
-        rotationMatrix = currentRotation.transposed() * restRotation;
+        RotationMatrix currentRotation(sofa::type::NOINIT);
+        computeRotationFrom3Points(currentRotation, {nodesPosition[0], nodesPosition[1], nodesPosition[2]});
+
+        rotationMatrix = currentRotation.multTranspose(initialRotationMatrix);
     }
 
     static constexpr sofa::helper::Item getItem()

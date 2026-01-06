@@ -25,10 +25,12 @@ struct PolarDecomposition
     }
 
     template<sofa::Size NumberOfNodesInElement>
-    void computeRotation(RotationMatrix& rotationMatrix,
+    void computeRotation(RotationMatrix& rotationMatrix, RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
+        SOFA_UNUSED(initialRotationMatrix);
+
         const auto t = computeCentroid(nodesPosition);
         const auto t0 = computeCentroid(nodesRestPosition);
 

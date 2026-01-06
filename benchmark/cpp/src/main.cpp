@@ -83,7 +83,7 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
 
         if (method == Method::Corotational)
         {
-            tetraForceField->setMethod("svd");
+            tetraForceField->setMethod("large");
         }
         else
         {
@@ -196,19 +196,24 @@ constexpr int minMultiplier = 1;
 constexpr int maxMultiplier = 8;
 #define BM_OPTIONS ->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {minMultiplier, maxMultiplier} })
 
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
 
-BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
+
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
+
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
+
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
-BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Sequential>) BM_OPTIONS;
+
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
+BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Sequential>) BM_OPTIONS;
+
 // BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
 // BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;

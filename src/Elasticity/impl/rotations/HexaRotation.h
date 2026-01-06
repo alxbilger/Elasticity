@@ -13,15 +13,16 @@ struct HexaRotation
     using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
 
     template<sofa::Size NumberOfNodesInElement>
-    void computeRotation(RotationMatrix& rotationMatrix,
+    void computeRotation(RotationMatrix& rotationMatrix, const RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
-        RotationMatrix currentRotation, restRotation;
-        computeRotationFromHexa(currentRotation, nodesPosition);
-        computeRotationFromHexa(restRotation, nodesRestPosition);
+        SOFA_UNUSED(nodesRestPosition);
 
-        rotationMatrix = currentRotation.transposed() * restRotation;
+        RotationMatrix currentRotation(sofa::type::NOINIT);
+        computeRotationFromHexa(currentRotation, nodesPosition);
+
+        rotationMatrix = currentRotation.multTranspose(initialRotationMatrix);
     }
 
     static constexpr sofa::helper::Item getItem()
