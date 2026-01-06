@@ -85,6 +85,24 @@ struct RotationMethods : RotationMethodsContainer<DataTypes, ElementType,
     using Inherit::RotationMethodsContainer;
 };
 
+template <class Real>
+using Vec3Real = sofa::defaulttype::StdVectorTypes<sofa::type::Vec<3, Real>, sofa::type::Vec<3, Real>, Real>;
+
+//partial specialization for linear triangle in 3D
+template <class Real>
+struct RotationMethods<Vec3Real<Real>, sofa::geometry::Triangle> : RotationMethodsContainer<Vec3Real<Real>, sofa::geometry::Triangle,
+    StablePolarDecomposition<Vec3Real<Real>>, PolarDecomposition<Vec3Real<Real>>, IdentityRotation, TriangleRotation<Vec3Real<Real>>
+>
+{
+    using Inherit = RotationMethodsContainer<Vec3Real<Real>, sofa::geometry::Triangle,
+        StablePolarDecomposition<Vec3Real<Real>>, PolarDecomposition<Vec3Real<Real>>, IdentityRotation, TriangleRotation<Vec3Real<Real>> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(TriangleRotation<Vec3Real<Real>>::getItem().key);
+    }
+};
+
 //partial specialization for linear tetrahedron
 template <class DataTypes>
 struct RotationMethods<DataTypes, sofa::geometry::Tetrahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Tetrahedron,

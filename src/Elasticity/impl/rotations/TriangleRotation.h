@@ -43,9 +43,11 @@ private:
         rotationMatrix(0,0) = edgex[0];
         rotationMatrix(0,1) = edgex[1];
         rotationMatrix(0,2) = edgex[2];
+
         rotationMatrix(1,0) = edgey[0];
         rotationMatrix(1,1) = edgey[1];
         rotationMatrix(1,2) = edgey[2];
+
         rotationMatrix(2,0) = edgez[0];
         rotationMatrix(2,1) = edgez[1];
         rotationMatrix(2,2) = edgez[2];
