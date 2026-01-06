@@ -1,12 +1,15 @@
 #pragma once
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
-#include <Elasticity/impl/ComputeStrategy.h>
+#include <Elasticity/component/FEMForceField.h>
+#include <Elasticity/impl/rotations/IdentityRotation.h>
+#include <Elasticity/impl/rotations/PolarDecomposition.h>
+#include <Elasticity/impl/rotations/StablePolarDecomposition.h>
+#include <Elasticity/impl/rotations/TriangleRotation.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/helper/OptionsGroup.h>
-#include <sofa/helper/decompose.h>
 
-#include <Elasticity/component/FEMForceField.h>
+#include <variant>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_COROTATIONAL_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -14,6 +17,88 @@
 
 namespace elasticity
 {
+
+template <class DataTypes, class ElementType, class... Methods>
+struct RotationMethodsContainer
+{
+    std::variant<Methods...> m_rotationComputer;
+
+    explicit RotationMethodsContainer(sofa::core::objectmodel::BaseObject* parent)
+        : d_rotationMethod(parent->initData(&d_rotationMethod, "rotationMethod", ("The method used to compute the element rotations.\n" + RotationMethodsItems::dataDescription()).c_str()))
+    {}
+
+    using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
+    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+
+    void computeRotation(RotationMatrix& rotationMatrix,
+        const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
+        const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
+    {
+        std::visit(
+            [&](auto& rotationComputer)
+            {
+                rotationComputer.computeRotation(rotationMatrix, nodesPosition, nodesRestPosition);
+            },
+            m_rotationComputer);
+    }
+
+    MAKE_SELECTABLE_ITEMS(RotationMethodsItems, Methods::getItem()...);
+    sofa::Data< RotationMethodsItems > d_rotationMethod;
+
+    void selectRotationMethod()
+    {
+        const std::size_t selectedId = d_rotationMethod.getValue();
+
+        if (selectedId < std::variant_size_v<decltype(m_rotationComputer)>)
+        {
+            doSelectRotationMethod<std::variant_size_v<decltype(m_rotationComputer)> - 1>(selectedId);
+        }
+    }
+
+private:
+
+    template<std::size_t Id>
+    void doSelectRotationMethod(const std::size_t selectedId)
+    {
+        if (selectedId == Id)
+        {
+            m_rotationComputer.template emplace<std::variant_alternative_t<Id, decltype(m_rotationComputer)>>();
+        }
+        else
+        {
+            if constexpr (Id > 0)
+            {
+                doSelectRotationMethod<Id - 1>(selectedId);
+            }
+        }
+    }
+};
+
+
+template <class DataTypes, class ElementType>
+struct RotationMethods : RotationMethodsContainer<DataTypes, ElementType,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, ElementType, StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation>;
+    using Inherit::RotationMethodsContainer;
+};
+
+//partial specialization for linear tetrahedron
+template <class DataTypes>
+struct RotationMethods<DataTypes, sofa::geometry::Tetrahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Tetrahedron,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, TriangleRotation<DataTypes>
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, sofa::geometry::Tetrahedron,
+        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, TriangleRotation<DataTypes> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(TriangleRotation<DataTypes>::getItem().key);
+    }
+};
+
 
 template <class DataTypes, class ElementType>
 class ElementCorotationalFEMForceField :
@@ -49,7 +134,9 @@ private:
 
 public:
 
-    void init() override;
+    ElementCorotationalFEMForceField();
+
+ void init() override;
 
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
@@ -72,15 +159,10 @@ protected:
 
     sofa::type::vector<RotationMatrix> m_rotations;
 
-    void computeElementRotation(
-        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesPosition,
-        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesRestPosition,
-        RotationMatrix& rotationMatrix);
-
     sofa::Coord_t<DataTypes> translation(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes) const;
     static sofa::Coord_t<DataTypes> computeCentroid(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes);
 
-
+    RotationMethods<DataTypes, ElementType> m_rotationMethods;
 };
 
 

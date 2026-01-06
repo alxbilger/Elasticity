@@ -11,6 +11,21 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
+ElementCorotationalFEMForceField<DataTypes, ElementType>::ElementCorotationalFEMForceField()
+    : m_rotationMethods(this)
+{
+    this->addUpdateCallback("selectRotationMethod", {&this->m_rotationMethods.d_rotationMethod},
+        [this](const sofa::core::DataTracker&)
+        {
+            m_rotationMethods.selectRotationMethod();
+            return this->getComponentState();
+        },
+        {});
+
+    m_rotationMethods.selectRotationMethod();
+}
+
+template <class DataTypes, class ElementType>
 void ElementCorotationalFEMForceField<DataTypes, ElementType>::init()
 {
     BaseElementLinearFEMForceField<DataTypes, ElementType>::init();
@@ -48,6 +63,11 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::init()
         fillMap.template operator()<std::execution::unsequenced_policy>(unsequencedComputeStrategy);
     }
 
+    if (!this->isComponentStateInvalid())
+    {
+        m_rotationMethods.selectRotationMethod();
+    }
+
 
     if (!this->isComponentStateInvalid())
     {
@@ -77,7 +97,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementFor
                 extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
             auto& elementRotation = this->m_rotations[elementId];
-            computeElementRotation(elementNodesCoordinates, restElementNodesCoordinates, elementRotation);
+            m_rotationMethods.computeRotation(elementRotation, elementNodesCoordinates, restElementNodesCoordinates);
 
             const auto t = translation(elementNodesCoordinates);
             const auto t0 = translation(restElementNodesCoordinates);
@@ -177,29 +197,6 @@ SReal ElementCorotationalFEMForceField<DataTypes, ElementType>::getPotentialEner
     const sofa::DataVecCoord_t<DataTypes>& x) const
 {
     return 0;
-}
-
-template <class DataTypes, class ElementType>
-void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementRotation(
-    const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesPosition,
-    const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesRestPosition,
-    RotationMatrix& rotationMatrix)
-{
-    const auto t = translation(nodesPosition);
-    const auto t0 = translation(nodesRestPosition);
-
-    sofa::type::Mat<trait::NumberOfNodesInElement, trait::spatial_dimensions, sofa::Real_t<DataTypes>> P(sofa::type::NOINIT);
-    sofa::type::Mat<trait::NumberOfNodesInElement, trait::spatial_dimensions, sofa::Real_t<DataTypes>> Q(sofa::type::NOINIT);
-
-    for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
-    {
-        P[j] = nodesPosition[j] - t;
-        Q[j] = nodesRestPosition[j] - t0;
-    }
-
-    const auto H = P.multTranspose(Q);
-
-    sofa::helper::Decompose<sofa::Real_t<DataTypes>>::polarDecomposition_stable(H, rotationMatrix);
 }
 
 template <class DataTypes, class ElementType>

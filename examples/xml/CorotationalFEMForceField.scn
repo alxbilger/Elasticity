@@ -42,16 +42,9 @@
             <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"/>
         </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../tetra/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
-        </Node>
-
         <BoxROI template="Vec3" name="box_roi" box="-16 -6 -1 -4 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
-
 
     <Node name="hexas_corot">
         <EulerImplicitSolver name="backward Euler" rayleighStiffness="0.1" rayleighMass="0.1" />
@@ -62,12 +55,6 @@
 
         <MeshMatrixMass totalMass="1500" topology="@grid"/>
         <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@grid"/>
-
-        <Node name="Data">
-            <DataDisplay pointData="@../FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
-        </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="4 -6 -1 16 6 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
