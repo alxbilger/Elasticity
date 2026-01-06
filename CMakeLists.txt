@@ -74,6 +74,7 @@ set(HEADER_FILES
     src/Elasticity/impl/rotations/HexaRotation.h
     src/Elasticity/impl/rotations/IdentityRotation.h
     src/Elasticity/impl/rotations/PolarDecomposition.h
+    src/Elasticity/impl/rotations/RotationMethodsContainer.h
     src/Elasticity/impl/rotations/StablePolarDecomposition.h
     src/Elasticity/impl/rotations/TriangleRotation.h
 )
