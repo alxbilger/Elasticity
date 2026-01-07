@@ -32,7 +32,7 @@
         <Node name="edges">
             <EdgeSetTopologyContainer name="topology" edges="@../grid.edges" position="@../state.position"/>
             <EdgeSetTopologyModifier/>
-            <EdgeSetGeometryAlgorithms template="Vec3" drawEdges="1"/>
+            <EdgeSetGeometryAlgorithms template="Vec3" drawEdges="false"/>
 
             <UniformMass totalMass="150" topology="@topology"/>
             <LinearSmallStrainFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@topology"/>
@@ -52,7 +52,7 @@
         <Node name="edges">
             <EdgeSetTopologyContainer name="topology" edges="@../grid.edges" position="@../state.position"/>
             <EdgeSetTopologyModifier/>
-            <EdgeSetGeometryAlgorithms template="Vec3" drawEdges="1" drawColorEdges="magenta"/>
+            <EdgeSetGeometryAlgorithms template="Vec3" drawEdges="false" drawColorEdges="magenta"/>
 
             <UniformMass totalMass="150" topology="@topology"/>
             <CorotationalFEMForceField name="FEM" youngModulus="10000" poissonRatio="0.45" topology="@topology"/>
