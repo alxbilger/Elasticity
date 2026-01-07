@@ -57,6 +57,7 @@ set(HEADER_FILES
     src/Elasticity/impl/ComputeStrategy.h
     src/Elasticity/impl/ElementStiffnessMatrix.h
     src/Elasticity/impl/FullySymmetric4Tensor.h
+    src/Elasticity/impl/IdentityMatrix.h
     src/Elasticity/impl/IsotropicElasticityTensor.h
     src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/LameParameters.h
@@ -64,12 +65,12 @@ set(HEADER_FILES
     src/Elasticity/impl/MatrixTools.h
     src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
-    src/Elasticity/impl/trait.h
     src/Elasticity/impl/SymmetricTensor.h
-    src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VecView.h
+    src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VoigtNotation.h
     src/Elasticity/impl/VonMisesStressContainer.h
+    src/Elasticity/impl/trait.h
 
     src/Elasticity/impl/rotations/HexaRotation.h
     src/Elasticity/impl/rotations/IdentityRotation.h
