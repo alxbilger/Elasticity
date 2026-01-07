@@ -1,6 +1,7 @@
 #pragma once
 #include <Elasticity/component/FEMForceField.h>
 #include <Elasticity/impl/VecView.h>
+#include <sofa/core/visual/VisualParams.h>
 
 namespace elasticity
 {
@@ -147,6 +148,25 @@ void FEMForceField<DataTypes, ElementType>::addElementDForce(
     else
     {
         msg_error() << "Unknown compute strategy: '" << computeForceDerivStrategy << "'";
+    }
+}
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::draw(const sofa::core::visual::VisualParams* vparams)
+{
+    if (!vparams->displayFlags().getShowForceFields())
+        return;
+
+    const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
+
+    if (vparams->displayFlags().getShowWireFrame())
+        vparams->drawTool()->setPolygonMode(0, true);
+
+    const auto& x = this->mstate->read(sofa::core::vec_id::read_access::position)->getValue();
+
+    if constexpr (std::same_as<ElementType, sofa::geometry::Triangle> || std::same_as<ElementType, sofa::geometry::Tetrahedron> || std::same_as<ElementType, sofa::geometry::Hexahedron> )
+    {
+        m_drawMesh.drawAllElements(vparams->drawTool(), x, this->l_topology.get());
     }
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <Elasticity/impl/ComputeStrategy.h>
+#include <sofa/core/visual/DrawMesh.h>
 
 namespace elasticity
 {
@@ -30,6 +31,8 @@ public:
     void addDForce(const sofa::core::MechanicalParams* mparams,
                    sofa::DataVecDeriv_t<DataTypes>& df,
                    const sofa::DataVecDeriv_t<DataTypes>& dx) override;
+
+    void draw(const sofa::core::visual::VisualParams*) override;
 
     sofa::Data<ComputeStrategy> d_computeForceStrategy;
     sofa::Data<ComputeStrategy> d_computeForceDerivStrategy;
@@ -77,6 +80,8 @@ protected:
      * forces derivatives
      */
     std::unordered_map<std::string_view, ComputeElementForceDerivFunction> m_computeElementForceDerivMap;
+
+    sofa::core::visual::DrawElementMesh<ElementType> m_drawMesh;
 };
 
 
