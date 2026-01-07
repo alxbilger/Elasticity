@@ -17,6 +17,19 @@
 namespace elasticity
 {
 
+/**
+ * @brief A container for rotation computation methods in corotational formulations
+ *
+ * This class provides element-specific rotation computation strategies for common element types.
+ *
+ * @tparam DataTypes The data type used throughout the simulation (e.g., sofa::defaulttype::Vec3Types for 3D)
+ * @tparam ElementType The element type (e.g., sofa::geometry::Triangle, sofa::geometry::Tetrahedron)
+ *
+ * Inherits from RotationMethodsContainer with pre-defined rotation strategies.
+ *
+ * The class is specialized for some elements because some rotation strategies can be used only
+ * for specific elements.
+ */
 template <class DataTypes, class ElementType>
 struct RotationMethods : RotationMethodsContainer<DataTypes, ElementType,
     StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation
