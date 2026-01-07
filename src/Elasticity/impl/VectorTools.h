@@ -39,16 +39,4 @@ extractNodesVectorFromGlobalVector(const sofa::topology::Element<ElementType>& e
     return detail::extractNodesVectorFromGlobalVector(element, vector, std::make_index_sequence<ElementType::NumberOfNodes>{});
 }
 
-template<sofa::Size N, typename ValueType>
-ValueType traceFromVoigtTensor(const sofa::type::Vec<N, ValueType>& voigtTensor)
-{
-    static const sofa::Size TensorSize = (-1 + std::sqrt(1 + 8 * N)) / 2;
-    ValueType trace = 0;
-    for (sofa::Size i = 0; i < TensorSize; ++i)
-    {
-        trace += voigtTensor[i];
-    }
-    return trace;
-}
-
 }
