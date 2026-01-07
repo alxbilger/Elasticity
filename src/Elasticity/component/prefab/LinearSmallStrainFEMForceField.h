@@ -32,6 +32,14 @@ public:
         LinearSmallStrainFEMForceField<DataTypes>,
             LinearPrefabParent<DataTypes>,
             LinearMechanicalParametersComponent<DataTypes>);
+
+    sofa::Data<ComputeStrategy> d_computeForceStrategy;
+    sofa::Data<ComputeStrategy> d_computeForceDerivStrategy;
+
+    sofa::Data<sofa::Real_t<DataTypes>> d_elementSpace;
+
+protected:
+    LinearSmallStrainFEMForceField();
 };
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)

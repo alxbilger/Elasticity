@@ -32,6 +32,14 @@ public:
         CorotationalFEMForceField<DataTypes>,
             CorotationalPrefabParent<DataTypes>,
             LinearMechanicalParametersComponent<DataTypes>);
+
+    sofa::Data<ComputeStrategy> d_computeForceStrategy;
+    sofa::Data<ComputeStrategy> d_computeForceDerivStrategy;
+
+    sofa::Data<sofa::Real_t<DataTypes>> d_elementSpace;
+
+protected:
+    CorotationalFEMForceField();
 };
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_COROTATIONAL_FEM_FORCEFIELD_CPP)
