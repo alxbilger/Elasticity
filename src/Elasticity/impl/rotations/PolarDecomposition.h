@@ -25,7 +25,7 @@ struct PolarDecomposition
     }
 
     template<sofa::Size NumberOfNodesInElement>
-    void computeRotation(RotationMatrix& rotationMatrix, RotationMatrix& initialRotationMatrix,
+    void computeRotation(RotationMatrix& rotationMatrix, const RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
     {
