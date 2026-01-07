@@ -165,14 +165,4 @@ constexpr sofa::type::Mat<L1 * N, C1, real> kroneckerProduct(const sofa::type::M
     return result;
 }
 
-template <sofa::Size L, sofa::Size C, class real>
-void setColumn(sofa::type::Mat<L, C, real>& mat, sofa::Size col, const sofa::type::Vec<L, real>& values)
-{
-    for (sofa::Size i = 0; i < L; ++i)
-    {
-        mat(i, col) = values[i];
-    }
-}
-
-
 }

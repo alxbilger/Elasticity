@@ -42,9 +42,9 @@ private:
         const Coord zAxis = cross( xAxis, yAxis ).normalized();
         yAxis = cross( zAxis, xAxis ); //yAxis is a unit vector because zAxis and xAxis are orthogonal unit vectors
 
-        setColumn(rotationMatrix, 0, xAxis);
-        setColumn(rotationMatrix, 1, yAxis);
-        setColumn(rotationMatrix, 2, zAxis);
+        rotationMatrix[0] = xAxis;
+        rotationMatrix[1] = yAxis;
+        rotationMatrix[2] = zAxis;
     }
 };
 

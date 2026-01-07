@@ -83,9 +83,9 @@ private:
         yAxis = cross(zAxis, xAxis);
 
         // Set the orthonormal basis matrix
-        setColumn(rotationMatrix, 0, xAxis);
-        setColumn(rotationMatrix, 1, yAxis);
-        setColumn(rotationMatrix, 2, zAxis);
+        rotationMatrix[0] = xAxis;
+        rotationMatrix[1] = yAxis;
+        rotationMatrix[2] = zAxis;
     }
 };
 
