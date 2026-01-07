@@ -37,6 +37,8 @@ public:
     sofa::Data<ComputeStrategy> d_computeForceStrategy;
     sofa::Data<ComputeStrategy> d_computeForceDerivStrategy;
 
+    sofa::Data<sofa::Real_t<DataTypes>> d_elementSpace;
+
 protected:
 
     FEMForceField();

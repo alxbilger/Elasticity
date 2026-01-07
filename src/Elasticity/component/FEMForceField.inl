@@ -10,7 +10,9 @@ template <class DataTypes, class ElementType>
 FEMForceField<DataTypes, ElementType>::FEMForceField()
     : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeStrategy", std::string("The compute strategy used to compute the forces.\n" + ComputeStrategy::dataDescription()).c_str()))
     , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", std::string("The compute strategy used to compute the forces derivatives.\n" + ComputeStrategy::dataDescription()).c_str()))
+    , d_elementSpace(initData(&d_elementSpace, static_cast<sofa::Real_t<DataTypes>>(0.125), "elementSpace", "When rendering, the space between elements"))
 {
+    d_elementSpace.setGroup("Visualization");
 }
 
 template <class DataTypes, class ElementType>
@@ -166,6 +168,7 @@ void FEMForceField<DataTypes, ElementType>::draw(const sofa::core::visual::Visua
 
     if constexpr (std::same_as<ElementType, sofa::geometry::Triangle> || std::same_as<ElementType, sofa::geometry::Tetrahedron> || std::same_as<ElementType, sofa::geometry::Hexahedron> )
     {
+        m_drawMesh.elementSpace = d_elementSpace.getValue();
         m_drawMesh.drawAllElements(vparams->drawTool(), x, this->l_topology.get());
     }
 }
