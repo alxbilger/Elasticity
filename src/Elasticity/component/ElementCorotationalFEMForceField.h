@@ -2,12 +2,12 @@
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
 #include <Elasticity/component/FEMForceField.h>
+#include <Elasticity/impl/rotations/HexahedronRotation.h>
 #include <Elasticity/impl/rotations/IdentityRotation.h>
 #include <Elasticity/impl/rotations/PolarDecomposition.h>
+#include <Elasticity/impl/rotations/RotationMethodsContainer.h>
 #include <Elasticity/impl/rotations/StablePolarDecomposition.h>
 #include <Elasticity/impl/rotations/TriangleRotation.h>
-#include <Elasticity/impl/rotations/HexaRotation.h>
-#include <Elasticity/impl/rotations/RotationMethodsContainer.h>
 #include <sofa/core/behavior/ForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_COROTATIONAL_FEM_FORCE_FIELD_CPP)
@@ -75,15 +75,15 @@ struct RotationMethods<DataTypes, sofa::geometry::Tetrahedron> : RotationMethods
 //partial specialization for linear hexahedron
 template <class DataTypes>
 struct RotationMethods<DataTypes, sofa::geometry::Hexahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
-    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexaRotation<DataTypes>
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexahedronRotation<DataTypes>
 >
 {
     using Inherit = RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
-        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexaRotation<DataTypes> >;
+        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexahedronRotation<DataTypes> >;
 
     explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
     {
-        this->d_rotationMethod.setValue(HexaRotation<DataTypes>::getItem().key);
+        this->d_rotationMethod.setValue(HexahedronRotation<DataTypes>::getItem().key);
     }
 };
 
