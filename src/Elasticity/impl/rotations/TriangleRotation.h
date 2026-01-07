@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Elasticity/impl/MatrixTools.h>
 #include <sofa/helper/SelectableItem.h>
 #include <sofa/type/Mat.h>
 
@@ -36,22 +37,14 @@ private:
     {
         using Coord = sofa::Coord_t<DataTypes>;
 
-        const Coord edgex = (nodesPosition[1] - nodesPosition[0]).normalized();
-        Coord edgey = nodesPosition[2] - nodesPosition[0];
-        const Coord edgez = cross( edgex, edgey ).normalized();
-        edgey = cross( edgez, edgex ); //edgey is unit vector because edgez and edgex are orthogonal unit vectors
+        const Coord xAxis = (nodesPosition[1] - nodesPosition[0]).normalized();
+        Coord yAxis = nodesPosition[2] - nodesPosition[0];
+        const Coord zAxis = cross( xAxis, yAxis ).normalized();
+        yAxis = cross( zAxis, xAxis ); //yAxis is a unit vector because zAxis and xAxis are orthogonal unit vectors
 
-        rotationMatrix(0,0) = edgex[0];
-        rotationMatrix(0,1) = edgex[1];
-        rotationMatrix(0,2) = edgex[2];
-
-        rotationMatrix(1,0) = edgey[0];
-        rotationMatrix(1,1) = edgey[1];
-        rotationMatrix(1,2) = edgey[2];
-
-        rotationMatrix(2,0) = edgez[0];
-        rotationMatrix(2,1) = edgez[1];
-        rotationMatrix(2,2) = edgez[2];
+        setColumn(rotationMatrix, 0, xAxis);
+        setColumn(rotationMatrix, 1, yAxis);
+        setColumn(rotationMatrix, 2, zAxis);
     }
 };
 
