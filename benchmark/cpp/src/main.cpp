@@ -100,8 +100,8 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
         {
             auto elementForceField = sofa::core::objectmodel::New<elasticity::ElementCorotationalFEMForceField<
                sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
-            elementForceField->d_poissonRatio.setValue(0.45);
-            elementForceField->d_youngModulus.setValue(1e6);
+            elementForceField->d_poissonRatio.setValue({0.45});
+            elementForceField->d_youngModulus.setValue({1e6});
             {
                 auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
                 if (computeStrategy == ComputeStrategy::Sequential)
@@ -130,8 +130,8 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
         {
             elasticity::ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>::SPtr elementForceField
                 = sofa::core::objectmodel::New<elasticity::ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>>();
-            elementForceField->d_poissonRatio.setValue(0.45);
-            elementForceField->d_youngModulus.setValue(1e6);
+            elementForceField->d_poissonRatio.setValue({0.45});
+            elementForceField->d_youngModulus.setValue({1e6});
             {
                 auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
                 if (computeStrategy == ComputeStrategy::Sequential)

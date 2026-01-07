@@ -1,29 +1,22 @@
 #pragma once
 
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement[all].h>
 #include <Elasticity/impl/ComputeStrategy.h>
 #include <Elasticity/impl/trait.h>
-#include <sofa/core/behavior/ForceField.h>
-#include <sofa/core/behavior/SingleStateAccessor.h>
+#include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.h>
 
 namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-class BaseElementLinearFEMForceField :
-    public virtual TopologyAccessor,
-    public LinearMechanicalParametersComponent<DataTypes>,
-    public virtual sofa::core::behavior::SingleStateAccessor<DataTypes>
+class BaseElementLinearFEMForceField : public sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>
 {
 public:
-    SOFA_CLASS3(
-    SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
-        TopologyAccessor,
-        LinearMechanicalParametersComponent<DataTypes>,
-        sofa::core::behavior::SingleStateAccessor<DataTypes>);
+    SOFA_CLASS(
+        SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
+        sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>);
 
     void init() override;
 
@@ -52,8 +45,6 @@ protected:
      * List of precomputed element stiffness matrices
      */
     sofa::type::vector<ElementStiffness> m_elementStiffness;
-
-    ElasticityTensor m_elasticityTensor;
 
     sofa::type::vector<std::array<StrainDisplacement, trait::NumberOfNodesInElement>> m_strainDisplacement;
 };

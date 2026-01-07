@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Elasticity/component/HyperelasticMaterial.h>
-#include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
 #include <Elasticity/finiteelement/FiniteElement.h>
 #include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
+#include <sofa/core/behavior/TopologyAccessor.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -16,13 +16,13 @@ namespace elasticity
 
 template <class TDataTypes, class TElementType>
 class ElementHyperelasticityFEMForceField :
-    public TopologyAccessor,
+    public sofa::core::behavior::TopologyAccessor,
     public sofa::core::behavior::ForceField<TDataTypes>
 {
 public:
     SOFA_CLASS2(
         SOFA_TEMPLATE2(ElementHyperelasticityFEMForceField, TDataTypes, TElementType),
-            TopologyAccessor,
+            sofa::core::behavior::TopologyAccessor,
             sofa::core::behavior::ForceField<TDataTypes>);
 
     using DataTypes = TDataTypes;

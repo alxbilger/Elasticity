@@ -68,8 +68,8 @@ struct TET4LinearSmallStrainFEMForceField_stepTest :
         }
 
         //mechanical parameters
-        this->force->d_poissonRatio.setValue(0);
-        this->force->d_youngModulus.setValue(1);
+        this->force->d_poissonRatio.setValue({0});
+        this->force->d_youngModulus.setValue({1});
 
         //Force e*E*S*1/3  = 1*40*sqrt(3)/4*1/3
         f.resize(4);

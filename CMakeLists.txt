@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(Elasticity VERSION 1.0 LANGUAGES CXX)
 
 find_package(Sofa.Core REQUIRED)
+sofa_find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
 
 set(HEADER_FILES
     src/Elasticity/config.h.in
@@ -34,7 +35,6 @@ set(HEADER_FILES
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/PK2HyperelasticMaterial.h
     src/Elasticity/component/PK2HyperelasticMaterial.inl
-    src/Elasticity/component/TopologyAccessor.h
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.inl
@@ -93,7 +93,6 @@ set(SOURCE_FILES
     src/Elasticity/component/HyperelasticMaterial.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/PK2HyperelasticMaterial.cpp
-    src/Elasticity/component/TopologyAccessor.cpp
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.cpp
     src/Elasticity/component/material/MooneyRivlinMaterial.cpp
@@ -107,7 +106,7 @@ set(SOURCE_FILES
 )
 
 add_library(${PROJECT_NAME} SHARED README.md ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Core)
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Core Sofa.Component.SolidMechanics.FEM.Elastic)
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}

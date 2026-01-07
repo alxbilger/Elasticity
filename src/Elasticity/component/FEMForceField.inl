@@ -159,6 +159,9 @@ void FEMForceField<DataTypes, ElementType>::draw(const sofa::core::visual::Visua
     if (!vparams->displayFlags().getShowForceFields())
         return;
 
+    if (!this->l_topology)
+        return;
+
     const auto stateLifeCycle = vparams->drawTool()->makeStateLifeCycle();
 
     if (vparams->displayFlags().getShowWireFrame())

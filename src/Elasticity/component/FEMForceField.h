@@ -7,13 +7,13 @@ namespace elasticity
 
 template<class DataTypes, class ElementType>
 class FEMForceField :
-    public sofa::core::behavior::ForceField<DataTypes>,
-    public virtual TopologyAccessor
+    public virtual sofa::core::behavior::ForceField<DataTypes>,
+    public virtual sofa::core::behavior::TopologyAccessor
 {
 public:
     SOFA_CLASS2(SOFA_TEMPLATE2(FEMForceField, DataTypes, ElementType),
         sofa::core::behavior::ForceField<DataTypes>,
-        TopologyAccessor);
+        sofa::core::behavior::TopologyAccessor);
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
