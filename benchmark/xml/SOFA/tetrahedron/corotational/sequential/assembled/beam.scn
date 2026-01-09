@@ -2,7 +2,7 @@
 <Node name="root" dt="0.1" gravity="0 -9.81 0">
 
     <Node name="plugins">
-        <RequiredPlugin name="Elasticity"/>
+        <RequiredPlugin name="Sofa.Component.SolidMechanics.FEM.Elastic"/>
         <RequiredPlugin name="Sofa.Component.Constraint.Projective"/> <!-- Needed to use components [FixedProjectiveConstraint] -->
         <RequiredPlugin name="Sofa.Component.Engine.Select"/> <!-- Needed to use components [BoxROI] -->
         <RequiredPlugin name="Sofa.Component.LinearSolver.Direct"/> <!-- Needed to use components [SparseLDLSolver] -->
