@@ -224,7 +224,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeRotations(
         m_initialRotationsTransposed.resize(elements.size(), RotationMatrix::Identity());
     }
 
-    std::for_each(std::execution::par, indices.begin(), indices.end(),
+    std::for_each(indices.begin(), indices.end(),
         [&](const auto elementId)
         {
             const auto& element = elements[elementId];

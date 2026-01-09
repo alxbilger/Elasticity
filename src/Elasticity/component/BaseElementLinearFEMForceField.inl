@@ -5,7 +5,6 @@
 #include <Elasticity/impl/LameParameters.h>
 #include <Elasticity/impl/VectorTools.h>
 
-#include <execution>
 #include <ranges>
 
 #include <Elasticity/component/FEMForceField.h>
@@ -57,7 +56,7 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
     SCOPED_TIMER("precomputeStiffness");
     std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
-    std::for_each(std::execution::par, indices.begin(), indices.end(),
+    std::for_each(indices.begin(), indices.end(),
         [&](const auto elementId)
         {
             const auto& element = elements[elementId];
