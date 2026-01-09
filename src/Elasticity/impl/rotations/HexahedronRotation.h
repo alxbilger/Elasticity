@@ -56,7 +56,7 @@ private:
      * @param rotationMatrix Output: Orthonormal basis matrix (x-axis, y-axis, z-axis)
      * @param hexahedronNodes Current positions of all 8 nodes
      */
-    template<sofa::Size NumberOfNodesInElement>
+    template<std::size_t NumberOfNodesInElement>
     void computeOrientationFromHexahedron(RotationMatrix& rotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& hexahedronNodes)
     {
