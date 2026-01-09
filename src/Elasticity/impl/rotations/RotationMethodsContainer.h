@@ -71,7 +71,14 @@ public:
             m_rotationComputer);
     }
 
-    MAKE_SELECTABLE_ITEMS(RotationMethodsItems, Methods::getItem()...);
+    struct RotationMethodsItems final : sofa::helper::SelectableItem<RotationMethodsItems>
+    {
+        using sofa::helper::SelectableItem<RotationMethodsItems>::SelectableItem;
+        using sofa::helper::SelectableItem<RotationMethodsItems>::operator=;
+        using sofa::helper::SelectableItem<RotationMethodsItems>::operator==;
+        static constexpr std::array s_items{Methods::getItem()...};
+        static_assert(std::is_same_v<typename decltype(s_items)::value_type, sofa::helper::Item>);
+    };
     sofa::Data< RotationMethodsItems > d_rotationMethod;
 
     /**
