@@ -56,34 +56,34 @@ def benchmark_beam(state, tetrahedron_force_field, linear_solver, timer):
             # Initialization of the scene will be done here
             Sofa.Gui.GUIManager.MainLoop(root)
             Sofa.Gui.GUIManager.closeGUI()
+        else:
+            Timer.setEnabled("Animate", True)
+            Timer.setOutputType("Animate", "json")  # hack to avoid printing in the console
 
-        Timer.setEnabled("Animate", True)
-        Timer.setOutputType("Animate", "json")  # hack to avoid printing in the console
+            nb_time_steps = 100
+            avg_addDForce = 0
 
-        nb_time_steps = 100
-        avg_addDForce = 0
+            for iteration in range(nb_time_steps):
+                Timer.begin("Animate")
+                Sofa.Simulation.animate(root, root.dt.value)
 
-        for iteration in range(nb_time_steps):
-            Timer.begin("Animate")
-            Sofa.Simulation.animate(root, root.dt.value)
+                # The first iteration is not added in the measures because precomputations often happen during this iteration
+                if iteration != 0:
+                    records = Timer.getRecords("Animate")
+                    # print(records)
+                    addForce_duration = timer(records)
+                    avg_addDForce += addForce_duration
 
-            # The first iteration is not added in the measures because precomputations often happen during this iteration
-            if iteration != 0:
-                records = Timer.getRecords("Animate")
-                # print(records)
-                addForce_duration = timer(records)
-                avg_addDForce += addForce_duration
+                Timer.end("Animate")
 
-            Timer.end("Animate")
+            Timer.clear()
+            Sofa.Simulation.unload(root)
 
-        Timer.clear()
-        Sofa.Simulation.unload(root)
-
-        avg_addDForce = avg_addDForce / (nb_time_steps - 1)
-        state.set_iteration_time(avg_addDForce / 1000.)
+            avg_addDForce = avg_addDForce / (nb_time_steps - 1)
+            state.set_iteration_time(avg_addDForce / 1000.)
 
 minScaleFactor = 1
-maxScaleFactor = 4
+maxScaleFactor = 3
 
 @benchmark.register
 @benchmark.option.dense_range(minScaleFactor, maxScaleFactor, 1)
@@ -93,7 +93,7 @@ maxScaleFactor = 4
 def benchmark_beam_tetra_linear_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('LinearSmallStrainFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo")
+                        poissonRatio="0.45", topology="@Tetra_topo", computeForceStrategy='sequential', computeForceDerivStrategy='sequential')
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -123,7 +123,7 @@ def benchmark_beam_tetra_linear_assembled_sofa_simulation(state):
 def benchmark_beam_tetra_corotational_assembled_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo")
+                        poissonRatio="0.45", topology="@Tetra_topo", computeForceStrategy='sequential', computeForceDerivStrategy='sequential')
 
     def linear_solver(root):
         root.addObject('SparseLDLSolver', template="CompressedRowSparseMatrixd")
@@ -153,7 +153,7 @@ def benchmark_beam_tetra_corotational_assembled_sofa_simulation(state):
 def benchmark_beam_tetra_corotational_matrixfree_elasticity_simulation(state):
     def tetrahedron_force_field(node):
         node.addObject('CorotationalFEMForceField', name="FEM", youngModulus="10000",
-                        poissonRatio="0.45", topology="@Tetra_topo")
+                        poissonRatio="0.45", topology="@Tetra_topo", computeForceStrategy='sequential', computeForceDerivStrategy='sequential')
 
     def linear_solver(root):
         root.addObject('CGLinearSolver', iterations=25, tolerance=1.0e-9, threshold=1.0e-9)
@@ -198,4 +198,4 @@ if __name__ == "__main__":
     # The following code is for debugging a SOFA scene using a GUI
     # import SofaImGui
     # with_gui = True
-    # benchmark_beam_tetra_corotational_assembled_sofa_simulation(FakeState(5))
+    # benchmark_beam_tetra_corotational_assembled_elasticity_simulation(FakeState(3))

@@ -49,7 +49,7 @@ void FEMForceField<DataTypes, ElementType>::addForce(
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     m_elementForce.resize(elements.size());
 
-    this->addElementForce(mparams, m_elementForce, positionAccessor.ref());
+    this->computeElementsForces(mparams, m_elementForce, positionAccessor.ref());
 
     auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
 
@@ -59,7 +59,7 @@ void FEMForceField<DataTypes, ElementType>::addForce(
 }
 
 template <class DataTypes, class ElementType>
-void FEMForceField<DataTypes, ElementType>::addElementForce(
+void FEMForceField<DataTypes, ElementType>::computeElementsForces(
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& f,
     const sofa::VecCoord_t<DataTypes>& x)
@@ -78,7 +78,7 @@ void FEMForceField<DataTypes, ElementType>::addElementForce(
     sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &f, &x](const auto& range)
         {
-            this->addElementForceRange(range, mparams, f, x);
+            this->computeElementsForces(range, mparams, f, x);
         });
 }
 
@@ -124,7 +124,7 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 
     m_elementDForce.resize(elements.size());
 
-    this->addElementDForce(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
+    this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
 
     // dispatch the element dforce to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
@@ -141,7 +141,7 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 }
 
 template <class DataTypes, class ElementType>
-void FEMForceField<DataTypes, ElementType>::addElementDForce(
+void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& df,
     const sofa::VecDeriv_t<DataTypes>& dx, sofa::Real_t<DataTypes> kFactor)
 {
@@ -157,7 +157,7 @@ void FEMForceField<DataTypes, ElementType>::addElementDForce(
     sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &df, &dx, kFactor](const auto& range)
         {
-            this->addElementDForceRange(range, mparams, df, dx, kFactor);
+            this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
         });
 }
 

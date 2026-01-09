@@ -25,7 +25,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::init()
 
 
 template <class DataTypes, class ElementType>
-void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addElementForceRange(
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementsForces(
     const sofa::simulation::Range<std::size_t>& range,
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForces,
@@ -54,7 +54,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addElementFo
 }
 
 template <class DataTypes, class ElementType>
-void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::addElementDForceRange(
+void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const sofa::simulation::Range<std::size_t>& range,
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForcesDeriv,

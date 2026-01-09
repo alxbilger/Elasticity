@@ -47,7 +47,7 @@ protected:
 
     FEMForceField();
 
-    void addElementForce(const sofa::core::MechanicalParams* mparams,
+    void computeElementsForces(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x);
 
@@ -55,18 +55,18 @@ protected:
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x) {}
 
-    virtual void addElementForceRange(
+    virtual void computeElementsForces(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x) = 0;
 
-    void addElementDForce(const sofa::core::MechanicalParams* mparams,
+    void computeElementsForcesDeriv(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,
         const sofa::VecDeriv_t<DataTypes>& dx,
         sofa::Real_t<DataTypes> kFactor);
 
-    virtual void addElementDForceRange(
+    virtual void computeElementsForcesDeriv(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,

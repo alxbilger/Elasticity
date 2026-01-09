@@ -59,7 +59,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::beforeElementForc
 }
 
 template <class DataTypes, class ElementType>
-void ElementCorotationalFEMForceField<DataTypes, ElementType>::addElementForceRange(
+void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsForces(
     const sofa::simulation::Range<std::size_t>& range, const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForces, const sofa::VecCoord_t<DataTypes>& nodePositions)
 {
@@ -105,7 +105,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::addElementForceRa
 
 
 template <class DataTypes, class ElementType>
-void ElementCorotationalFEMForceField<DataTypes, ElementType>::addElementDForceRange(
+void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const sofa::simulation::Range<std::size_t>& range,
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForcesDeriv,

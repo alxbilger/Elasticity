@@ -138,13 +138,13 @@ protected:
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x) override;
 
-    void addElementForceRange(
+    void computeElementsForces(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x) override;
 
-    void addElementDForceRange(
+    void computeElementsForcesDeriv(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForcesDeriv,
