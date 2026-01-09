@@ -1,6 +1,8 @@
 #pragma once
 #include <Elasticity/impl/ComputeStrategy.h>
 #include <sofa/core/visual/DrawMesh.h>
+#include <sofa/simulation/task/ParallelForEach.h>
+#include <sofa/simulation/task/TaskSchedulerUser.h>
 
 namespace elasticity
 {
@@ -8,12 +10,14 @@ namespace elasticity
 template<class DataTypes, class ElementType>
 class FEMForceField :
     public virtual sofa::core::behavior::ForceField<DataTypes>,
-    public virtual sofa::core::behavior::TopologyAccessor
+    public virtual sofa::core::behavior::TopologyAccessor,
+    public virtual sofa::simulation::TaskSchedulerUser
 {
 public:
-    SOFA_CLASS2(SOFA_TEMPLATE2(FEMForceField, DataTypes, ElementType),
+    SOFA_CLASS3(SOFA_TEMPLATE2(FEMForceField, DataTypes, ElementType),
         sofa::core::behavior::ForceField<DataTypes>,
-        sofa::core::behavior::TopologyAccessor);
+        sofa::core::behavior::TopologyAccessor,
+        sofa::simulation::TaskSchedulerUser);
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
@@ -47,10 +51,27 @@ protected:
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x);
 
+    virtual void beforeElementForce(const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<DataTypes>& x) {}
+
+    virtual void addElementForceRange(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<DataTypes>& x) = 0;
+
     void addElementDForce(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,
         const sofa::VecDeriv_t<DataTypes>& dx,
         sofa::Real_t<DataTypes> kFactor);
+
+    virtual void addElementDForceRange(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& df,
+        const sofa::VecDeriv_t<DataTypes>& dx,
+        sofa::Real_t<DataTypes> kFactor) = 0;
 
     void dispatchElementForcesToNodes(
         const sofa::type::vector<typename trait::TopologyElement>& elements,
@@ -58,30 +79,6 @@ protected:
 
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
-
-    /**
-     * The signature of the function that will be executed depending on the compute strategy of the
-     * element forces
-     */
-    using ComputeElementForceFunction = std::function<void(sofa::type::vector<ElementForce>&, const sofa::VecCoord_t<DataTypes>&)>;
-
-    /**
-     * Stores the functions that will be executed depending on the compute strategy of the element
-     * forces
-     */
-    std::unordered_map<std::string_view, ComputeElementForceFunction> m_computeElementForceMap;
-
-    /**
-     * The signature of the function that will be executed depending on the compute strategy of the
-     * element forces derivatives
-     */
-    using ComputeElementForceDerivFunction = std::function<void(sofa::type::vector<ElementForce>&, const sofa::VecDeriv_t<DataTypes>&, sofa::Real_t<DataTypes>)>;
-
-    /**
-     * Stores the functions that will be executed depending on the compute strategy of the element
-     * forces derivatives
-     */
-    std::unordered_map<std::string_view, ComputeElementForceDerivFunction> m_computeElementForceDerivMap;
 
     sofa::core::visual::DrawElementMesh<ElementType> m_drawMesh;
 };

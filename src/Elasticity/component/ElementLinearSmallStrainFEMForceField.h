@@ -61,16 +61,18 @@ public:
 
 protected:
 
-    template<class ExecutionPolicy>
-    void computeElementForce(
+    void addElementForceRange(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForces,
-        const sofa::VecCoord_t<DataTypes>& nodePositions);
+        const sofa::VecCoord_t<DataTypes>& nodePositions) override;
 
-    template<class ExecutionPolicy>
-    void computeElementForceDeriv(
+    void addElementDForceRange(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForcesDeriv,
-        const sofa::VecCoord_t<DataTypes>& nodeDx,
-        sofa::Real_t<DataTypes> kFactor);
+        const sofa::VecDeriv_t<DataTypes>& nodeDx,
+        sofa::Real_t<DataTypes> kFactor) override;
 
 };
 

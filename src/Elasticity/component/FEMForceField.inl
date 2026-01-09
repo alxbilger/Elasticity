@@ -2,13 +2,14 @@
 #include <Elasticity/component/FEMForceField.h>
 #include <Elasticity/impl/VecView.h>
 #include <sofa/core/visual/VisualParams.h>
+#include <sofa/simulation/task/ParallelForEach.h>
 
 namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
 FEMForceField<DataTypes, ElementType>::FEMForceField()
-    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeStrategy", std::string("The compute strategy used to compute the forces.\n" + ComputeStrategy::dataDescription()).c_str()))
+    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeForceStrategy", std::string("The compute strategy used to compute the forces.\n" + ComputeStrategy::dataDescription()).c_str()))
     , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", std::string("The compute strategy used to compute the forces derivatives.\n" + ComputeStrategy::dataDescription()).c_str()))
     , d_elementSpace(initData(&d_elementSpace, static_cast<sofa::Real_t<DataTypes>>(0.125), "elementSpace", "When rendering, the space between elements"))
 {
@@ -24,6 +25,11 @@ void FEMForceField<DataTypes, ElementType>::init()
     {
         TopologyAccessor::init();
     }
+
+    if (!this->isComponentStateInvalid())
+    {
+        this->initTaskScheduler();
+    }
 }
 
 template <class DataTypes, class ElementType>
@@ -37,7 +43,6 @@ void FEMForceField<DataTypes, ElementType>::addForce(
     SOFA_UNUSED(v);
 
     auto positionAccessor = sofa::helper::getReadAccessor(x);
-    auto restPositionAccessor = this->mstate->readRestPositions();
 
     if (this->l_topology == nullptr) return;
 
@@ -55,23 +60,26 @@ void FEMForceField<DataTypes, ElementType>::addForce(
 
 template <class DataTypes, class ElementType>
 void FEMForceField<DataTypes, ElementType>::addElementForce(
-    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& f,
+    const sofa::core::MechanicalParams* mparams,
+    sofa::type::vector<ElementForce>& f,
     const sofa::VecCoord_t<DataTypes>& x)
 {
+    this->beforeElementForce(mparams, f, x);
+
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
     const auto& computeForceStrategy = computeForceStrategyAccessor->key();
 
-    const auto it = m_computeElementForceMap.find(computeForceStrategy);
-    if (it != m_computeElementForceMap.end())
-    {
-        it->second(f, x);
-    }
-    else
-    {
-        msg_error() << "Unknown compute strategy: '" << computeForceStrategy << "'";
-    }
+    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
+    if (computeForceStrategy == parallelComputeStrategy)
+        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
+
+    sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
+        static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &f, &x](const auto& range)
+        {
+            this->addElementForceRange(range, mparams, f, x);
+        });
 }
 
 template <class DataTypes, class ElementType>
@@ -142,15 +150,15 @@ void FEMForceField<DataTypes, ElementType>::addElementDForce(
     auto computeForceDerivStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceDerivStrategy);
     const auto& computeForceDerivStrategy = computeForceDerivStrategyAccessor->key();
 
-    const auto it = m_computeElementForceDerivMap.find(computeForceDerivStrategy);
-    if (it != m_computeElementForceDerivMap.end())
-    {
-        it->second(df, dx, kFactor);
-    }
-    else
-    {
-        msg_error() << "Unknown compute strategy: '" << computeForceDerivStrategy << "'";
-    }
+    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
+    if (computeForceDerivStrategy == parallelComputeStrategy)
+        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
+
+    sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
+        static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &df, &dx, kFactor](const auto& range)
+        {
+            this->addElementDForceRange(range, mparams, df, dx, kFactor);
+        });
 }
 
 template <class DataTypes, class ElementType>
