@@ -36,7 +36,8 @@ struct RotationMethods : RotationMethodsContainer<DataTypes, ElementType,
 >
 {
     using Inherit = RotationMethodsContainer<DataTypes, ElementType, StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation>;
-    using Inherit::RotationMethodsContainer;
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {}
 };
 
 template <class Real>
