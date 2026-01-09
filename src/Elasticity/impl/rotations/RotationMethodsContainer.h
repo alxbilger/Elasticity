@@ -49,7 +49,7 @@ public:
     {}
 
     using RotationMatrix = sofa::type::Mat<DataTypes::spatial_dimensions, DataTypes::spatial_dimensions, sofa::Real_t<DataTypes>>;
-    static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;
+    static constexpr std::size_t NumberOfNodesInElement = ElementType::NumberOfNodes;
 
     /**
      * Computes the current rotation state relative to the initial configuration.

@@ -30,7 +30,7 @@ struct HexahedronRotation
      * @param nodesPosition Current positions of all nodes
      * @param nodesRestPosition Rest positions of all nodes (initial configuration)
      */
-    template<sofa::Size NumberOfNodesInElement>
+    template<std::size_t NumberOfNodesInElement>
     void computeRotation(RotationMatrix& rotationMatrix, const RotationMatrix& initialRotationMatrix,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesPosition,
         const std::array<sofa::Coord_t<DataTypes>, NumberOfNodesInElement>& nodesRestPosition)
