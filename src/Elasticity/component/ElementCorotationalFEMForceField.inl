@@ -71,7 +71,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
         const auto& element = elements[elementId];
 
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesCoordinates =
-                extractNodesVectorFromGlobalVector(element, nodePositions);
+            extractNodesVectorFromGlobalVector(element, nodePositions);
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> restElementNodesCoordinates =
             extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
