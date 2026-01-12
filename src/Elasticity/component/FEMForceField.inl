@@ -122,20 +122,9 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 
     this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
 
-    SCOPED_TIMER("DispatchElementForcesDeriv");
-
     // dispatch the element dforce to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
-    for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
-    {
-        const auto& element = elements[elementId];
-
-        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
-        {
-            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(m_elementDForce[elementId], i * trait::spatial_dimensions);
-            dfAccessor[element[i]] -= nodedForce.toVec();
-        }
-    }
+    dispatchElementForcesDerivToNodes(elements, dfAccessor.wref());
 }
 
 template <class DataTypes, class ElementType>
@@ -154,6 +143,27 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
             this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
         });
 }
+
+template <class DataTypes, class ElementType>
+void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(
+    const sofa::type::vector<typename trait::TopologyElement>& elements,
+    sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv)
+{
+    SCOPED_TIMER("DispatchElementForcesDeriv");
+
+    for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
+    {
+        const auto& element = elements[elementId];
+
+        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+        {
+            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(
+                m_elementDForce[elementId], i * trait::spatial_dimensions);
+            nodeForcesDeriv[element[i]] -= nodedForce.toVec();
+        }
+    }
+}
+
 
 template <class DataTypes, class ElementType>
 sofa::simulation::ForEachExecutionPolicy FEMForceField<DataTypes, ElementType>::getExecutionPolicy(
