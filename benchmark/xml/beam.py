@@ -36,6 +36,8 @@ def main(root_dir="."):
             end = time.perf_counter()
             elapsed = end - start
 
+            print(f"Elapsed {elapsed} s")
+
             timers[beam_path] = elapsed
 
             Timer.clear()
