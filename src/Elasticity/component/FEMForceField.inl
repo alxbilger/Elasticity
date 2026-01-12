@@ -64,6 +64,7 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForces(
     sofa::type::vector<ElementForce>& f,
     const sofa::VecCoord_t<DataTypes>& x)
 {
+    SCOPED_TIMER("ElementForces");
     this->beforeElementForce(mparams, f, x);
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
@@ -78,6 +79,7 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForces(
     sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &f, &x](const auto& range)
         {
+            SCOPED_TIMER_TR("ElementForcesRange");
             this->computeElementsForces(range, mparams, f, x);
         });
 }
@@ -87,6 +89,8 @@ void FEMForceField<DataTypes, ElementType>::dispatchElementForcesToNodes(
     const sofa::type::vector<typename trait::TopologyElement>& elements,
     sofa::VecDeriv_t<DataTypes>& nodeForces)
 {
+    SCOPED_TIMER("DispatchElementForces");
+
     for (sofa::Size i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
@@ -126,6 +130,8 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 
     this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
 
+    SCOPED_TIMER("DispatchElementForcesDeriv");
+
     // dispatch the element dforce to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
     for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
@@ -145,6 +151,8 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& df,
     const sofa::VecDeriv_t<DataTypes>& dx, sofa::Real_t<DataTypes> kFactor)
 {
+    SCOPED_TIMER("ElementForcesDeriv");
+
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     auto computeForceDerivStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceDerivStrategy);
@@ -157,6 +165,7 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &df, &dx, kFactor](const auto& range)
         {
+            SCOPED_TIMER_TR("ElementForcesDerivRange");
             this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
         });
 }
