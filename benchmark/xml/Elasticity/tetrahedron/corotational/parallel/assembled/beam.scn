@@ -38,7 +38,7 @@
             <Hexa2TetraTopologicalMapping input="@grid" output="@Tetra_topo" />
 
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
-            <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"
+            <TetrahedronCorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Tetra_topo"
                 computeForceStrategy="parallel" computeForceDerivStrategy="parallel"/>
         </Node>
 
