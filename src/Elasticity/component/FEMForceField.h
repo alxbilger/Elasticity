@@ -77,6 +77,8 @@ protected:
         const sofa::type::vector<typename trait::TopologyElement>& elements,
         sofa::VecDeriv_t<DataTypes>& nodeForces);
 
+    sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<ComputeStrategy>& strategy) const;
+
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
 

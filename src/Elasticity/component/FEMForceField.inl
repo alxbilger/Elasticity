@@ -69,14 +69,7 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForces(
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
-    auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
-    const auto& computeForceStrategy = computeForceStrategyAccessor->key();
-
-    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
-    if (computeForceStrategy == parallelComputeStrategy)
-        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
-
-    sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
+    sofa::simulation::forEachRange(getExecutionPolicy(d_computeForceStrategy), *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &f, &x](const auto& range)
         {
             SCOPED_TIMER_TR("ElementForcesRange");
@@ -106,7 +99,6 @@ void FEMForceField<DataTypes, ElementType>::dispatchElementForcesToNodes(
         }
     }
 }
-
 
 template <class DataTypes, class ElementType>
 void FEMForceField<DataTypes, ElementType>::addDForce(
@@ -155,19 +147,26 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
-    auto computeForceDerivStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceDerivStrategy);
-    const auto& computeForceDerivStrategy = computeForceDerivStrategyAccessor->key();
-
-    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
-    if (computeForceDerivStrategy == parallelComputeStrategy)
-        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
-
-    sofa::simulation::forEachRange(executionPolicy, *this->m_taskScheduler,
+    sofa::simulation::forEachRange(getExecutionPolicy(d_computeForceDerivStrategy), *this->m_taskScheduler,
         static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &df, &dx, kFactor](const auto& range)
         {
             SCOPED_TIMER_TR("ElementForcesDerivRange");
             this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
         });
+}
+
+template <class DataTypes, class ElementType>
+sofa::simulation::ForEachExecutionPolicy FEMForceField<DataTypes, ElementType>::getExecutionPolicy(
+    const sofa::Data<ComputeStrategy>& strategy) const
+{
+    auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
+    const auto& computeForceStrategy = computeForceStrategyAccessor->key();
+
+    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
+    if (computeForceStrategy == parallelComputeStrategy)
+        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
+
+    return executionPolicy;
 }
 
 template <class DataTypes, class ElementType>
