@@ -37,6 +37,7 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
     rootNode->addObject(hexaTopology);
 
     auto mstate = sofa::core::objectmodel::New<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types>>();
+    mstate->writeOnlyDx().resize(hexaTopology->getNbPoints());
     rootNode->addObject(mstate);
 
     sofa::core::behavior::BaseForceField::SPtr forceField;
@@ -101,6 +102,20 @@ benchmark::State& state)
     }
 }
 
+template<ComponentType componentType, Method method>
+static void BM_HexahedronAddDForce(
+benchmark::State& state)
+{
+    auto forcefield = createScene<componentType, method>(state);
+    forcefield->addForce( sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+
+    for (auto _ : state)
+    {
+        forcefield->addDForce(
+        sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::dforce);
+    }
+}
+
 constexpr int minMultiplier = 1;
 constexpr int maxMultiplier = 8;
 #define BM_OPTIONS ->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {minMultiplier, maxMultiplier} })
@@ -110,5 +125,11 @@ BENCHMARK(BM_HexahedronAddForce<ComponentType::SOFA, Method::Linear>) BM_OPTIONS
 
 BENCHMARK(BM_HexahedronAddForce<ComponentType::Elasticity, Method::Corotational>) BM_OPTIONS;
 BENCHMARK(BM_HexahedronAddForce<ComponentType::SOFA, Method::Corotational>) BM_OPTIONS;
+
+BENCHMARK(BM_HexahedronAddDForce<ComponentType::Elasticity, Method::Linear>) BM_OPTIONS;
+BENCHMARK(BM_HexahedronAddDForce<ComponentType::SOFA, Method::Linear>) BM_OPTIONS;
+
+BENCHMARK(BM_HexahedronAddDForce<ComponentType::Elasticity, Method::Corotational>) BM_OPTIONS;
+BENCHMARK(BM_HexahedronAddDForce<ComponentType::SOFA, Method::Corotational>) BM_OPTIONS;
 
 #undef BM_OPTIONS
