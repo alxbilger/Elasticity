@@ -69,6 +69,15 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
             elementForceField->d_poissonRatio.setValue({0.45});
             elementForceField->d_youngModulus.setValue({1e6});
 
+            {
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+            }
+            {
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceDerivStrategy);
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+            }
+
             rootNode->addObject(elementForceField);
             forceField = elementForceField;
         }
@@ -78,6 +87,15 @@ static sofa::core::behavior::BaseForceField::SPtr createScene(benchmark::State& 
 
             elementForceField->d_poissonRatio.setValue({0.45});
             elementForceField->d_youngModulus.setValue({1e6});
+
+            {
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceStrategy);
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+            }
+            {
+                auto computeStrategyAccessor = sofa::helper::getWriteOnlyAccessor(elementForceField->d_computeForceDerivStrategy);
+                computeStrategyAccessor.wref() = elasticity::sequencedComputeStrategy;
+            }
 
             rootNode->addObject(elementForceField);
             forceField = elementForceField;
