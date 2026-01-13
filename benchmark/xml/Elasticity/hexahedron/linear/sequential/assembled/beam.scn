@@ -40,7 +40,7 @@
             <MeshMatrixMass totalMass="1500" topology="@Tetra_topo"/>
         </Node>
 
-        <LinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@grid"
+        <HexahedronLinearSmallStrainFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@grid"
                                         computeForceStrategy="sequenced" computeForceDerivStrategy="sequenced"/>
 
         <BoxROI template="Vec3" name="box_roi" box="-6 -6 -1 6 6 0.1" drawBoxes="1" />

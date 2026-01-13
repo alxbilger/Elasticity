@@ -102,7 +102,7 @@ benchmark::State& state)
 }
 
 constexpr int minMultiplier = 1;
-constexpr int maxMultiplier = 4;
+constexpr int maxMultiplier = 8;
 #define BM_OPTIONS ->Unit(benchmark::kMillisecond)->RangeMultiplier(2)->Ranges({ {minMultiplier, maxMultiplier} })
 
 BENCHMARK(BM_HexahedronAddForce<ComponentType::Elasticity, Method::Linear>) BM_OPTIONS;
