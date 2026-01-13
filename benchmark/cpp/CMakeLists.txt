@@ -24,7 +24,11 @@ sofa_find_package(Elasticity REQUIRED)
 
 set(SOFABENCHMARK_SRC "src")
 set(HEADER_FILES "")
-set(SOURCE_FILES ${SOFABENCHMARK_SRC}/main.cpp)
+set(SOURCE_FILES
+    ${SOFABENCHMARK_SRC}/main.cpp
+
+    ${SOFABENCHMARK_SRC}/Tetrahedron.cpp
+)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC benchmark::benchmark)
