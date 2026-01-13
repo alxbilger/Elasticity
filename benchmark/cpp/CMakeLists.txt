@@ -28,6 +28,7 @@ set(SOURCE_FILES
     ${SOFABENCHMARK_SRC}/main.cpp
 
     ${SOFABENCHMARK_SRC}/Tetrahedron.cpp
+    ${SOFABENCHMARK_SRC}/Hexahedron.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})

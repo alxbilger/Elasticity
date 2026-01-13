@@ -213,3 +213,5 @@ BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, Com
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Linear, ComputeStrategy::Parallel>) BM_OPTIONS;
 // BENCHMARK(BM_TetrahedronAddDForce<ComponentType::SOFA, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
 BENCHMARK(BM_TetrahedronAddDForce<ComponentType::Elasticity, Method::Corotational, ComputeStrategy::Parallel>) BM_OPTIONS;
+
+#undef BM_OPTIONS
