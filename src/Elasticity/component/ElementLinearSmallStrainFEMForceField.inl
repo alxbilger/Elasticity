@@ -56,8 +56,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
     const sofa::simulation::Range<std::size_t>& range,
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForcesDeriv,
-    const sofa::VecDeriv_t<DataTypes>& nodeDx,
-    sofa::Real_t<DataTypes> kFactor)
+    const sofa::VecDeriv_t<DataTypes>& nodeDx)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
@@ -79,7 +78,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
             }
         }
 
-        elementForcesDeriv[elementId] = kFactor * (stiffnessMatrix * element_dx);
+        elementForcesDeriv[elementId] = stiffnessMatrix * element_dx;
     }
 }
 

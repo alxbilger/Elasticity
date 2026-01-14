@@ -149,8 +149,7 @@ protected:
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForcesDeriv,
-        const sofa::VecDeriv_t<DataTypes>& nodeDx,
-        sofa::Real_t<DataTypes> kFactor) override;
+        const sofa::VecDeriv_t<DataTypes>& nodeDx) override;
 
     sofa::type::vector<RotationMatrix> m_rotations;
     sofa::type::vector<RotationMatrix> m_initialRotationsTransposed;

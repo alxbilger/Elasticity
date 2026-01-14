@@ -125,17 +125,17 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
         m_elementDForce.resize(elements.size());
     }
 
-    this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
+    this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref());
 
     // dispatch the element dforce to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
-    dispatchElementForcesDerivToNodes(elements, dfAccessor.wref());
+    dispatchElementForcesDerivToNodes(mparams, elements, dfAccessor.wref());
 }
 
 template <class DataTypes, class ElementType>
 void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& df,
-    const sofa::VecDeriv_t<DataTypes>& dx, sofa::Real_t<DataTypes> kFactor)
+    const sofa::VecDeriv_t<DataTypes>& dx)
 {
     SCOPED_TIMER("ElementForcesDeriv");
 
@@ -143,19 +143,22 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
 
     sofa::simulation::forEachRange(getExecutionPolicy(d_computeForceDerivStrategy), *this->m_taskScheduler,
         static_cast<std::size_t>(0), elements.size(),
-        [this, mparams, &df, &dx, kFactor](const sofa::simulation::Range<std::size_t>& range)
+        [this, mparams, &df, &dx](const sofa::simulation::Range<std::size_t>& range)
         {
             SCOPED_TIMER_TR("ElementForcesDerivRange");
-            this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
+            this->computeElementsForcesDeriv(range, mparams, df, dx);
         });
 }
 
 template <class DataTypes, class ElementType>
-void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(
+void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(const sofa::core::MechanicalParams* mparams,
     const sofa::type::vector<typename trait::TopologyElement>& elements,
     sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv)
 {
     SCOPED_TIMER("DispatchElementForcesDeriv");
+
+    const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
+            mparams, this->rayleighStiffness.getValue()));
 
     for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
     {
@@ -169,7 +172,7 @@ void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(
 
             for (sofa::Size dim = 0; dim < trait::spatial_dimensions; ++dim)
             {
-                df[dim] -= elementDForce[i * trait::spatial_dimensions + dim];
+                df[dim] -= kFactor * elementDForce[i * trait::spatial_dimensions + dim];
             }
         }
     }

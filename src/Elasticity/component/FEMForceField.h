@@ -63,15 +63,13 @@ protected:
 
     void computeElementsForcesDeriv(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,
-        const sofa::VecDeriv_t<DataTypes>& dx,
-        sofa::Real_t<DataTypes> kFactor);
+        const sofa::VecDeriv_t<DataTypes>& dx);
 
     virtual void computeElementsForcesDeriv(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,
-        const sofa::VecDeriv_t<DataTypes>& dx,
-        sofa::Real_t<DataTypes> kFactor) = 0;
+        const sofa::VecDeriv_t<DataTypes>& dx) = 0;
 
     void dispatchElementForcesToNodes(
         const sofa::type::vector<typename trait::TopologyElement>& elements,
@@ -81,7 +79,7 @@ protected:
      * Force derivatives were computed at the element level. This function dispatches the force
      * derivatives from the elements to the nodes.
      */
-    void dispatchElementForcesDerivToNodes(const sofa::type::vector<typename trait::TopologyElement>& elements, sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
+    void dispatchElementForcesDerivToNodes(const sofa::core::MechanicalParams* mparams, const sofa::type::vector<typename trait::TopologyElement>& elements, sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
 
     sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<ComputeStrategy>& strategy) const;
 

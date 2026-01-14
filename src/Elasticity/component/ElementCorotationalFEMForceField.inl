@@ -109,8 +109,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
     const sofa::simulation::Range<std::size_t>& range,
     const sofa::core::MechanicalParams* mparams,
     sofa::type::vector<ElementForce>& elementForcesDeriv,
-    const sofa::VecDeriv_t<DataTypes>& nodeDx,
-    sofa::Real_t<DataTypes> kFactor)
+    const sofa::VecDeriv_t<DataTypes>& nodeDx)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
@@ -131,7 +130,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
         const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
 
         auto& df = elementForcesDeriv[elementId];
-        df = kFactor * (stiffnessMatrix * element_dx);
+        df = stiffnessMatrix * element_dx;
 
         for (sofa::Size n = 0; n < trait::NumberOfNodesInElement; ++n)
         {
