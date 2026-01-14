@@ -41,9 +41,9 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
         for (sofa::Size j = 0; j < trait::NumberOfNodesInElement; ++j)
         {
             const auto nodeId = element[j];
-            for (sofa::Size k = 0; k < trait::spatial_dimensions; ++k)
+            for (sofa::Size dim = 0; dim < trait::spatial_dimensions; ++dim)
             {
-                displacement[j * trait::spatial_dimensions + k] = nodePositions[nodeId][k] - restPositionAccessor[nodeId][k];
+                displacement[j * trait::spatial_dimensions + dim] = nodePositions[nodeId][dim] - restPositionAccessor[nodeId][dim];
             }
         }
 
