@@ -1,6 +1,5 @@
 #pragma once
 #include <Elasticity/component/FEMForceField.h>
-#include <Elasticity/impl/VecView.h>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/task/ParallelForEach.h>
 
@@ -111,14 +110,20 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 
     auto dfAccessor = sofa::helper::getWriteAccessor(df);
     auto dxAccessor = sofa::helper::getReadAccessor(dx);
-    dfAccessor.resize(dxAccessor.size());
+    if (dxAccessor.size() != dfAccessor.size())
+    {
+        dfAccessor.resize(dxAccessor.size());
+    }
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
             mparams, this->rayleighStiffness.getValue()));
 
-    m_elementDForce.resize(elements.size());
+    if (m_elementDForce.size() != elements.size())
+    {
+        m_elementDForce.resize(elements.size());
+    }
 
     this->computeElementsForcesDeriv(mparams, m_elementDForce, dxAccessor.ref(), kFactor);
 
@@ -154,12 +159,17 @@ void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(
     for (std::size_t elementId = 0; elementId < elements.size(); ++elementId)
     {
         const auto& element = elements[elementId];
+        const auto& elementDForce = m_elementDForce[elementId];
 
         for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
         {
-            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodedForce(
-                m_elementDForce[elementId], i * trait::spatial_dimensions);
-            nodeForcesDeriv[element[i]] -= nodedForce.toVec();
+            const auto nodeId = element[i];
+            auto& df = nodeForcesDeriv[nodeId];
+
+            for (sofa::Size dim = 0; dim < trait::spatial_dimensions; ++dim)
+            {
+                df[dim] -= elementDForce[i * trait::spatial_dimensions + dim];
+            }
         }
     }
 }

@@ -3,10 +3,7 @@
 #include <Elasticity/component/BaseElementLinearFEMForceField.inl>
 #include <Elasticity/component/FEMForceField.inl>
 #include <Elasticity/impl/LameParameters.h>
-#include <Elasticity/impl/VecView.h>
 #include <sofa/core/behavior/ForceField.inl>
-#include <ranges>
-#include <execution>
 
 namespace elasticity
 {
@@ -67,15 +64,21 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
     for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
     {
         const auto& element = elements[elementId];
+        const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
+
+        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesDx =
+            extractNodesVectorFromGlobalVector(element, nodeDx);
 
         sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
-        for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+        for (sofa::Size nodeId = 0; nodeId < trait::NumberOfNodesInElement; ++nodeId)
         {
-            VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> node_dx(element_dx, i * trait::spatial_dimensions);
-            node_dx = nodeDx[element[i]];
+            const auto& dx = elementNodesDx[nodeId];
+            for (sofa::Size dim = 0; dim < trait::spatial_dimensions; ++dim)
+            {
+                element_dx[nodeId * trait::spatial_dimensions + dim] = dx[dim];
+            }
         }
 
-        const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
         elementForcesDeriv[elementId] = kFactor * (stiffnessMatrix * element_dx);
     }
 }

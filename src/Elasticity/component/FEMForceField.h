@@ -77,6 +77,10 @@ protected:
         const sofa::type::vector<typename trait::TopologyElement>& elements,
         sofa::VecDeriv_t<DataTypes>& nodeForces);
 
+    /**
+     * Force derivatives were computed at the element level. This function dispatches the force
+     * derivatives from the elements to the nodes.
+     */
     void dispatchElementForcesDerivToNodes(const sofa::type::vector<typename trait::TopologyElement>& elements, sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
 
     sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<ComputeStrategy>& strategy) const;
