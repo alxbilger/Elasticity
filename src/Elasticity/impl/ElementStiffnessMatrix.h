@@ -5,7 +5,6 @@
 #include <Elasticity/impl/IsotropicElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/StrainDisplacement.h>
-#include <sofa/helper/MatEigen.h>
 #include <sofa/type/Mat.h>
 
 namespace elasticity
@@ -103,8 +102,7 @@ public:
                 for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
                 {
                     const auto& B = this->B[i];
-                    const auto& C = this->elasticityTensor.toMat();
-                    result += this->factors[i] * B.multTranspose(C * (B * v));
+                    result += this->factors[i] * B.multTranspose(this->elasticityTensor * (B * v));
                 }
                 return result;
             }
