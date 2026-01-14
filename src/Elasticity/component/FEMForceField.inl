@@ -142,7 +142,8 @@ void FEMForceField<DataTypes, ElementType>::computeElementsForcesDeriv(
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
     sofa::simulation::forEachRange(getExecutionPolicy(d_computeForceDerivStrategy), *this->m_taskScheduler,
-        static_cast<decltype(elements.size())>(0), elements.size(), [this, mparams, &df, &dx, kFactor](const auto& range)
+        static_cast<std::size_t>(0), elements.size(),
+        [this, mparams, &df, &dx, kFactor](const sofa::simulation::Range<std::size_t>& range)
         {
             SCOPED_TIMER_TR("ElementForcesDerivRange");
             this->computeElementsForcesDeriv(range, mparams, df, dx, kFactor);
