@@ -117,9 +117,6 @@ void FEMForceField<DataTypes, ElementType>::addDForce(
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
-    const auto kFactor = static_cast<sofa::Real_t<DataTypes>>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
-            mparams, this->rayleighStiffness.getValue()));
-
     if (m_elementDForce.size() != elements.size())
     {
         m_elementDForce.resize(elements.size());

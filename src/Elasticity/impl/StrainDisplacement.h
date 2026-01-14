@@ -32,12 +32,14 @@ template <class real>
 sofa::type::Vec<6, real> strainDisplacementVectorProduct(const sofa::type::Mat<6, 12, real>& B, const sofa::type::Vec<12, real>& v)
 {
     sofa::type::Vec<6, real> Bv{sofa::type::NOINIT};
+
     Bv[0] = B(0, 0) * v[0] + B(0, 3) * v[3] + B(0, 6) * v[6] + B(0, 9) * v[9];
     Bv[1] = B(1, 1) * v[1] + B(1, 4) * v[4] + B(1, 7) * v[7] + B(1, 10) * v[10];
     Bv[2] = B(2, 2) * v[2] + B(2, 5) * v[5] + B(2, 8) * v[8] + B(2, 11) * v[11];
     Bv[3] = B(3, 0) * v[0] + B(3, 1) * v[1] + B(3, 3) * v[3] + B(3, 4) * v[4] + B(3, 6) * v[6] + B(3, 7) * v[7] + B(3, 9) * v[9] + B(3, 10) * v[10];
     Bv[4] = B(4, 0) * v[0] + B(4, 2) * v[2] + B(4, 3) * v[3] + B(4, 5) * v[5] + B(4, 6) * v[6] + B(4, 8) * v[8] + B(4, 9) * v[9] + B(4, 11) * v[11];
     Bv[5] = B(5, 1) * v[1] + B(5, 2) * v[2] + B(5, 4) * v[4] + B(5, 5) * v[5] + B(5, 7) * v[7] + B(5, 8) * v[8] + B(5, 10) * v[10] + B(5, 11) * v[11];
+
     return Bv;
 }
 
