@@ -11,6 +11,7 @@ set(SOURCE_FILES
     HexahedronLinearSmallStrainFEMForceField_test.cpp
     Material_test.cpp
     MatrixTools_test.cpp
+    SoA_test.cpp
 )
 
 sofa_find_package(Sofa.Component.SolidMechanics.Testing REQUIRED)

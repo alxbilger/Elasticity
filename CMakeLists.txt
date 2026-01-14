@@ -63,9 +63,11 @@ set(HEADER_FILES
     src/Elasticity/impl/LameParameters.h
     src/Elasticity/impl/MajorSymmetric4Tensor.h
     src/Elasticity/impl/MatrixTools.h
+    src/Elasticity/impl/MatSoA.h
     src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/SymmetricTensor.h
+    src/Elasticity/impl/VecSoA.h
     src/Elasticity/impl/VecView.h
     src/Elasticity/impl/VectorTools.h
     src/Elasticity/impl/VoigtNotation.h
