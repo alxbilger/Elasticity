@@ -87,8 +87,8 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::buildStiffne
     if (this->isComponentStateInvalid())
         return;
 
-    auto dfdx = matrix->getForceDerivativeIn(this->sofa::core::behavior::ForceField<DataTypes>::mstate)
-        .withRespectToPositionsIn(this->sofa::core::behavior::ForceField<DataTypes>::mstate);
+    auto dfdx = matrix->getForceDerivativeIn(this->mstate)
+        .withRespectToPositionsIn(this->mstate);
 
     sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
