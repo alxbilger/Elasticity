@@ -11,7 +11,7 @@ static void BM_Vec3SoA(benchmark::State& state)
 
     for (auto _ : state)
     {
-        elasticity::VecSoA<3, SReal>::Add(c, a, b);
+        c = a + b;
     }
 }
 
@@ -41,7 +41,7 @@ static void BM_Mat3Vec3SoA(benchmark::State& state)
 
     for (auto _ : state)
     {
-        elasticity::matrixVectorProduct(a, b, c);
+        a = b * c;
     }
 }
 
@@ -55,10 +55,10 @@ static void BM_Mat3Vec3AoS(benchmark::State& state)
     {
         for (auto i = 0; i < state.range(0); ++i)
         {
-            a[i] = b[i] * a[i];
+            a[i] = b[i] * c[i];
         }
     }
 }
 
-BENCHMARK(BM_Mat3Vec3SoA)->RangeMultiplier(10)->Range(1e3, 1e7);
-BENCHMARK(BM_Mat3Vec3AoS)->RangeMultiplier(10)->Range(1e3, 1e7);
+BENCHMARK(BM_Mat3Vec3SoA)->RangeMultiplier(10)->Range(1e3, 1e8)->Unit(benchmark::kMicrosecond);
+BENCHMARK(BM_Mat3Vec3AoS)->RangeMultiplier(10)->Range(1e3, 1e8)->Unit(benchmark::kMicrosecond);

@@ -6,6 +6,9 @@
 namespace elasticity
 {
 
+template<sofa::Size L, sofa::Size C, class real>
+struct LazyMatrixVectorProductResult;
+
 template <sofa::Size L, sofa::Size C, class real>
 class MatSoA
 {
@@ -53,6 +56,11 @@ public:
             }
         }
     }
+
+    LazyMatrixVectorProductResult<L, C, real> operator*(const VecSoA<C, real>& vec)
+    {
+        return { this, &vec };
+    }
 };
 
 template<sofa::Size L, sofa::Size C, class real>
@@ -80,6 +88,24 @@ void matrixVectorProduct(VecSoA<L, real>& result, const MatSoA<L, C, real>& mat,
     }
 }
 
+template<sofa::Size L, sofa::Size C, class real>
+struct LazyMatrixVectorProductResult
+{
+    const MatSoA<L, C, real>* const m_mat { nullptr };
+    const VecSoA<C, real>* const m_vec { nullptr };
+
+    LazyMatrixVectorProductResult(const MatSoA<L, C, real>* mat, const VecSoA<C, real>* vec)
+    : m_mat(mat), m_vec(vec)
+    {
+        assert(mat != nullptr);
+        assert(vec != nullptr);
+    }
+
+    void apply(VecSoA<L, real>& result) const
+    {
+        matrixVectorProduct(result, *m_mat, *m_vec);
+    }
+};
 
 
 }

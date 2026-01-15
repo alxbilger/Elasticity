@@ -9,6 +9,9 @@ namespace elasticity
 {
 
 template <sofa::Size N, typename real>
+struct LazyPlusResult;
+
+template <sofa::Size N, typename real>
 class VecSoA
 {
 private:
@@ -18,6 +21,12 @@ public:
 
     VecSoA() = default;
     explicit VecSoA(std::size_t count) { resize(count); }
+
+    template<class LazyResult>
+    void operator=(const LazyResult& other)
+    {
+        other.apply(*this);
+    }
 
     void resize(std::size_t size)
     {
@@ -58,6 +67,11 @@ public:
         }
     }
 
+    LazyPlusResult<N, real> operator+(const VecSoA<N, real>& other)
+    {
+        return { this, &other };
+    }
+
     static void Add(VecSoA& result, const VecSoA& a, const VecSoA& b)
     {
         assert(a.size() == b.size());
@@ -88,6 +102,24 @@ public:
                 aos[j][i] = m_data[i][j];
             }
         }
+    }
+};
+
+template <sofa::Size N, typename real>
+struct LazyPlusResult
+{
+    const VecSoA<N, real>* const m_a { nullptr };
+    const VecSoA<N, real>* const m_b { nullptr };
+
+    LazyPlusResult(const VecSoA<N, real>* a, const VecSoA<N, real>* b) : m_a(a), m_b(b)
+    {
+        assert(m_a != nullptr);
+        assert(m_b != nullptr);
+    }
+
+    void apply(VecSoA<N, real>& result) const
+    {
+        VecSoA<N, real>::Add(result, *m_a, *m_b);
     }
 };
 
