@@ -35,6 +35,8 @@ set(HEADER_FILES
     src/Elasticity/component/LinearMechanicalParametersComponent.inl
     src/Elasticity/component/PK2HyperelasticMaterial.h
     src/Elasticity/component/PK2HyperelasticMaterial.inl
+    src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.h
+    src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.inl
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.inl
@@ -95,6 +97,7 @@ set(SOURCE_FILES
     src/Elasticity/component/HyperelasticMaterial.cpp
     src/Elasticity/component/LinearMechanicalParametersComponent.cpp
     src/Elasticity/component/PK2HyperelasticMaterial.cpp
+    src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.cpp
 
     src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.cpp
     src/Elasticity/component/material/MooneyRivlinMaterial.cpp

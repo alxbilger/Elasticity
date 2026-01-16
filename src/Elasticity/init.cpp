@@ -16,6 +16,7 @@ extern void registerNeoHookeanMaterial(sofa::core::ObjectFactory* factory);
 extern void registerMooneyRivlinMaterial(sofa::core::ObjectFactory* factory);
 extern void registerOgdenMaterial(sofa::core::ObjectFactory* factory);
 extern void registerIncompressibleMooneyRivlinMaterial(sofa::core::ObjectFactory* factory);
+extern void registerSoAElementLinearSmallStrainFEMForceField(sofa::core::ObjectFactory* factory);
 
 void initializePlugin() 
 {
@@ -69,5 +70,6 @@ extern "C"
         elasticity::registerIncompressibleMooneyRivlinMaterial(factory);
         elasticity::registerMooneyRivlinMaterial(factory);
         elasticity::registerOgdenMaterial(factory);
+        elasticity::registerSoAElementLinearSmallStrainFEMForceField(factory);
     }
 }
