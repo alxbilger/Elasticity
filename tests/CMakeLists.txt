@@ -12,6 +12,7 @@ set(SOURCE_FILES
     Material_test.cpp
     MatrixTools_test.cpp
     SoA_test.cpp
+    StrainDisplacement_test.cpp
 )
 
 sofa_find_package(Sofa.Component.SolidMechanics.Testing REQUIRED)
