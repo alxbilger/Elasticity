@@ -103,6 +103,11 @@ struct StrainDisplacement
     }
 
     sofa::type::Mat<nbLines, nbColumns, sofa::Real_t<DataTypes>> B;
+
+    friend std::ostream& operator<<(std::ostream& out, const StrainDisplacement& B)
+    {
+        return operator<<(out, B.B);
+    }
 };
 
 template <sofa::Size L, sofa::Size C, class real, class DataTypes, class ElementType>
