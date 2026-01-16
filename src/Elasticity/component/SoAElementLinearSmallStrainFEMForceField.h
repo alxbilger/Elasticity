@@ -36,7 +36,7 @@ public:
 
 private:
 
-    using trait = trait<DataTypes, ElementType>;
+    using trait = elasticity::trait<DataTypes, ElementType>;
 
     VecSoA<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes> > m_elementDisplacement;
     MatSoA<trait::NumberOfDofsInElement, trait::NumberOfDofsInElement, sofa::Real_t<DataTypes> > m_elementStiffness;
