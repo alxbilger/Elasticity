@@ -48,6 +48,14 @@ public:
         return m_data[i];
     }
 
+    void setVec(std::size_t i, const sofa::type::Vec<N, real>& vec)
+    {
+        for (std::size_t j = 0; j < N; ++j)
+        {
+            m_data[j][i] = vec[j];
+        }
+    }
+
     template<class BinaryOp>
     static void BinaryOperation(VecSoA& result, const VecSoA& a, const VecSoA& b, const BinaryOp& op)
     {
