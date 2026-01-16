@@ -64,6 +64,10 @@ private:
         sofa::Real_t<DataTypes>> stiffnessMatrix;
 
 public:
+    const StrainDisplacement<DataTypes, ElementType>& getB(std::size_t i) const { return B[i]; }
+    Real getFactor(std::size_t i) const { return factors[i]; }
+    const IsotropicElasticityTensor<DataTypes>& getElasticityTensor() const { return elasticityTensor; }
+
     void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor_)
     {
         for (std::size_t i = 0; i < NumberOfIndependentElements; ++i)
@@ -102,13 +106,13 @@ public:
                 for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
                 {
                     const auto& B = this->B[i];
-                    result += this->factors[i] * B.multTranspose(this->elasticityTensor * (B * v));
+                    result += B.multTranspose(this->factors[i] * (this->elasticityTensor * (B * v)));
                 }
                 return result;
             }
             else
             {
-                return this->factors[0] * this->B[0].multTranspose(this->elasticityTensor * (this->B[0] * v));
+                return this->B[0].multTranspose(this->factors[0] * (this->elasticityTensor * (this->B[0] * v)));
             }
         }
         else
