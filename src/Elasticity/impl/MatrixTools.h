@@ -69,20 +69,14 @@ real determinant(const sofa::type::Mat<L, C, real>& mat)
     }
     else
     {
-        return std::sqrt(determinantSquareMatrix(mat.transposed() * mat));
+        return std::sqrt(determinantSquareMatrix(mat.multTranspose(mat)));
     }
 }
 
 template <sofa::Size L, sofa::Size C, class real>
 sofa::type::Mat<C, L, real> leftPseudoInverse(const sofa::type::Mat<L, C, real>& mat)
 {
-    return (mat.transposed() * mat).inverted() * mat.transposed();
-}
-
-template <sofa::Size L, sofa::Size C, class real>
-sofa::type::Mat<C, L, real> rightPseudoInverse(const sofa::type::Mat<L, C, real>& mat)
-{
-    return mat.transposed() * (mat * mat.transposed()).inverted();
+    return mat.multTranspose(mat).inverted() * mat.transposed();
 }
 
 /**
@@ -104,24 +98,6 @@ sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
     {
         return leftPseudoInverse(mat);
     }
-}
-
-/**
- * Stack the columns of a matrix on top of each other to form a vector.
- */
-template <sofa::Size L, sofa::Size C, class real>
-constexpr auto flatten(const sofa::type::Mat<L, C, real>& mat)
-{
-    sofa::type::Vec<L * C, real> res(sofa::type::NOINIT);
-    sofa::Index index = 0;
-    for (sofa::Size c = 0; c < C; ++c)
-    {
-        for (sofa::Size l = 0; l < L; ++l)
-        {
-            res[index++] = mat(l, c);
-        }
-    }
-    return res;
 }
 
 }
