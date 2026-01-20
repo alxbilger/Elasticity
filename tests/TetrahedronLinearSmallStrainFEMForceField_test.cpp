@@ -6,6 +6,7 @@
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 #include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/testing/LinearCongruentialRandomGenerator.h>
 
 namespace elasticity
 {
@@ -168,7 +169,7 @@ TEST(TET4LinearSmallStrainFEMForceField, jacobian)
 
 }
 
-struct LegacyComparisonTest : public BaseSimulationTest
+struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SReal>
 {
     SceneInstance m_scene{};
 
@@ -179,10 +180,12 @@ struct LegacyComparisonTest : public BaseSimulationTest
     void doSetUp() override
     {
         m_elasticityComponent = sofa::core::objectmodel::New<TetrahedronLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>>();
+        m_elasticityComponent->setYoungModulus(1_sreal);
         m_scene.root->addObject(m_elasticityComponent);
 
         m_legacyComponent = sofa::core::objectmodel::New<sofa::component::solidmechanics::fem::elastic::TetrahedronFEMForceField<sofa::defaulttype::Vec3Types>>();
         m_legacyComponent->d_method.setValue("small");
+        m_legacyComponent->setYoungModulus(1_sreal);
         m_scene.root->addObject(m_legacyComponent);
 
         auto topology = sofa::core::objectmodel::New<sofa::component::topology::container::constant::MeshTopology>();
@@ -202,28 +205,91 @@ struct LegacyComparisonTest : public BaseSimulationTest
 
         m_scene.initScene();
     }
+
+    void checkAddForce(const std::array<sofa::type::Vec3, 4>& vertices, const std::array<sofa::type::Vec3, 4>& vertices_0, const SReal maxError)
+    {
+        {
+            auto x_0 = m_mstate->writeOnlyRestPositions();
+            x_0.resize(4);
+            for (std::size_t i = 0; i < 4; ++i)
+            {
+                x_0[i] = vertices_0[i];
+            }
+        }
+
+        {
+            auto x = m_mstate->writeOnlyPositions();
+            x.resize(4);
+            for (std::size_t i = 0; i < 4; ++i)
+            {
+                x[i] = vertices[i];
+            }
+        }
+
+        auto forcesAccessor = m_mstate->writeForces();
+        forcesAccessor.clear();
+        // forcesAccessor.resize(4);
+
+        m_scene.initScene();
+
+        m_elasticityComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+
+        const auto elasticityForces = forcesAccessor.ref();
+        forcesAccessor.clear();
+        forcesAccessor.resize(4);
+
+        for (const auto& force : forcesAccessor.ref())
+        {
+            for (const auto f : force)
+            {
+                EXPECT_EQ(f, 0_sreal);
+            }
+        }
+
+        m_legacyComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+        const auto legacyForces = forcesAccessor.ref();
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            EXPECT_LT(vectorMaxDiff(legacyForces[i], elasticityForces[i]), maxError)
+                << "legacy = " << legacyForces[i] << " vs. elasticity = " << elasticityForces[i];
+        }
+    }
 };
 
 TEST_F(LegacyComparisonTest, checkAddForce)
 {
-    m_elasticityComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
-    auto forcesAccessor = m_mstate->writeForces();
-    const auto elasticityForces = forcesAccessor.ref();
-    forcesAccessor.clear();
-    forcesAccessor.resize(4);
+    this->checkAddForce(
+        { sofa::type::Vec3{ 0, 0, 0 }, sofa::type::Vec3{ 1, 0, 0 }, sofa::type::Vec3{ 0, 1, 0 }, sofa::type::Vec3{ 0, 0, 1 }},
+        { sofa::type::Vec3{ 0, 0, 0 }, sofa::type::Vec3{ 1, 0, 0 }, sofa::type::Vec3{ 0, 1, 0 }, sofa::type::Vec3{ 0, 0, 1 }},
+        1e-10_sreal);
 
-    for (const auto& force : forcesAccessor.ref())
+    sofa::testing::LinearCongruentialRandomGenerator lcrg(41314325);
+    constexpr auto range = 1e4_sreal;
+    const auto generateScalar = [&lcrg]() { return lcrg.generateInRange(-range, range); };
+    const auto generateVec = [&generateScalar]() { return sofa::type::Vec3 { generateScalar(), generateScalar(), generateScalar() }; };
+
+    for (std::size_t i = 0; i < 100;)
     {
-        for (const auto f : force)
+        const auto a = generateVec();
+        const auto b = generateVec();
+        const auto c = generateVec();
+        const auto d = generateVec();
+
+        const auto e = generateVec();
+        const auto f = generateVec();
+        const auto g = generateVec();
+        const auto h = generateVec();
+
+        // known bug in TetrahedronFEMForceField: the use of the absolute value on the volume looses
+        // the sign in case of inverted element
+        const auto isInitialTetrahedronValid = sofa::geometry::Tetrahedron::signedVolume(e, f, g, h) > 0;
+        if (isInitialTetrahedronValid)
         {
-            EXPECT_EQ(f, 0_sreal);
+            this->checkAddForce({ a, b, c, d}, {e, f, g, h}, 1e-3_sreal);
+            ++i;
         }
     }
-
-    m_legacyComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
-    const auto legacyForces = forcesAccessor.ref();
-
-    EXPECT_EQ(elasticityForces, legacyForces);
 }
 
 }

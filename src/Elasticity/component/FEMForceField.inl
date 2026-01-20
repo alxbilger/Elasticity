@@ -51,6 +51,10 @@ void FEMForceField<DataTypes, ElementType>::addForce(
     this->computeElementsForces(mparams, m_elementForce, positionAccessor.ref());
 
     auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
+    if (forceAccessor.size() < positionAccessor.size())
+    {
+        forceAccessor.resize(positionAccessor.size());
+    }
 
     // dispatch the element force to the degrees of freedom.
     // this operation is done outside the compute strategy because it is not thread-safe.
