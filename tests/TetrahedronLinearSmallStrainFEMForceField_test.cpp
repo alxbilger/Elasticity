@@ -1,9 +1,11 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
-#include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/LameParameters.h>
+#include <Elasticity/impl/MatrixTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
+#include <sofa/core/behavior/BaseForceField.h>
 
 namespace elasticity
 {
@@ -164,6 +166,64 @@ TEST(TET4LinearSmallStrainFEMForceField, jacobian)
         for (sofa::Size j = 0; j < 3; ++j)
            EXPECT_DOUBLE_EQ(jacobian(i, j), static_cast<SReal>(i == j)) << "i = " << i << " j = " << j;
 
+}
+
+struct LegacyComparisonTest : public BaseSimulationTest
+{
+    SceneInstance m_scene{};
+
+    TetrahedronLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>::SPtr m_elasticityComponent;
+    sofa::component::solidmechanics::fem::elastic::TetrahedronFEMForceField<sofa::defaulttype::Vec3Types>::SPtr m_legacyComponent;
+    sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types>::SPtr m_mstate;
+
+    void doSetUp() override
+    {
+        m_elasticityComponent = sofa::core::objectmodel::New<TetrahedronLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>>();
+        m_scene.root->addObject(m_elasticityComponent);
+
+        m_legacyComponent = sofa::core::objectmodel::New<sofa::component::solidmechanics::fem::elastic::TetrahedronFEMForceField<sofa::defaulttype::Vec3Types>>();
+        m_legacyComponent->d_method.setValue("small");
+        m_scene.root->addObject(m_legacyComponent);
+
+        auto topology = sofa::core::objectmodel::New<sofa::component::topology::container::constant::MeshTopology>();
+        topology->addTetra(0,1,2,3);
+        m_scene.root->addObject(topology);
+
+        m_mstate = sofa::core::objectmodel::New<sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types>>();
+        m_scene.root->addObject(m_mstate);
+        m_mstate->resize(4);
+
+        auto x = m_mstate->writeOnlyRestPositions();
+        x.resize(4);
+        x[0] = { 0, 0, 0 };
+        x[1] = { 1, 0, 0 };
+        x[2] = { 0, 1, 0 };
+        x[3] = { 0, 0, 1 };
+
+        m_scene.initScene();
+    }
+};
+
+TEST_F(LegacyComparisonTest, checkAddForce)
+{
+    m_elasticityComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+    auto forcesAccessor = m_mstate->writeForces();
+    const auto elasticityForces = forcesAccessor.ref();
+    forcesAccessor.clear();
+    forcesAccessor.resize(4);
+
+    for (const auto& force : forcesAccessor.ref())
+    {
+        for (const auto f : force)
+        {
+            EXPECT_EQ(f, 0_sreal);
+        }
+    }
+
+    m_legacyComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+    const auto legacyForces = forcesAccessor.ref();
+
+    EXPECT_EQ(elasticityForces, legacyForces);
 }
 
 }
