@@ -177,6 +177,8 @@ struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SRea
     sofa::component::solidmechanics::fem::elastic::TetrahedronFEMForceField<sofa::defaulttype::Vec3Types>::SPtr m_legacyComponent;
     sofa::component::statecontainer::MechanicalObject<sofa::defaulttype::Vec3Types>::SPtr m_mstate;
 
+    sofa::testing::LinearCongruentialRandomGenerator m_lcrg { 41314325 };
+
     void doSetUp() override
     {
         m_elasticityComponent = sofa::core::objectmodel::New<TetrahedronLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types>>();
@@ -203,7 +205,21 @@ struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SRea
         x[2] = { 0, 1, 0 };
         x[3] = { 0, 0, 1 };
 
+        m_mstate->vRealloc(sofa::core::ExecParams::defaultInstance(), sofa::core::vec_id::write_access::dforce);
+
         m_scene.initScene();
+    }
+
+    void resetForces()
+    {
+        auto forcesAccessor = m_mstate->writeForces();
+        forcesAccessor.clear();
+    }
+
+    void resetDForces()
+    {
+        auto dfAccessor = sofa::helper::getWriteAccessor(*m_mstate->write(sofa::core::vec_id::write_access::dforce));
+        dfAccessor.clear();
     }
 
     void checkAddForce(const std::array<sofa::type::Vec3, 4>& vertices, const std::array<sofa::type::Vec3, 4>& vertices_0, const SReal maxError)
@@ -227,17 +243,17 @@ struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SRea
         }
 
         auto forcesAccessor = m_mstate->writeForces();
-        forcesAccessor.clear();
-        // forcesAccessor.resize(4);
+        resetForces();
 
         m_scene.initScene();
 
-        m_elasticityComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+        sofa::core::MechanicalParams mparams;
+        m_elasticityComponent->toBaseForceField()->addForce(&mparams, sofa::core::vec_id::write_access::force);
 
         const auto elasticityForces = forcesAccessor.ref();
-        forcesAccessor.clear();
-        forcesAccessor.resize(4);
+        resetForces();
 
+        //make sure the forces has been reset
         for (const auto& force : forcesAccessor.ref())
         {
             for (const auto f : force)
@@ -246,7 +262,7 @@ struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SRea
             }
         }
 
-        m_legacyComponent->toBaseForceField()->addForce(sofa::core::MechanicalParams::defaultInstance(), sofa::core::vec_id::write_access::force);
+        m_legacyComponent->toBaseForceField()->addForce(&mparams, sofa::core::vec_id::write_access::force);
         const auto legacyForces = forcesAccessor.ref();
 
         for (std::size_t i = 0; i < 4; ++i)
@@ -254,6 +270,50 @@ struct LegacyComparisonTest : public BaseSimulationTest, public NumericTest<SRea
             EXPECT_LT(vectorMaxDiff(legacyForces[i], elasticityForces[i]), maxError)
                 << "legacy = " << legacyForces[i] << " vs. elasticity = " << elasticityForces[i];
         }
+    }
+
+    void checkAddDForce(const std::array<sofa::type::Vec3, 4>& dx, SReal maxError)
+    {
+        {
+            auto dxAccessor = m_mstate->writeDx();
+            dxAccessor.resize(4);
+            for (std::size_t i = 0; i < 4; ++i)
+            {
+                dxAccessor[i] = dx[i];
+            }
+        }
+
+        sofa::core::MechanicalParams mparams;
+        mparams.setKFactor(1._sreal);
+
+        auto dfAccessor = sofa::helper::getWriteAccessor(*m_mstate->write(sofa::core::vec_id::write_access::dforce));
+
+        resetDForces();
+        m_elasticityComponent->toBaseForceField()->addDForce(&mparams, sofa::core::vec_id::write_access::dforce);
+
+        const auto elasticityDf = dfAccessor.ref();
+
+        resetDForces();
+        m_legacyComponent->toBaseForceField()->addDForce(&mparams, sofa::core::vec_id::write_access::dforce);
+
+        const auto legacyDf = dfAccessor.ref();
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            EXPECT_LT(vectorMaxDiff(legacyDf[i], elasticityDf[i]), maxError)
+                << "legacy = " << legacyDf[i] << " vs. elasticity = " << elasticityDf[i];
+        }
+    }
+
+
+    SReal generateScalar(SReal range)
+    {
+        return m_lcrg.generateInRange(-range, range);
+    }
+
+    auto generateVec3(SReal range)
+    {
+        return sofa::type::Vec3{ generateScalar(range), generateScalar(range), generateScalar(range) };
     }
 };
 
@@ -264,22 +324,20 @@ TEST_F(LegacyComparisonTest, checkAddForce)
         { sofa::type::Vec3{ 0, 0, 0 }, sofa::type::Vec3{ 1, 0, 0 }, sofa::type::Vec3{ 0, 1, 0 }, sofa::type::Vec3{ 0, 0, 1 }},
         1e-10_sreal);
 
-    sofa::testing::LinearCongruentialRandomGenerator lcrg(41314325);
+
     constexpr auto range = 1e4_sreal;
-    const auto generateScalar = [&lcrg]() { return lcrg.generateInRange(-range, range); };
-    const auto generateVec = [&generateScalar]() { return sofa::type::Vec3 { generateScalar(), generateScalar(), generateScalar() }; };
 
     for (std::size_t i = 0; i < 100;)
     {
-        const auto a = generateVec();
-        const auto b = generateVec();
-        const auto c = generateVec();
-        const auto d = generateVec();
+        const auto a = generateVec3(range);
+        const auto b = generateVec3(range);
+        const auto c = generateVec3(range);
+        const auto d = generateVec3(range);
 
-        const auto e = generateVec();
-        const auto f = generateVec();
-        const auto g = generateVec();
-        const auto h = generateVec();
+        const auto e = generateVec3(range);
+        const auto f = generateVec3(range);
+        const auto g = generateVec3(range);
+        const auto h = generateVec3(range);
 
         // known bug in TetrahedronFEMForceField: the use of the absolute value on the volume looses
         // the sign in case of inverted element
@@ -289,6 +347,23 @@ TEST_F(LegacyComparisonTest, checkAddForce)
             this->checkAddForce({ a, b, c, d}, {e, f, g, h}, 1e-3_sreal);
             ++i;
         }
+    }
+}
+
+TEST_F(LegacyComparisonTest, checkAddDForce)
+{
+    checkAddDForce({sofa::type::Vec3{1,1,1}, sofa::type::Vec3{1,1,1}, sofa::type::Vec3{1,1,1}, sofa::type::Vec3{1,1,1}}, 1e-8_sreal);
+
+    constexpr auto range = 1e4_sreal;
+
+    for (std::size_t i = 0; i < 100; ++i)
+    {
+        const auto a = generateVec3(range);
+        const auto b = generateVec3(range);
+        const auto c = generateVec3(range);
+        const auto d = generateVec3(range);
+
+        this->checkAddDForce({a, b, c, d}, 1e-11_sreal);
     }
 }
 
