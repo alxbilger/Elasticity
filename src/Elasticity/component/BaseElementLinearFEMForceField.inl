@@ -13,17 +13,6 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-void BaseElementLinearFEMForceField<DataTypes, ElementType>::init()
-{
-    sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>::init();
-
-    if (!this->isComponentStateInvalid())
-    {
-        this->precomputeElementStiffness();
-    }
-}
-
-template <class DataTypes, class ElementType>
 BaseElementLinearFEMForceField<DataTypes, ElementType>::BaseElementLinearFEMForceField()
     : d_elementStiffness(initData(&d_elementStiffness, "elementStiffness", "List of stiffness matrices per element"))
 {
@@ -33,6 +22,17 @@ BaseElementLinearFEMForceField<DataTypes, ElementType>::BaseElementLinearFEMForc
         precomputeElementStiffness();
         return this->getComponentState();
     }, {});
+}
+
+template <class DataTypes, class ElementType>
+void BaseElementLinearFEMForceField<DataTypes, ElementType>::init()
+{
+    sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>::init();
+
+    if (!this->isComponentStateInvalid())
+    {
+        this->precomputeElementStiffness();
+    }
 }
 
 template <class DataTypes, class ElementType>

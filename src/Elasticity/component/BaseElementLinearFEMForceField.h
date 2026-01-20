@@ -1,20 +1,29 @@
 #pragma once
 
-#include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/config.h>
-#include <Elasticity/finiteelement/FiniteElement[all].h>
-#include <Elasticity/impl/ComputeStrategy.h>
+#include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/impl/trait.h>
 #include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.h>
+
+#if !defined(ELASTICITY_COMPONENT_BASE_ELEMENT_LINEAR_FEM_FORCEFIELD_CPP)
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#endif
 
 namespace elasticity
 {
 
+/**
+ * A base class for all element-based linear elastic force fields.
+ *
+ * It stores precomputed stiffness matrices (one per element) that are derived from:
+ *   - The initial configuration of the mechanical model
+ *   - Material properties (Young's modulus, Poisson's ratio)
+ */
 template <class DataTypes, class ElementType>
 class BaseElementLinearFEMForceField : public sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>
 {
 public:
-    SOFA_CLASS(
+    SOFA_ABSTRACT_CLASS(
         SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
         sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>);
 
