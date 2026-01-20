@@ -1,6 +1,5 @@
 #pragma once
-#include <Elasticity/impl/trait.h>
-#include <sofa/helper/OptionsGroup.h>
+#include <sofa/helper/SelectableItem.h>
 
 namespace elasticity
 {

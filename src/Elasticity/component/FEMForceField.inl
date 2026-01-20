@@ -2,7 +2,6 @@
 #include <Elasticity/component/FEMForceField.h>
 #include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
-#include <sofa/simulation/task/ParallelForEach.h>
 
 namespace elasticity
 {
@@ -191,11 +190,9 @@ sofa::simulation::ForEachExecutionPolicy FEMForceField<DataTypes, ElementType>::
     auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
     const auto& computeForceStrategy = computeForceStrategyAccessor->key();
 
-    sofa::simulation::ForEachExecutionPolicy executionPolicy(sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL);
-    if (computeForceStrategy == parallelComputeStrategy)
-        executionPolicy = sofa::simulation::ForEachExecutionPolicy::PARALLEL;
-
-    return executionPolicy;
+    return (computeForceStrategy == parallelComputeStrategy)
+        ? sofa::simulation::ForEachExecutionPolicy::PARALLEL
+        : sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL;
 }
 
 template <class DataTypes, class ElementType>

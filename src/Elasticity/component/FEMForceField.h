@@ -1,5 +1,6 @@
 #pragma once
 #include <Elasticity/config.h>
+#include <Elasticity/impl/trait.h>
 #include <Elasticity/impl/ComputeStrategy.h>
 #include <sofa/core/visual/DrawMesh.h>
 #include <sofa/simulation/task/ParallelForEach.h>
@@ -54,6 +55,8 @@ protected:
 
     FEMForceField();
 
+    /// Methods related to addForce
+    /// @{
     void computeElementsForces(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x);
@@ -68,6 +71,14 @@ protected:
         sofa::type::vector<ElementForce>& f,
         const sofa::VecCoord_t<DataTypes>& x) = 0;
 
+    void dispatchElementForcesToNodes(
+        const sofa::type::vector<typename trait::TopologyElement>& elements,
+        sofa::VecDeriv_t<DataTypes>& nodeForces);
+    /// @}
+
+
+    /// Methods related to addDForce
+    /// @{
     void computeElementsForcesDeriv(const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& df,
         const sofa::VecDeriv_t<DataTypes>& dx);
@@ -78,15 +89,14 @@ protected:
         sofa::type::vector<ElementForce>& df,
         const sofa::VecDeriv_t<DataTypes>& dx) = 0;
 
-    void dispatchElementForcesToNodes(
-        const sofa::type::vector<typename trait::TopologyElement>& elements,
-        sofa::VecDeriv_t<DataTypes>& nodeForces);
-
     /**
      * Force derivatives were computed at the element level. This function dispatches the force
      * derivatives from the elements to the nodes.
      */
-    void dispatchElementForcesDerivToNodes(const sofa::core::MechanicalParams* mparams, const sofa::type::vector<typename trait::TopologyElement>& elements, sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
+    void dispatchElementForcesDerivToNodes(const sofa::core::MechanicalParams* mparams,
+        const sofa::type::vector<typename trait::TopologyElement>& elements,
+        sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
+    /// @}
 
     sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<ComputeStrategy>& strategy) const;
 
