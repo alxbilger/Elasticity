@@ -65,6 +65,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
     auto restPositionAccessor = this->mstate->readRestPositions();
+    auto elementStiffness = sofa::helper::getReadAccessor(this->d_elementStiffness);
 
     for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
     {
@@ -90,7 +91,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
             transformedDisplacement = elementRotation.multTranspose(elementNodesCoordinates[j] - t) - (restElementNodesCoordinates[j] - t0);
         }
 
-        const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
+        const auto& stiffnessMatrix = elementStiffness[elementId];
 
         auto& elementForce = elementForces[elementId];
         elementForce = stiffnessMatrix * displacement;
@@ -112,6 +113,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
     const sofa::VecDeriv_t<DataTypes>& nodeDx)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
+    auto elementStiffness = sofa::helper::getReadAccessor(this->d_elementStiffness);
 
     for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
     {
@@ -127,7 +129,7 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
             rotated_dx = elementRotation.multTranspose(nodeDx[element[n]]);
         }
 
-        const auto& stiffnessMatrix = this->m_elementStiffness[elementId];
+        const auto& stiffnessMatrix = elementStiffness[elementId];
 
         auto& df = elementForcesDeriv[elementId];
         df = stiffnessMatrix * element_dx;
@@ -150,13 +152,14 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::buildStiffnessMat
     sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>> localMatrix(sofa::type::NOINIT);
 
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
+    auto elementStiffness = sofa::helper::getReadAccessor(this->d_elementStiffness);
 
-    if (m_rotations.size() < elements.size() || this->m_elementStiffness.size() < elements.size())
+    if (m_rotations.size() < elements.size() || elementStiffness.size() < elements.size())
     {
         return;
     }
 
-    auto elementStiffnessIt = this->m_elementStiffness.begin();
+    auto elementStiffnessIt = elementStiffness.begin();
     auto rotationMatrixIt = m_rotations.begin();
     for (const auto& element : elements)
     {

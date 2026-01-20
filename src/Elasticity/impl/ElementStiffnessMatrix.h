@@ -127,6 +127,11 @@ public:
     {
         return os << obj.getAssembledMatrix();
     }
+
+    friend std::istream& operator>>(std::istream& in, FactorizedElementStiffness& obj)
+    {
+        return in;
+    }
 };
 
 template <class DataTypes, class ElementType, MatrixVectorProductType matrixVectorProductType = MatrixVectorProductType::Dense>

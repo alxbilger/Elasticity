@@ -20,17 +20,11 @@ public:
 
     void init() override;
 
-
-
-
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
     using ElementStiffness = typename trait::ElementStiffness;
     using ElasticityTensor = typename trait::ElasticityTensor;
     using StrainDisplacement = typename trait::StrainDisplacement;
-
-public:
-    const sofa::type::vector<ElementStiffness>& getElementStiffness() const { return m_elementStiffness; }
 
 protected:
 
@@ -41,12 +35,12 @@ protected:
      */
     void precomputeElementStiffness();
 
+public:
+
     /**
      * List of precomputed element stiffness matrices
      */
-    sofa::type::vector<ElementStiffness> m_elementStiffness;
-
-    sofa::type::vector<std::array<StrainDisplacement, trait::NumberOfNodesInElement>> m_strainDisplacement;
+    sofa::Data<sofa::type::vector<ElementStiffness> > d_elementStiffness;
 };
 
 #if !defined(ELASTICITY_COMPONENT_BASE_ELEMENT_LINEAR_FEM_FORCEFIELD_CPP)
