@@ -214,11 +214,8 @@ void FEMForceField<DataTypes, ElementType>::draw(const sofa::core::visual::Visua
 
     const auto& x = this->mstate->read(sofa::core::vec_id::read_access::position)->getValue();
 
-    if constexpr (std::same_as<ElementType, sofa::geometry::Triangle> || std::same_as<ElementType, sofa::geometry::Tetrahedron> || std::same_as<ElementType, sofa::geometry::Hexahedron> )
-    {
-        m_drawMesh.elementSpace = d_elementSpace.getValue();
-        m_drawMesh.drawAllElements(vparams->drawTool(), x, this->l_topology.get());
-    }
+    m_drawMesh.elementSpace = d_elementSpace.getValue();
+    m_drawMesh.drawAllElements(vparams->drawTool(), x, this->l_topology.get());
 }
 
 }  // namespace elasticity
