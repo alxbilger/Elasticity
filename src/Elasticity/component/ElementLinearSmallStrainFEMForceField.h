@@ -2,7 +2,6 @@
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
 #include <Elasticity/config.h>
-#include <Elasticity/impl/ComputeStrategy.h>
 #include <Elasticity/impl/trait.h>
 
 #include <Elasticity/component/FEMForceField.h>

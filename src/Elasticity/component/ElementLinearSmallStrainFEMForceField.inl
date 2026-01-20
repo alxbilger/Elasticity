@@ -2,8 +2,6 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 #include <Elasticity/component/BaseElementLinearFEMForceField.inl>
 #include <Elasticity/component/FEMForceField.inl>
-#include <Elasticity/impl/LameParameters.h>
-#include <sofa/core/behavior/ForceField.inl>
 
 namespace elasticity
 {

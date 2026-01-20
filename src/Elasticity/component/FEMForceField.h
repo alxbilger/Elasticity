@@ -1,8 +1,15 @@
 #pragma once
+#include <Elasticity/config.h>
 #include <Elasticity/impl/ComputeStrategy.h>
 #include <sofa/core/visual/DrawMesh.h>
 #include <sofa/simulation/task/ParallelForEach.h>
 #include <sofa/simulation/task/TaskSchedulerUser.h>
+#include <sofa/core/behavior/ForceField.h>
+#include <sofa/core/behavior/TopologyAccessor.h>
+
+#if !defined(ELASTICITY_COMPONENT_FEM_FORCEFIELD_CPP)
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#endif
 
 namespace elasticity
 {
@@ -89,5 +96,16 @@ protected:
     sofa::core::visual::DrawElementMesh<ElementType> m_drawMesh;
 };
 
+#if !defined(ELASTICITY_COMPONENT_FEM_FORCEFIELD_CPP)
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Triangle>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Quad>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Quad>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Tetrahedron>;
+extern template class ELASTICITY_API FEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Hexahedron>;
+#endif
 
 }  // namespace elasticity

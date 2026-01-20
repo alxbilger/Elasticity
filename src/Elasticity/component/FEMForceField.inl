@@ -1,5 +1,6 @@
 #pragma once
 #include <Elasticity/component/FEMForceField.h>
+#include <sofa/core/behavior/ForceField.inl>
 #include <sofa/core/visual/VisualParams.h>
 #include <sofa/simulation/task/ParallelForEach.h>
 
@@ -13,6 +14,9 @@ FEMForceField<DataTypes, ElementType>::FEMForceField()
     , d_elementSpace(initData(&d_elementSpace, static_cast<sofa::Real_t<DataTypes>>(0.125), "elementSpace", "When rendering, the space between elements"))
 {
     d_elementSpace.setGroup("Visualization");
+
+    d_computeForceStrategy.setGroup("Multithreading");
+    d_computeForceDerivStrategy.setGroup("Multithreading");
 }
 
 template <class DataTypes, class ElementType>
