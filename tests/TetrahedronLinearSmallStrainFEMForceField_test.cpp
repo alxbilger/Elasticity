@@ -344,7 +344,7 @@ TEST_F(LegacyComparisonTest, checkAddForce)
         const auto isInitialTetrahedronValid = sofa::geometry::Tetrahedron::signedVolume(e, f, g, h) > 0;
         if (isInitialTetrahedronValid)
         {
-            this->checkAddForce({ a, b, c, d}, {e, f, g, h}, 1e-3_sreal);
+            this->checkAddForce({ a, b, c, d}, {e, f, g, h}, 1e-4_sreal);
             ++i;
         }
     }
