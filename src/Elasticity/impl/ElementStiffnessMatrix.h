@@ -7,6 +7,8 @@
 #include <Elasticity/impl/StrainDisplacement.h>
 #include <sofa/type/Mat.h>
 
+#include <ostream>
+
 namespace elasticity
 {
 
@@ -119,6 +121,11 @@ public:
         {
             return this->stiffnessMatrix * v;
         }
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const FactorizedElementStiffness& obj)
+    {
+        return os << obj.getAssembledMatrix();
     }
 };
 
