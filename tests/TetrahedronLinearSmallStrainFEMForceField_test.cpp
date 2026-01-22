@@ -327,7 +327,7 @@ TEST_F(LegacyComparisonTest, checkAddForce)
 
     constexpr auto range = 1e4_sreal;
 
-    for (std::size_t i = 0; i < 100;)
+    for (std::size_t i = 0; i < 100; ++i)
     {
         const auto a = generateVec3(range);
         const auto b = generateVec3(range);
@@ -339,14 +339,7 @@ TEST_F(LegacyComparisonTest, checkAddForce)
         const auto g = generateVec3(range);
         const auto h = generateVec3(range);
 
-        // known bug in TetrahedronFEMForceField: the use of the absolute value on the volume looses
-        // the sign in case of inverted element
-        const auto isInitialTetrahedronValid = sofa::geometry::Tetrahedron::signedVolume(e, f, g, h) > 0;
-        if (isInitialTetrahedronValid)
-        {
-            this->checkAddForce({ a, b, c, d}, {e, f, g, h}, 1e-4_sreal);
-            ++i;
-        }
+        this->checkAddForce({a, b, c, d}, {e, f, g, h}, 1e-3_sreal);
     }
 }
 

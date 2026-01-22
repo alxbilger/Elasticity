@@ -92,14 +92,6 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
             Strain<DataTypes> strain(deformationGradient, F);
 
-            const auto detF = strain.getDeterminantDeformationGradient();
-            if (detF < 0)
-            {
-                const auto detJ_q = elasticity::determinant(J_q);
-                msg_error("FEM") << "Element inversion detected (detF = " << detF << " < 0, " <<
-                    " detJ_q = " << detJ_q << ", detJ_Q = " << detJ_Q << ")";
-            }
-
             const auto P = l_material->firstPiolaKirchhoffStress(strain);
 
             for (sofa::Index i = 0; i < NumberOfNodesInElement; ++i)
@@ -398,7 +390,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
             PrecomputedData& data = m_precomputedData[i][j];
             data.jacobian = FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
             data.jacobianInv = elasticity::inverse(data.jacobian);
-            data.detJacobian = elasticity::determinant(data.jacobian);
+            data.detJacobian = elasticity::absGeneralizedDeterminant(data.jacobian);
 
             for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
             {

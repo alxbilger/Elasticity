@@ -162,7 +162,7 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
 
-        const auto detJ = elasticity::determinant(jacobian);
+        const auto detJ = elasticity::absGeneralizedDeterminant(jacobian);
         const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
             elasticity::inverse(jacobian);
 

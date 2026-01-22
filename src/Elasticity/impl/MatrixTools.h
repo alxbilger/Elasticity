@@ -51,21 +51,18 @@ real determinantSquareMatrix(const sofa::type::Mat<N, N, real>& mat)
     }
 }
 
-/**
- * Computes the determinant of a given matrix.
- * For square matrices, the standard determinant is computed.
- * For non-square matrices, the determinant is computed using the product of the transposed
- * matrix and the original matrix, followed by taking the square root of the result.
- *
- * @param mat The input matrix of size LxC.
- * @return The determinant of the matrix.
- */
+template <sofa::Size N, class real>
+real determinant(const sofa::type::Mat<N, N, real>& mat)
+{
+    return determinantSquareMatrix(mat);
+}
+
 template <sofa::Size L, sofa::Size C, class real>
-real determinant(const sofa::type::Mat<L, C, real>& mat)
+real absGeneralizedDeterminant(const sofa::type::Mat<L, C, real>& mat)
 {
     if constexpr (L == C)
     {
-        return determinantSquareMatrix(mat);
+        return std::abs(determinantSquareMatrix(mat));
     }
     else
     {
