@@ -29,7 +29,7 @@ public:
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
-    using ElementForce = trait::ElementForce;
+    using ElementForce = typename trait::ElementForce;
 
 public:
     void init() override;
