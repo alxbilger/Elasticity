@@ -50,6 +50,10 @@ set(HEADER_FILES
     src/Elasticity/component/material/OgdenMaterial.inl
     src/Elasticity/component/material/StVenantKirchhoffMaterial.h
     src/Elasticity/component/material/StVenantKirchhoffMaterial.inl
+    src/Elasticity/component/material/YeohSecondOrderMaterial.h
+    src/Elasticity/component/material/YeohSecondOrderMaterial.inl
+    src/Elasticity/component/material/YeohThirdOrderMaterial.h
+    src/Elasticity/component/material/YeohThirdOrderMaterial.inl
 
     src/Elasticity/component/prefab/CorotationalFEMForceField.h
     src/Elasticity/component/prefab/CorotationalFEMForceField.inl
@@ -107,6 +111,8 @@ set(SOURCE_FILES
     src/Elasticity/component/material/OgdenMaterial.cpp
     src/Elasticity/component/material/NeoHookeanMaterial.cpp
     src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
+    src/Elasticity/component/material/YeohSecondOrderMaterial.cpp
+    src/Elasticity/component/material/YeohThirdOrderMaterial.cpp
 
     src/Elasticity/component/prefab/CorotationalFEMForceField.cpp
     src/Elasticity/component/prefab/HyperelasticityFEMForceField.cpp
