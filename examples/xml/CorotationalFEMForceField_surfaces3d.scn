@@ -39,12 +39,6 @@
             <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Triangle_topo"/>
         </Node>
 
-        <Node name="Data">
-            <DataDisplay pointData="@../triangles/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
-        </Node>
-
         <BoxROI template="Vec3" name="box_roi" box="-21 4.9 -1 -9 5.1 0.1" drawBoxes="1" />
         <FixedProjectiveConstraint template="Vec3" indices="@box_roi.indices" />
     </Node>
@@ -62,12 +56,6 @@
 
             <MeshMatrixMass totalMass="1500" topology="@Quad_topo"/>
             <CorotationalFEMForceField name="FEM" youngModulus="2000" poissonRatio="0.45" topology="@Quad_topo"/>
-        </Node>
-
-        <Node name="Data">
-            <DataDisplay pointData="@../quads/FEM.vonMisesStressValues" name="data"/>
-            <OglColorMap colorScheme="Blue to Red" showLegend="true" min="@data.currentMin" max="@data.currentMax"/>
-            <IdentityMapping input="@.." output="@."/>
         </Node>
 
         <BoxROI template="Vec3" name="box_roi" box="9.9 4.9 -1 20.1 5.1 0.1" drawBoxes="1" />

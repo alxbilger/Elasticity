@@ -10,10 +10,10 @@ namespace elasticity
 
 void registerElementCorotationalFEMForceField(sofa::core::ObjectFactory* factory)
 {
-    // factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear beams using the corotational approach")
+    factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear beams using the corotational approach")
     //     .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge> >()
-    //     .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge> >()
-    //     .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge> >(true));
+        .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge> >()
+        .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge> >(true));
 
     factory->registerObjects(sofa::core::ObjectRegistrationData("Hooke's law on linear triangles using the corotational approach")
         .add< ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle> >()
@@ -31,8 +31,8 @@ void registerElementCorotationalFEMForceField(sofa::core::ObjectFactory* factory
 }
 
 // template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
-// template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
-// template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
+template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
+template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
 template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle>;
 template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Triangle>;
 template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Quad>;

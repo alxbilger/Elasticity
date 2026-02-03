@@ -1,12 +1,14 @@
 #pragma once
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
-#include <Elasticity/impl/ComputeStrategy.h>
-#include <sofa/core/behavior/ForceField.h>
-#include <sofa/helper/OptionsGroup.h>
-#include <sofa/helper/decompose.h>
-
 #include <Elasticity/component/FEMForceField.h>
+#include <Elasticity/impl/rotations/HexahedronRotation.h>
+#include <Elasticity/impl/rotations/IdentityRotation.h>
+#include <Elasticity/impl/rotations/PolarDecomposition.h>
+#include <Elasticity/impl/rotations/RotationMethodsContainer.h>
+#include <Elasticity/impl/rotations/StablePolarDecomposition.h>
+#include <Elasticity/impl/rotations/TriangleRotation.h>
+#include <sofa/core/behavior/ForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_COROTATIONAL_FEM_FORCE_FIELD_CPP)
 #include <Elasticity/finiteelement/FiniteElement[all].h>
@@ -14,6 +16,78 @@
 
 namespace elasticity
 {
+
+/**
+ * @brief A container for rotation computation methods in corotational formulations
+ *
+ * This class provides element-specific rotation computation strategies for common element types.
+ *
+ * @tparam DataTypes The data type used throughout the simulation (e.g., sofa::defaulttype::Vec3Types for 3D)
+ * @tparam ElementType The element type (e.g., sofa::geometry::Triangle, sofa::geometry::Tetrahedron)
+ *
+ * Inherits from RotationMethodsContainer with pre-defined rotation strategies.
+ *
+ * The class is specialized for some elements because some rotation strategies can be used only
+ * for specific elements.
+ */
+template <class DataTypes, class ElementType>
+struct RotationMethods : RotationMethodsContainer<DataTypes, ElementType,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, ElementType, StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation>;
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {}
+};
+
+template <class Real>
+using Vec3Real = sofa::defaulttype::StdVectorTypes<sofa::type::Vec<3, Real>, sofa::type::Vec<3, Real>, Real>;
+
+//partial specialization for linear triangle in 3D
+template <class Real>
+struct RotationMethods<Vec3Real<Real>, sofa::geometry::Triangle> : RotationMethodsContainer<Vec3Real<Real>, sofa::geometry::Triangle,
+    StablePolarDecomposition<Vec3Real<Real>>, PolarDecomposition<Vec3Real<Real>>, IdentityRotation, TriangleRotation<Vec3Real<Real>>
+>
+{
+    using Inherit = RotationMethodsContainer<Vec3Real<Real>, sofa::geometry::Triangle,
+        StablePolarDecomposition<Vec3Real<Real>>, PolarDecomposition<Vec3Real<Real>>, IdentityRotation, TriangleRotation<Vec3Real<Real>> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(TriangleRotation<Vec3Real<Real>>::getItem().key);
+    }
+};
+
+//partial specialization for linear tetrahedron
+template <class DataTypes>
+struct RotationMethods<DataTypes, sofa::geometry::Tetrahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Tetrahedron,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, TriangleRotation<DataTypes>
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, sofa::geometry::Tetrahedron,
+        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, TriangleRotation<DataTypes> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(TriangleRotation<DataTypes>::getItem().key);
+    }
+};
+
+//partial specialization for linear hexahedron
+template <class DataTypes>
+struct RotationMethods<DataTypes, sofa::geometry::Hexahedron> : RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
+    StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexahedronRotation<DataTypes>
+>
+{
+    using Inherit = RotationMethodsContainer<DataTypes, sofa::geometry::Hexahedron,
+        StablePolarDecomposition<DataTypes>, PolarDecomposition<DataTypes>, IdentityRotation, HexahedronRotation<DataTypes> >;
+
+    explicit RotationMethods(sofa::core::objectmodel::BaseObject* parent) : Inherit(parent)
+    {
+        this->d_rotationMethod.setValue(HexahedronRotation<DataTypes>::getItem().key);
+    }
+};
+
 
 template <class DataTypes, class ElementType>
 class ElementCorotationalFEMForceField :
@@ -43,11 +117,13 @@ public:
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
-    using ElementForce = trait::ElementForce;
+    using ElementForce = typename trait::ElementForce;
     using RotationMatrix = sofa::type::Mat<trait::spatial_dimensions, trait::spatial_dimensions, sofa::Real_t<DataTypes>>;
 
 
 public:
+
+    ElementCorotationalFEMForceField();
 
     void init() override;
 
@@ -59,36 +135,42 @@ public:
 
 protected:
 
-    template<class ExecutionPolicy>
-    void computeElementForce(
-        sofa::type::vector<ElementForce>& elementForces,
-        const sofa::VecCoord_t<DataTypes>& nodePositions);
+    void beforeElementForce(const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<DataTypes>& x) override;
 
-    template<class ExecutionPolicy>
-    void computeElementForceDeriv(
+    void computeElementsForces(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<DataTypes>& x) override;
+
+    void computeElementsForcesDeriv(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForcesDeriv,
-        const sofa::VecCoord_t<DataTypes>& nodeDx,
-        sofa::Real_t<DataTypes> kFactor);
+        const sofa::VecDeriv_t<DataTypes>& nodeDx) override;
 
     sofa::type::vector<RotationMatrix> m_rotations;
-
-    void computeElementRotation(
-        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesPosition,
-        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodesRestPosition,
-        RotationMatrix& rotationMatrix);
+    sofa::type::vector<RotationMatrix> m_initialRotationsTransposed;
 
     sofa::Coord_t<DataTypes> translation(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes) const;
     static sofa::Coord_t<DataTypes> computeCentroid(const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement>& nodes);
 
+    RotationMethods<DataTypes, ElementType> m_rotationMethods;
 
+    void computeRotations(sofa::type::vector<RotationMatrix>& rotations,
+        const sofa::VecCoord_t<DataTypes>& nodePositions,
+        const sofa::VecCoord_t<DataTypes>& nodeRestPositions);
+    void computeInitialRotations();
 };
 
 
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_COROTATIONAL_FEM_FORCE_FIELD_CPP)
 // extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec1Types, sofa::geometry::Edge>;
-// extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
-// extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
+extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Edge>;
+extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Edge>;
 extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Triangle>;
 extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Triangle>;
 extern template class ELASTICITY_API ElementCorotationalFEMForceField<sofa::defaulttype::Vec2Types, sofa::geometry::Quad>;

@@ -20,6 +20,18 @@ struct FiniteElement<sofa::geometry::Triangle, DataTypes>
         return topology.getTriangles();
     }
 
+    static constexpr sofa::type::Vec<NumberOfNodesInElement, Real> shapeFunctions(const ReferenceCoord& q)
+    {
+        // Reference triangle: (x,y) with x>=0, y>=0, x+y<=1
+        // Barycentric P1:
+        // N0 = 1 - x - y, N1 = x, N2 = y
+        return {
+            static_cast<Real>(1) - q[0] - q[1],
+            q[0],
+            q[1]
+        };
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);

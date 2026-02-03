@@ -22,6 +22,22 @@ struct FiniteElement<sofa::geometry::Quad, DataTypes>
         return topology.getQuads();
     }
 
+    static constexpr sofa::type::Vec<NumberOfNodesInElement, Real> shapeFunctions(const ReferenceCoord& q)
+    {
+        // Reference quad: (x,y) in [-1,1]^2
+        const Real x = q[0];
+        const Real y = q[1];
+
+        // Node order matches referenceElementNodes above:
+        // (-1,-1), (1,-1), (1,1), (-1,1)
+        return {
+            static_cast<Real>(0.25) * (static_cast<Real>(1) - x) * (static_cast<Real>(1) - y),
+            static_cast<Real>(0.25) * (static_cast<Real>(1) + x) * (static_cast<Real>(1) - y),
+            static_cast<Real>(0.25) * (static_cast<Real>(1) + x) * (static_cast<Real>(1) + y),
+            static_cast<Real>(0.25) * (static_cast<Real>(1) - x) * (static_cast<Real>(1) + y)
+        };
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         return {

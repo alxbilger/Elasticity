@@ -16,6 +16,16 @@ struct FiniteElement<sofa::geometry::Edge, DataTypes>
         return topology.getEdges();
     }
 
+    static constexpr sofa::type::Vec<NumberOfNodesInElement, Real> shapeFunctions(const ReferenceCoord& q)
+    {
+        // Reference edge: q in [-1, 1]
+        // N0(-1)=1, N0(1)=0 ; N1(-1)=0, N1(1)=1
+        return {
+            static_cast<Real>(0.5) * (static_cast<Real>(1) - q[0]),
+            static_cast<Real>(0.5) * (static_cast<Real>(1) + q[0])
+        };
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);

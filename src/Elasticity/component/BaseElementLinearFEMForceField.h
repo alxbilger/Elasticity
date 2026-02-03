@@ -1,43 +1,39 @@
 #pragma once
 
-#include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
-#include <Elasticity/finiteelement/FiniteElement[all].h>
-#include <Elasticity/impl/ComputeStrategy.h>
+#include <Elasticity/component/LinearMechanicalParametersComponent.h>
 #include <Elasticity/impl/trait.h>
-#include <sofa/core/behavior/ForceField.h>
-#include <sofa/core/behavior/SingleStateAccessor.h>
+#include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.h>
+
+#if !defined(ELASTICITY_COMPONENT_BASE_ELEMENT_LINEAR_FEM_FORCEFIELD_CPP)
+#include <Elasticity/finiteelement/FiniteElement[all].h>
+#endif
 
 namespace elasticity
 {
 
+/**
+ * A base class for all element-based linear elastic force fields.
+ *
+ * It stores precomputed stiffness matrices (one per element) that are derived from:
+ *   - The initial configuration of the mechanical model
+ *   - Material properties (Young's modulus, Poisson's ratio)
+ */
 template <class DataTypes, class ElementType>
-class BaseElementLinearFEMForceField :
-    public virtual TopologyAccessor,
-    public LinearMechanicalParametersComponent<DataTypes>,
-    public virtual sofa::core::behavior::SingleStateAccessor<DataTypes>
+class BaseElementLinearFEMForceField : public sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>
 {
 public:
-    SOFA_CLASS3(
-    SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
-        TopologyAccessor,
-        LinearMechanicalParametersComponent<DataTypes>,
-        sofa::core::behavior::SingleStateAccessor<DataTypes>);
+    SOFA_ABSTRACT_CLASS(
+        SOFA_TEMPLATE2(BaseElementLinearFEMForceField, DataTypes, ElementType),
+        sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>);
 
     void init() override;
-
-
-
 
 private:
     using trait = elasticity::trait<DataTypes, ElementType>;
     using ElementStiffness = typename trait::ElementStiffness;
     using ElasticityTensor = typename trait::ElasticityTensor;
     using StrainDisplacement = typename trait::StrainDisplacement;
-
-public:
-    const sofa::type::vector<ElementStiffness>& getElementStiffness() const { return m_elementStiffness; }
 
 protected:
 
@@ -48,14 +44,12 @@ protected:
      */
     void precomputeElementStiffness();
 
+public:
+
     /**
      * List of precomputed element stiffness matrices
      */
-    sofa::type::vector<ElementStiffness> m_elementStiffness;
-
-    ElasticityTensor m_elasticityTensor;
-
-    sofa::type::vector<std::array<StrainDisplacement, trait::NumberOfNodesInElement>> m_strainDisplacement;
+    sofa::Data<sofa::type::vector<ElementStiffness> > d_elementStiffness;
 };
 
 #if !defined(ELASTICITY_COMPONENT_BASE_ELEMENT_LINEAR_FEM_FORCEFIELD_CPP)

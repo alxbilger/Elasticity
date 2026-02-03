@@ -5,8 +5,9 @@
 #include <Elasticity/impl/IsotropicElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/StrainDisplacement.h>
-#include <sofa/helper/MatEigen.h>
 #include <sofa/type/Mat.h>
+
+#include <ostream>
 
 namespace elasticity
 {
@@ -65,6 +66,10 @@ private:
         sofa::Real_t<DataTypes>> stiffnessMatrix;
 
 public:
+    const StrainDisplacement<DataTypes, ElementType>& getB(std::size_t i) const { return B[i]; }
+    Real getFactor(std::size_t i) const { return factors[i]; }
+    const IsotropicElasticityTensor<DataTypes>& getElasticityTensor() const { return elasticityTensor; }
+
     void setElasticityTensor(const FullySymmetric4Tensor<DataTypes>& elasticityTensor_)
     {
         for (std::size_t i = 0; i < NumberOfIndependentElements; ++i)
@@ -103,20 +108,29 @@ public:
                 for (std::size_t i = 0; i < NbQuadraturePoints; ++i)
                 {
                     const auto& B = this->B[i];
-                    const auto& C = this->elasticityTensor.toMat();
-                    result += this->factors[i] * B.multTranspose(C * (B * v));
+                    result += B.multTranspose(this->factors[i] * (this->elasticityTensor * (B * v)));
                 }
                 return result;
             }
             else
             {
-                return this->factors[0] * this->B[0].multTranspose(this->elasticityTensor * (this->B[0] * v));
+                return this->B[0].multTranspose(this->factors[0] * (this->elasticityTensor * (this->B[0] * v)));
             }
         }
         else
         {
             return this->stiffnessMatrix * v;
         }
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const FactorizedElementStiffness& obj)
+    {
+        return os << obj.getAssembledMatrix();
+    }
+
+    friend std::istream& operator>>(std::istream& in, FactorizedElementStiffness& obj)
+    {
+        return in;
     }
 };
 
@@ -148,7 +162,7 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
             jacobian += sofa::type::dyad(nodesCoordinates[i], dN_dq_ref[i]);
 
-        const auto detJ = elasticity::determinant(jacobian);
+        const auto detJ = elasticity::absGeneralizedDeterminant(jacobian);
         const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real> J_inv =
             elasticity::inverse(jacobian);
 

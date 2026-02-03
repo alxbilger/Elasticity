@@ -186,11 +186,11 @@ protected:
     {
         if (m_deformationGradient.has_value())
         {
-            m_determinantF = elasticity::determinantSquareMatrix(*m_deformationGradient);
+            m_determinantF = elasticity::determinant(*m_deformationGradient);
         }
         else if (m_rightCauchyGreenTensor.has_value())
         {
-            m_determinantF = sqrt(elasticity::determinantSquareMatrix(*m_rightCauchyGreenTensor));
+            m_determinantF = sqrt(elasticity::determinant(*m_rightCauchyGreenTensor));
         }
         else
         {

@@ -26,6 +26,25 @@ struct FiniteElement<sofa::geometry::Hexahedron, DataTypes>
         return topology.getHexahedra();
     }
 
+    static constexpr sofa::type::Vec<NumberOfNodesInElement, Real> shapeFunctions(const ReferenceCoord& q)
+    {
+        // Reference hexa: (x,y,z) in [-1,1]^3, trilinear (Q1)
+        const Real x = q[0];
+        const Real y = q[1];
+        const Real z = q[2];
+
+        sofa::type::Vec<NumberOfNodesInElement, Real> N(sofa::type::NOINIT);
+        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
+        {
+            const auto& [xref, yref, zref] = referenceElementNodes[i];
+            N[i] = static_cast<Real>(1.0 / 8.0)
+                 * (static_cast<Real>(1) + x * xref)
+                 * (static_cast<Real>(1) + y * yref)
+                 * (static_cast<Real>(1) + z * zref);
+        }
+        return N;
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         const auto [x, y, z] = q;

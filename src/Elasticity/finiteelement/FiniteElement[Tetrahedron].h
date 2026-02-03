@@ -22,6 +22,19 @@ struct FiniteElement<sofa::geometry::Tetrahedron, DataTypes>
         return topology.getTetrahedra();
     }
 
+    static constexpr sofa::type::Vec<NumberOfNodesInElement, Real> shapeFunctions(const ReferenceCoord& q)
+    {
+        // Reference tetra: (x,y,z) with x,y,z>=0, x+y+z<=1
+        // P1 barycentric:
+        // N0 = 1-x-y-z, N1 = x, N2 = y, N3 = z
+        return {
+            static_cast<Real>(1) - q[0] - q[1] - q[2],
+            q[0],
+            q[1],
+            q[2]
+        };
+    }
+
     static constexpr sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real> gradientShapeFunctions(const sofa::type::Vec<TopologicalDimension, Real>& q)
     {
         SOFA_UNUSED(q);

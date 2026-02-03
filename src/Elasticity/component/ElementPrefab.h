@@ -1,9 +1,8 @@
 #pragma once
 
 #include <Elasticity/config.h>
+#include <sofa/core/behavior/TopologyAccessor.h>
 #include <sofa/core/objectmodel/BaseObject.h>
-
-#include <Elasticity/component/TopologyAccessor.h>
 
 namespace elasticity
 {
@@ -16,7 +15,7 @@ namespace elasticity
  * the type of elements.
  */
 template <class ElementTypes>
-class ElementPrefab : public virtual TopologyAccessor
+class ElementPrefab : public virtual sofa::core::behavior::TopologyAccessor
 {
 public:
     SOFA_CLASS(ElementPrefab<ElementTypes>, TopologyAccessor);

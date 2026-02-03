@@ -1,14 +1,8 @@
 #pragma once
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
-#include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/TopologyAccessor.h>
 #include <Elasticity/config.h>
-#include <Elasticity/impl/ComputeStrategy.h>
-#include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <Elasticity/impl/trait.h>
-#include <sofa/core/behavior/ForceField.h>
-#include <sofa/helper/OptionsGroup.h>
 
 #include <Elasticity/component/FEMForceField.h>
 
@@ -58,6 +52,7 @@ public:
 
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
+    using sofa::core::behavior::ForceField<DataTypes>::getPotentialEnergy;
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const sofa::DataVecCoord_t<DataTypes>& x) const override;
 
     using sofa::core::behavior::ForceField<DataTypes>::addKToMatrix;
@@ -66,16 +61,17 @@ public:
 
 protected:
 
-    template<class ExecutionPolicy>
-    void computeElementForce(
+    void computeElementsForces(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForces,
-        const sofa::VecCoord_t<DataTypes>& nodePositions);
+        const sofa::VecCoord_t<DataTypes>& nodePositions) override;
 
-    template<class ExecutionPolicy>
-    void computeElementForceDeriv(
+    void computeElementsForcesDeriv(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
         sofa::type::vector<ElementForce>& elementForcesDeriv,
-        const sofa::VecCoord_t<DataTypes>& nodeDx,
-        sofa::Real_t<DataTypes> kFactor);
+        const sofa::VecDeriv_t<DataTypes>& nodeDx) override;
 
 };
 

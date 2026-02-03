@@ -1,0 +1,134 @@
+#pragma once
+
+#include <sofa/type/vector.h>
+#include <sofa/type/Vec.h>
+#include <algorithm>
+#include <functional>
+
+namespace elasticity
+{
+
+template <sofa::Size N, typename real>
+struct LazyPlusResult;
+
+template <sofa::Size N, typename real>
+class VecSoA
+{
+private:
+    std::array<sofa::type::vector<real>, N> m_data;
+
+public:
+
+    VecSoA() = default;
+    explicit VecSoA(std::size_t count) { resize(count); }
+
+    template<class LazyResult>
+    void operator=(const LazyResult& other)
+    {
+        other.apply(*this);
+    }
+
+    void resize(std::size_t size)
+    {
+        if (this->size() != size)
+        {
+            std::for_each(m_data.begin(), m_data.end(), [size](std::vector<real>& vec){ vec.resize(size); });
+        }
+    }
+
+    std::size_t size() const { return m_data.front().size(); }
+
+    sofa::type::vector<real>& element(std::size_t i)
+    {
+        return m_data[i];
+    }
+
+    const sofa::type::vector<real>& element(std::size_t i) const
+    {
+        return m_data[i];
+    }
+
+    void setVec(std::size_t i, const sofa::type::Vec<N, real>& vec)
+    {
+        for (std::size_t j = 0; j < N; ++j)
+        {
+            m_data[j][i] = vec[j];
+        }
+    }
+
+    template<class BinaryOp>
+    static void BinaryOperation(VecSoA& result, const VecSoA& a, const VecSoA& b, const BinaryOp& op)
+    {
+        assert(a.size() == b.size());
+        const auto commonSize = a.size();
+        result.resize(commonSize);
+
+        for (sofa::Size i = 0; i < N; ++i)
+        {
+            const auto& a_i = a.m_data[i];
+            const auto& b_i = b.m_data[i];
+            auto& result_i = result.m_data[i];
+            for (std::size_t j = 0; j < commonSize; ++j)
+            {
+                result_i[j] = op(a_i[j], b_i[j]);
+            }
+        }
+    }
+
+    LazyPlusResult<N, real> operator+(const VecSoA<N, real>& other)
+    {
+        return { this, &other };
+    }
+
+    static void Add(VecSoA& result, const VecSoA& a, const VecSoA& b)
+    {
+        assert(a.size() == b.size());
+        const auto commonSize = a.size();
+        result.resize(commonSize);
+
+        for (sofa::Size i = 0; i < N; ++i)
+        {
+            const auto& a_i = a.m_data[i];
+            const auto& b_i = b.m_data[i];
+            auto& result_i = result.m_data[i];
+            for (std::size_t j = 0; j < commonSize; ++j)
+            {
+                result_i[j] = a_i[j] + b_i[j];
+            }
+        }
+    }
+
+    void toAoS(sofa::type::vector<sofa::type::Vec<N, real> >& aos)
+    {
+        const auto count = this->size();
+        aos.resize(count);
+
+        for (sofa::Size i = 0; i < N; ++i)
+        {
+            for (std::size_t j = 0; j < count; ++j)
+            {
+                aos[j][i] = m_data[i][j];
+            }
+        }
+    }
+};
+
+template <sofa::Size N, typename real>
+struct LazyPlusResult
+{
+    const VecSoA<N, real>* const m_a { nullptr };
+    const VecSoA<N, real>* const m_b { nullptr };
+
+    LazyPlusResult(const VecSoA<N, real>* a, const VecSoA<N, real>* b) : m_a(a), m_b(b)
+    {
+        assert(m_a != nullptr);
+        assert(m_b != nullptr);
+    }
+
+    void apply(VecSoA<N, real>& result) const
+    {
+        VecSoA<N, real>::Add(result, *m_a, *m_b);
+    }
+};
+
+}

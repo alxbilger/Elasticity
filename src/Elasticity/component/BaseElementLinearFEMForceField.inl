@@ -1,10 +1,10 @@
 #pragma once
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
+#include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.inl>
 #include <Elasticity/impl/LameParameters.h>
 #include <Elasticity/impl/VectorTools.h>
 
-#include <execution>
 #include <ranges>
 
 #include <Elasticity/component/FEMForceField.h>
@@ -13,20 +13,8 @@ namespace elasticity
 {
 
 template <class DataTypes, class ElementType>
-void BaseElementLinearFEMForceField<DataTypes, ElementType>::init()
-{
-    LinearMechanicalParametersComponent<DataTypes>::init();
-    TopologyAccessor::init();
-    sofa::core::behavior::SingleStateAccessor<DataTypes>::init();
-
-    if (!this->isComponentStateInvalid())
-    {
-        this->precomputeElementStiffness();
-    }
-}
-
-template <class DataTypes, class ElementType>
 BaseElementLinearFEMForceField<DataTypes, ElementType>::BaseElementLinearFEMForceField()
+    : d_elementStiffness(initData(&d_elementStiffness, "elementStiffness", "List of stiffness matrices per element"))
 {
     this->addUpdateCallback("precomputeStiffness", {&this->d_youngModulus, &this->d_poissonRatio},
     [this](const sofa::core::DataTracker& )
@@ -34,6 +22,17 @@ BaseElementLinearFEMForceField<DataTypes, ElementType>::BaseElementLinearFEMForc
         precomputeElementStiffness();
         return this->getComponentState();
     }, {});
+}
+
+template <class DataTypes, class ElementType>
+void BaseElementLinearFEMForceField<DataTypes, ElementType>::init()
+{
+    sofa::component::solidmechanics::fem::elastic::BaseLinearElasticityFEMForceField<DataTypes>::init();
+
+    if (!this->isComponentStateInvalid())
+    {
+        this->precomputeElementStiffness();
+    }
 }
 
 template <class DataTypes, class ElementType>
@@ -48,25 +47,32 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
     if (!this->mstate)
         return;
 
-    const auto youngModulus = this->d_youngModulus.getValue();
-    const auto poissonRatio = this->d_poissonRatio.getValue();
-    const auto [mu, lambda] = elasticity::toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
+    const auto youngModulusAccessor = sofa::helper::ReadAccessor(this->d_youngModulus);
+    const auto poissonRatioAccessor = sofa::helper::ReadAccessor(this->d_poissonRatio);
 
     auto restPositionAccessor = this->mstate->readRestPositions();
 
-    m_elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
-
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
-    m_elementStiffness.resize(elements.size());
+
+    auto elementStiffness = sofa::helper::getWriteOnlyAccessor(d_elementStiffness);
+    elementStiffness.resize(elements.size());
 
     SCOPED_TIMER("precomputeStiffness");
-    std::ranges::iota_view indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
-    std::for_each(std::execution::par, indices.begin(), indices.end(),
+    sofa::helper::IotaView indices {static_cast<decltype(elements.size())>(0ul), elements.size()};
+    std::for_each(indices.begin(), indices.end(),
         [&](const auto elementId)
         {
             const auto& element = elements[elementId];
+
+            const auto youngModulus = this->getYoungModulusInElement(elementId);
+            const auto poissonRatio = this->getPoissonRatioInElement(elementId);
+
+            const auto [mu, lambda] = elasticity::toLameParameters<DataTypes>(youngModulus, poissonRatio);
+
+            const auto elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
+
             const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-            m_elementStiffness[elementId] = integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, m_elasticityTensor);
+            elementStiffness[elementId] = integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, elasticityTensor);
         });
 }
 

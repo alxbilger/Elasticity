@@ -33,7 +33,7 @@
         <Node name="triangles">
             <TriangleSetTopologyContainer name="Triangle_topo" src="@../grid"/>
             <TriangleSetTopologyModifier name="Modifier" />
-            <TriangleSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawTriangles="true"/>
+            <TriangleSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawTriangles="false"/>
 
             <MeshMatrixMass totalMass="1500" topology="@Triangle_topo" template="Vec2,Vec2"/>
             <CorotationalFEMForceField mstate="@../state" template="Vec2" name="FEM" youngModulus="100000" poissonRatio="0.45" topology="@Triangle_topo"/>
@@ -52,7 +52,7 @@
         <Node name="triangles">
             <QuadSetTopologyContainer name="quad_topo" src="@../grid"/>
             <QuadSetTopologyModifier name="Modifier" />
-            <QuadSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawQuads="true"/>
+            <QuadSetGeometryAlgorithms template="Vec2" name="GeomAlgo" drawQuads="false"/>
 
             <MeshMatrixMass totalMass="1500" topology="@quad_topo" template="Vec2,Vec2"/>
             <CorotationalFEMForceField mstate="@../state" template="Vec2" name="FEM" youngModulus="100000" poissonRatio="0.45" topology="@quad_topo"/>

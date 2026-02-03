@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sofa/topology/Element.h>
-#include <sofa/type/Mat.h>
+#include <Elasticity/impl/IdentityMatrix.h>
 
 #include <Eigen/Geometry>
 
@@ -51,38 +51,29 @@ real determinantSquareMatrix(const sofa::type::Mat<N, N, real>& mat)
     }
 }
 
-/**
- * Computes the determinant of a given matrix.
- * For square matrices, the standard determinant is computed.
- * For non-square matrices, the determinant is computed using the product of the transposed
- * matrix and the original matrix, followed by taking the square root of the result.
- *
- * @param mat The input matrix of size LxC.
- * @return The determinant of the matrix.
- */
+template <sofa::Size N, class real>
+real determinant(const sofa::type::Mat<N, N, real>& mat)
+{
+    return determinantSquareMatrix(mat);
+}
+
 template <sofa::Size L, sofa::Size C, class real>
-real determinant(const sofa::type::Mat<L, C, real>& mat)
+real absGeneralizedDeterminant(const sofa::type::Mat<L, C, real>& mat)
 {
     if constexpr (L == C)
     {
-        return determinantSquareMatrix(mat);
+        return std::abs(determinantSquareMatrix(mat));
     }
     else
     {
-        return std::sqrt(determinantSquareMatrix(mat.transposed() * mat));
+        return std::sqrt(determinantSquareMatrix(mat.multTranspose(mat)));
     }
 }
 
 template <sofa::Size L, sofa::Size C, class real>
 sofa::type::Mat<C, L, real> leftPseudoInverse(const sofa::type::Mat<L, C, real>& mat)
 {
-    return (mat.transposed() * mat).inverted() * mat.transposed();
-}
-
-template <sofa::Size L, sofa::Size C, class real>
-sofa::type::Mat<C, L, real> rightPseudoInverse(const sofa::type::Mat<L, C, real>& mat)
-{
-    return mat.transposed() * (mat * mat.transposed()).inverted();
+    return mat.multTranspose(mat).inverted() * mat.transposed();
 }
 
 /**
@@ -105,165 +96,5 @@ sofa::type::Mat<C, L, real> inverse(const sofa::type::Mat<L, C, real>& mat)
         return leftPseudoInverse(mat);
     }
 }
-
-/**
- * Stack the columns of a matrix on top of each other to form a vector.
- */
-template <sofa::Size L, sofa::Size C, class real>
-constexpr auto flatten(const sofa::type::Mat<L, C, real>& mat)
-{
-    sofa::type::Vec<L * C, real> res(sofa::type::NOINIT);
-    sofa::Index index = 0;
-    for (sofa::Size c = 0; c < C; ++c)
-    {
-        for (sofa::Size l = 0; l < L; ++l)
-        {
-            res[index++] = mat(l, c);
-        }
-    }
-    return res;
-}
-
-template <sofa::Size L1, sofa::Size C1, sofa::Size L2, sofa::Size C2, class real>
-constexpr sofa::type::Mat<L1 * L2, C1 * C2, real> kroneckerProduct(const sofa::type::Mat<L1, C1, real>& mat1, const sofa::type::Mat<L2, C2, real>& mat2)
-{
-    sofa::type::Mat<L1 * L2, C1 * C2, real> result(sofa::type::NOINIT);
-
-    for (sofa::Size i1 = 0; i1 < L1; ++i1)
-    {
-        for (sofa::Size j1 = 0; j1 < C1; ++j1)
-        {
-            for (sofa::Size i2 = 0; i2 < L2; ++i2)
-            {
-                for (sofa::Size j2 = 0; j2 < C2; ++j2)
-                {
-                    result(i1 * L2 + i2, j1 * C2 + j2) = mat1(i1, j1) * mat2(i2, j2);
-                }
-            }
-        }
-    }
-
-    return result;
-}
-
-template <sofa::Size L1, sofa::Size C1, sofa::Size N, class real>
-constexpr sofa::type::Mat<L1 * N, C1, real> kroneckerProduct(const sofa::type::Mat<L1, C1, real>& mat, const sofa::type::Vec<N, real>& vec)
-{
-    sofa::type::Mat<L1 * N, C1, real> result(sofa::type::NOINIT);
-
-    for (sofa::Size i1 = 0; i1 < L1; ++i1)
-    {
-        for (sofa::Size j1 = 0; j1 < C1; ++j1)
-        {
-            for (sofa::Size i2 = 0; i2 < N; ++i2)
-            {
-                result(i1 * N + i2, j1) = mat(i1, j1) * vec[i2];
-            }
-        }
-    }
-
-    return result;
-}
-
-struct IdentityMatrix
-{};
-
-template<class real>
-struct ScaledIdentityMatrix
-{
-    real scale;
-};
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator+(const elasticity::IdentityMatrix& I, const sofa::type::Mat<N, N, real>& M)
-{
-    sofa::type::Mat<N, N, real> res(M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] += static_cast<real>(1);
-    }
-    return res;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator+(const sofa::type::Mat<N, N, real>& M, const elasticity::IdentityMatrix& I)
-{
-    return I + M;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator-(const elasticity::IdentityMatrix& I, const sofa::type::Mat<N, N, real>& M)
-{
-    sofa::type::Mat<N, N, real> res(-M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] += static_cast<real>(1);
-    }
-    return res;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator-(const sofa::type::Mat<N, N, real>& M, const elasticity::IdentityMatrix& I)
-{
-    sofa::type::Mat<N, N, real> res(M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] -= static_cast<real>(1);
-    }
-    return res;
-}
-
-template<class real>
-constexpr ScaledIdentityMatrix<real> operator*(const IdentityMatrix& I, real s)
-{
-    return { s };
-}
-
-template<class real>
-constexpr ScaledIdentityMatrix<real> operator*(real s, const IdentityMatrix& I)
-{
-    return { s };
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator-(const elasticity::ScaledIdentityMatrix<real>& I, const sofa::type::Mat<N, N, real>& M)
-{
-    sofa::type::Mat<N, N, real> res(-M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] += I.scale;
-    }
-    return res;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator-(const sofa::type::Mat<N, N, real>& M, const elasticity::ScaledIdentityMatrix<real>& I)
-{
-    sofa::type::Mat<N, N, real> res(M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] -= I.scale;
-    }
-    return res;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator+(const elasticity::ScaledIdentityMatrix<real>& I, const sofa::type::Mat<N, N, real>& M)
-{
-    sofa::type::Mat<N, N, real> res(M);
-    for (sofa::Size i = 0; i < N; ++i)
-    {
-        res[i][i] += I.scale;
-    }
-    return res;
-}
-
-template<sofa::Size N, class real>
-constexpr sofa::type::Mat<N, N, real> operator+(const sofa::type::Mat<N, N, real>& M, const elasticity::ScaledIdentityMatrix<real>& I)
-{
-    return I + M;
-}
-
-
 
 }
