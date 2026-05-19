@@ -98,13 +98,21 @@ def h1_semi_error(nodes, u_h, du_ex, quadrature):
 # SOFA runner
 # ---------------------------------------------------------------------------
 
-def build_bar_scene(root, young_modulus, nx, nodal_forces, apply_bcs):
-    """
-    Populate root with a static 1D bar scene on the non-dimensional domain [0,1].
 
+def build_bar_scene(root, young_modulus, nx, nodal_forces, apply_bcs, L=1.0):
+    """
+    Populate root with a static 1D bar scene on the non-dimensional domain [0, L].
+    Uses RegularGridTopology for mesh definition.
+
+    Parameters
+    ----------
+    root         : SOFA root node
+    young_modulus: float
+    nx           : int, number of nodes along the bar
     nodal_forces : array of length nx, assembled body force vector
     apply_bcs    : callable(Bar, nx) that adds all boundary conditions
                    (FixedProjectiveConstraint + Neumann ConstantForceField)
+    L            : float, bar length (default 1.0, non-dimensional)
 
     Returns the dofs MechanicalObject.
     """
@@ -115,6 +123,7 @@ def build_bar_scene(root, young_modulus, nx, nodal_forces, apply_bcs):
         "Sofa.Component.MechanicalLoad",
         "Sofa.Component.ODESolver.Backward",
         "Sofa.Component.StateContainer",
+        "Sofa.Component.Topology.Container.Grid",
         "Sofa.Component.Topology.Container.Dynamic",
         "Sofa.Component.Visual",
     ])
@@ -122,11 +131,18 @@ def build_bar_scene(root, young_modulus, nx, nodal_forces, apply_bcs):
     root.addObject('VisualStyle',
                    displayFlags="showBehaviorModels showForceFields")
 
-    h         = 1.0 / (nx - 1)
-    positions = [[i * h] for i in range(nx)]
-    edges     = [[i, i + 1] for i in range(nx - 1)]
+    root.gravity.value = [0, 0, 0]
+    root.dt.value = 1.0
 
     Bar = root.addChild('Bar')
+
+    #  Regular grid Topology 
+    Bar.addObject('RegularGridTopology',
+                  name="grid",
+                  nx=nx, ny=1, nz=1,
+                  min=[0., 0., 0.],
+                  max=[L, 0., 0.])
+
     Bar.addObject('NewtonRaphsonSolver',
                   name="newtonSolver",
                   maxNbIterationsNewton=10,
@@ -142,9 +158,12 @@ def build_bar_scene(root, young_modulus, nx, nodal_forces, apply_bcs):
 
     dofs = Bar.addObject('MechanicalObject',
                          name="dofs",
-                         template="Vec1d",
-                         position=positions)
-    Bar.addObject('EdgeSetTopologyContainer', name="topology", edges=edges)
+                         template="Vec1d")
+
+    Bar.addObject('EdgeSetTopologyContainer',
+                  name="topology",
+                  src="@grid")
+
     Bar.addObject('LinearSmallStrainFEMForceField',
                   name="FEM",
                   template="Vec1d",
