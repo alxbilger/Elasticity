@@ -20,6 +20,16 @@ $$
 
 Dirichlet and/or Neumann boundary conditions at $x = 0$ and $x = L$.
 
+## Non-dimensionalization
+
+With $\hat{x} = x/L$, $\hat{u}(\hat{x}) = u(L\hat{x})$, $\hat{E} = E/L$, $\hat{f}(\hat{x}) = f(L\hat{x})$, the problem becomes:
+
+$$
+\hat{E}\frac{d^2 \hat{u}}{d\hat{x}^2} + \hat{f}(\hat{x}) = 0 \quad \forall \hat{x} \in [0,1]
+$$
+
+From this point on, all symbols refer to the non-dimensional quantities; the hats are dropped.
+
 ## Discretization  
 
 - Standard Galerkin finite element formulation
@@ -83,13 +93,13 @@ evaluated with the 2-point rule.
 ### Manufactured Solution
 
 $$
-u_{ex}(x) = \frac{x(L - x)}{L^2}
+u_{ex}(x) = x(1 - x)
 $$
 
 ### Source Term
 
 $$
-f(x) = \frac{2E}{L^2}
+f(x) = 2E
 $$
 
 ### Boundary Conditions
@@ -99,13 +109,13 @@ u(0) = 0
 $$
 
 $$
-\left.\frac{d u}{d x}\right|_{L} = -\frac{1}{L}
+\left.\frac{d u}{d x}\right|_{1} = -1
 $$
 
-Equivalent Neumann force (unit section):
+Neumann force:
 
 $$
-F_N = -\frac{E}{L}
+F_N = -E
 $$
 
 
@@ -140,7 +150,13 @@ u(0) = 0
 $$
 
 $$
-E \left.\frac{du}{dx}\right|_{L} = 2 E \pi \cos(2\pi L)
+\left.\frac{du}{dx}\right|_{1} = 2\pi \cos(2\pi) = 2\pi
+$$
+
+Neumann force:
+
+$$
+F_N = 2\pi E
 $$
 
 ### Source Term Discretization
@@ -158,13 +174,13 @@ $$
 ### Manufactured Solution
 
 $$
-u_{ex}(x) = \frac{x^2 (L - x)}{L^2}
+u_{ex}(x) = x^2 (1 - x)
 $$
 
 ### Source Term
 
 $$
-f(x) = \frac{E (6x - 2L)}{L^2}
+f(x) = E (6x - 2)
 $$
 
 ### Boundary Conditions
@@ -174,10 +190,10 @@ u(0) = 0
 $$
 
 $$
-\left.\frac{du}{dx}\right|_{L} = -1
+\left.\frac{du}{dx}\right|_{1} = -1
 $$
 
-Equivalent Neumann force (unit section):
+Neumann force:
 
 $$
 F_N = -E
@@ -189,4 +205,49 @@ With a 2-point quadrature rule:
 
 $$
 F_0 = \frac{h}{6}\left[2f(x_0) + f(x_1)\right], \quad F_i = h\, f(x_i), \quad F_N = \frac{h}{6}\left[f(x_{N-1}) + 2f(x_N)\right]
+$$
+
+$$
+F_i^{(e)} = \frac{h}{2} \sum_{k=1}^{2} w_k\, f(x_k^{(e)})\, \phi_i(x_k^{(e)})
+$$
+
+---
+## Case 4: Exponential Function
+
+### Manufactured Solution
+
+
+$$u_{ex}(x) = e^x - 1$$
+
+### Source Term
+
+$$
+f(x)=−E exf(x) = -E\, e^xf(x)=−Eex
+$$
+
+### Boundary Conditions
+
+
+$$ 
+u(0)=0
+$$
+
+
+$$
+\left.\frac{du}{dx}\right|_{1} = e
+$$
+
+Neumann force:
+
+$$
+F_N = E\, e
+$$
+
+
+### Source Term Discretization
+
+With a 2-point quadrature rule:
+
+$$
+F_i^{(e)} = \frac{h}{2} \sum_{k=1}^{2} w_k\, f(x_k^{(e)})\, \phi_i(x_k^{(e)})
 $$
