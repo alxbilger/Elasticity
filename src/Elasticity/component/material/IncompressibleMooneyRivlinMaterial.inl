@@ -31,13 +31,15 @@ auto IncompressibleMooneyRivlinMaterial<DataTypes>::secondPiolaKirchhoffStress(S
 template <class DataTypes>
 auto IncompressibleMooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain) -> ElasticityTensor
 {
+    auto delta = [](auto i, auto j){ return sofa::component::solidmechanics::fem::elastic::kroneckerDelta<Real>(i, j); };
+
     return ElasticityTensor(
-        [mu01 = m_mu01.getValue()](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
+        [mu01 = m_mu01.getValue(), &delta](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
             return 2 * mu01 * (
-                2 * kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
-                - kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l)
-                - kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k)
+                2 * delta(i, j) * delta(k, l)
+                - delta(i, k) * delta(j, l)
+                - delta(i, l) * delta(j, k)
                 );
         });
 }

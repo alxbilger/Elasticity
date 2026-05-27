@@ -46,7 +46,6 @@ set(HEADER_FILES
 
     src/Elasticity/impl/IdentityMatrix.h
     src/Elasticity/impl/IsotropicElasticityTensor.h
-    src/Elasticity/impl/KroneckerDelta.h
     src/Elasticity/impl/MajorSymmetric4Tensor.h
     src/Elasticity/impl/MatSoA.h
     src/Elasticity/impl/Strain.h

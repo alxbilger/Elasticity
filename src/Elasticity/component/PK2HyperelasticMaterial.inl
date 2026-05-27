@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Elasticity/component/PK2HyperelasticMaterial.h>
-#include <Elasticity/component/HyperelasticMaterial.inl>
-#include <Elasticity/impl/KroneckerDelta.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/KroneckerDelta.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
+
+#include <Elasticity/component/HyperelasticMaterial.inl>
 
 namespace elasticity
 {
@@ -28,7 +29,7 @@ auto PK2HyperelasticMaterial<TDataTypes>::materialTangentModulus(Strain<DataType
 
     const auto A = TangentModulus([&F, &C, &S](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
-        auto A_ijkl = kroneckerDelta<Real>(i,k) * S(l, j);
+        auto A_ijkl = sofa::component::solidmechanics::fem::elastic::kroneckerDelta<Real>(i,k) * S(l, j);
         for (std::size_t q = 0; q < spatial_dimensions; ++q)
         {
             for (std::size_t r = 0; r < spatial_dimensions; ++r)

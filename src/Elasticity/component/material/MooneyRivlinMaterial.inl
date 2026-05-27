@@ -67,6 +67,8 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
     const auto mu10 = m_mu10.getValue();
     const auto bulk = m_bulkModulus.getValue();
 
+    auto delta = [](auto i, auto j){ return sofa::component::solidmechanics::fem::elastic::kroneckerDelta<Real>(i, j); };
+
     return ElasticityTensor(
         [&](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
         {
@@ -76,7 +78,7 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             // the derivative of S_mu_10 with respect to C
             // each term has both minor and major symmetries
             const Real dS_mu_10dC = -dim_1 * J_2dim * (
-                kroneckerDelta<Real>(i, j) * C_1(k, l) + kroneckerDelta<Real>(k, l) * C_1(i, j)
+                delta(i, j) * C_1(k, l) + delta(k, l) * C_1(i, j)
                 - dim_1 * C_1(k, l) * I1 * C_1(i, j)
                 + I1 * dC_1dC
             );
@@ -85,14 +87,14 @@ auto MooneyRivlinMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain
             // the terms have been grouped to highlight the minor and major symmetries
             const Real dS_mu_01dC = J_4dim * (
                 - 2 * dim_1 * (
-                    C_1(k, l) * (I1 * kroneckerDelta<Real>(i, j) - C(i, j)) +
-                    C_1(i, j) * (I1 * kroneckerDelta<Real>(k, l) - C(k, l))
+                    C_1(k, l) * (I1 * delta(i, j) - C(i, j)) +
+                    C_1(i, j) * (I1 * delta(k, l) - C(k, l))
                     + dC_1dC * I2
                 )
-                + kroneckerDelta<Real>(i, j) * kroneckerDelta<Real>(k, l)
+                + delta(i, j) * delta(k, l)
                 - static_cast<Real>(0.5) * (
-                        kroneckerDelta<Real>(i, k) * kroneckerDelta<Real>(j, l) +
-                        kroneckerDelta<Real>(i, l) * kroneckerDelta<Real>(j, k))
+                        delta(i, k) * delta(j, l) +
+                        delta(i, l) * delta(j, k))
                 + 4 * dim_1 * dim_1 * C_1(k, l) * C_1(i, j) * I2
             );
 
