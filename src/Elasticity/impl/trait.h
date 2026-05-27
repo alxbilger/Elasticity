@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sofa/fem/FiniteElement.h>
-#include <Elasticity/impl/ElementStiffnessMatrix.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/ElementStiffnessMatrix.h>
 #include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <sofa/core/trait/DataTypes.h>
 
@@ -33,20 +33,21 @@ struct trait
     using ElasticityTensor = FullySymmetric4Tensor<DataTypes>;
 
     /// the type of B in e = B d, if e is the strain, and d is the displacement
-    using StrainDisplacement = elasticity::StrainDisplacement<DataTypes, ElementType>;
+    using StrainDisplacement = sofa::component::solidmechanics::fem::elastic::StrainDisplacement<DataTypes, ElementType>;
 
     /// the concatenation of the displacement of the element nodes in a single vector
     using ElementDisplacement = sofa::type::Vec<NumberOfDofsInElement, Real>;
 
     /// tells how to compute the matrix-vector product of the stiffness matrix with a displacement
     /// vector. It does not change the result, but it can have an impact on performances.
-    static constexpr MatrixVectorProductType matrixVectorProductType =
+    static constexpr sofa::component::solidmechanics::fem::elastic::MatrixVectorProductType matrixVectorProductType =
         NbQuadraturePoints > 1
-            ? MatrixVectorProductType::Dense
-            : MatrixVectorProductType::Factorization;
+            ? sofa::component::solidmechanics::fem::elastic::MatrixVectorProductType::Dense
+            : sofa::component::solidmechanics::fem::elastic::MatrixVectorProductType::Factorization;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = elasticity::FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType>;
+    using ElementStiffness =
+        sofa::component::solidmechanics::fem::elastic::FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType>;
 
     using ElementForce = sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>;
 };

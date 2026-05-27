@@ -3,7 +3,7 @@
 #include <Elasticity/component/HyperelasticMaterial.h>
 #include <Elasticity/config.h>
 #include <sofa/fem/FiniteElement.h>
-#include <Elasticity/impl/ElementStiffnessMatrix.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/behavior/TopologyAccessor.h>
 
@@ -62,7 +62,11 @@ private:
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
 
     /// the type of the element stiffness matrix
-    using ElementStiffness = elasticity::ElementStiffness<TDataTypes, TElementType>;
+    using ElementStiffness = sofa::type::Mat<
+        TElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+        TElementType::NumberOfNodes * DataTypes::spatial_dimensions,
+        sofa::Real_t<DataTypes>
+    >;
 
 public:
     void init() override;

@@ -69,21 +69,18 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
             using Real = sofa::Real_t<DataTypes>;
 
-            sofa::component::solidmechanics::fem::elastic::LameLambda<Real> lambdaStrong { 0 };
-            sofa::component::solidmechanics::fem::elastic::LameMu<Real> muStrong { 0 };
+            sofa::component::solidmechanics::fem::elastic::LameLambda<Real> lambda { 0 };
+            sofa::component::solidmechanics::fem::elastic::LameMu<Real> mu { 0 };
 
             sofa::component::solidmechanics::fem::elastic::toLameParameters<DataTypes::spatial_dimensions, Real>(
                 sofa::component::solidmechanics::fem::elastic::YoungModulus<Real>(youngModulus),
                 sofa::component::solidmechanics::fem::elastic::PoissonRatio<Real>(poissonRatio),
-                lambdaStrong, muStrong);
+                lambda, mu);
 
-            Real lambda = lambdaStrong.get();
-            Real mu = muStrong.get();
-
-            const auto elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
+            const auto elasticityTensor = sofa::component::solidmechanics::fem::elastic::makeIsotropicElasticityTensor<DataTypes::spatial_dimensions>(mu, lambda);
 
             const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
-            elementStiffness[elementId] = integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, elasticityTensor);
+            elementStiffness[elementId] = sofa::component::solidmechanics::fem::elastic::integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, elasticityTensor);
         });
 }
 
