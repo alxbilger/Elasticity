@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/ElementPrefab.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/ElementCorotationalFEMForceField.h>
+#include <sofa/component/solidmechanics/fem/elastic/ElementCorotationalFEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_COROTATIONAL_FEM_FORCEFIELD_CPP)
 #include <sofa/defaulttype/VecTypes.h>
@@ -13,7 +13,8 @@ namespace elasticity
 
 template <class DataTypes>
 using CorotationalPrefabParent =
-    ElementPrefab<ElementPrefabTrait<ElementCorotationalFEMForceField, DataTypes>>;
+    ElementPrefab<ElementPrefabTrait<
+    sofa::component::solidmechanics::fem::elastic::ElementCorotationalFEMForceField, DataTypes>>;
 
 /**
  * An intermediate class that instantiates other element-specific corotational components based on

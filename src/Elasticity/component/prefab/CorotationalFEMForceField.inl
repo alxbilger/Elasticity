@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/component/prefab/CorotationalFEMForceField.h>
-#include <Elasticity/component/ElementCorotationalFEMForceField.inl>
+#include <sofa/component/solidmechanics/fem/elastic/ElementCorotationalFEMForceField.inl>
 #include <Elasticity/component/ElementPrefab.inl>
 
 namespace elasticity
