@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Elasticity/finiteelement/FiniteElement.h>
+#include <sofa/fem/FiniteElement.h>
 #include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <Elasticity/impl/IsotropicElasticityTensor.h>
 #include <Elasticity/impl/MatrixTools.h>
@@ -46,7 +46,7 @@ struct FactorizedElementStiffness
 {
 private:
     using Real = sofa::Real_t<DataTypes>;
-    using FiniteElement = elasticity::FiniteElement<ElementType, DataTypes>;
+    using FiniteElement = sofa::fem::FiniteElement<ElementType, DataTypes>;
     static constexpr auto NbQuadraturePoints = FiniteElement::quadraturePoints().size();
     static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
 
@@ -140,7 +140,7 @@ FactorizedElementStiffness<DataTypes, ElementType, matrixVectorProductType> inte
     const FullySymmetric4Tensor<DataTypes>& elasticityTensor)
 {
     using Real = sofa::Real_t<DataTypes>;
-    using FiniteElement = FiniteElement<ElementType, DataTypes>;
+    using FiniteElement = sofa::fem::FiniteElement<ElementType, DataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = ElementType::NumberOfNodes;

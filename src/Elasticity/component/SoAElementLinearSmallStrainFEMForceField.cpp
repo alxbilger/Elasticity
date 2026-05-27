@@ -1,6 +1,6 @@
 #include <Elasticity/component/SoAElementLinearSmallStrainFEMForceField.inl>
 
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #include <sofa/core/ObjectFactory.h>
 
 namespace elasticity

@@ -6,7 +6,7 @@
 #include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_BASE_ELEMENT_LINEAR_FEM_FORCEFIELD_CPP)
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #endif
 
 namespace elasticity

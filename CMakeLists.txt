@@ -9,14 +9,6 @@ set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
 
-    src/Elasticity/finiteelement/FiniteElement.h
-    src/Elasticity/finiteelement/FiniteElement[all].h
-    src/Elasticity/finiteelement/FiniteElement[Edge].h
-    src/Elasticity/finiteelement/FiniteElement[Hexahedron].h
-    src/Elasticity/finiteelement/FiniteElement[Quad].h
-    src/Elasticity/finiteelement/FiniteElement[Tetrahedron].h
-    src/Elasticity/finiteelement/FiniteElement[Triangle].h
-
     src/Elasticity/component/BaseElementLinearFEMForceField.h
     src/Elasticity/component/BaseElementLinearFEMForceField.inl
     src/Elasticity/component/ElementCorotationalFEMForceField.h

@@ -1,7 +1,7 @@
 // #include <Elasticity/impl/CorotationalFEM.h>
 // #include <Elasticity/impl/MatrixTools.h>
-// #include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
-// #include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
+// #include <sofa/fem/FiniteElement[Tetrahedron].h>
+// #include <sofa/fem/FiniteElement[Hexahedron].h>
 // #include <gtest/gtest.h>
 //
 // namespace elasticity

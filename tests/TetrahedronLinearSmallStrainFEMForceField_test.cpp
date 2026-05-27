@@ -1,5 +1,5 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
-#include <Elasticity/finiteelement/FiniteElement[Tetrahedron].h>
+#include <sofa/fem/FiniteElement[Tetrahedron].h>
 #include <Elasticity/impl/LameParameters.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>

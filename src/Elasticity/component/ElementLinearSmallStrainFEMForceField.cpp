@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.inl>
 
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #include <sofa/core/ObjectFactory.h>
 
 namespace elasticity

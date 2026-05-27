@@ -2,13 +2,13 @@
 
 #include <Elasticity/component/HyperelasticMaterial.h>
 #include <Elasticity/config.h>
-#include <Elasticity/finiteelement/FiniteElement.h>
+#include <sofa/fem/FiniteElement.h>
 #include <Elasticity/impl/ElementStiffnessMatrix.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/behavior/TopologyAccessor.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #endif
 
 namespace elasticity
@@ -51,7 +51,7 @@ private:
     using Deriv = sofa::Deriv_t<TDataTypes>;
     using Real = sofa::Real_t<TDataTypes>;
 
-    using FiniteElement = elasticity::FiniteElement<TElementType, TDataTypes>;
+    using FiniteElement = sofa::fem::FiniteElement<TElementType, TDataTypes>;
 
     static constexpr sofa::Size spatial_dimensions = TDataTypes::spatial_dimensions;
     static constexpr sofa::Size NumberOfNodesInElement = TElementType::NumberOfNodes;

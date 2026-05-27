@@ -6,7 +6,7 @@
 #include <sofa/core/behavior/TopologyAccessor.h>
 
 #if !defined(ELASTICITY_COMPONENTS_ELEMENT_MASS_CPP)
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #endif
 
 namespace elasticity

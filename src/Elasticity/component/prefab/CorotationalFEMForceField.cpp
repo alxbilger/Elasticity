@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/prefab/CorotationalFEMForceField.inl>
 #include <sofa/core/ObjectFactory.h>
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 
 namespace elasticity
 {

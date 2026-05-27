@@ -9,7 +9,7 @@
 #include <sofa/core/behavior/TopologyAccessor.h>
 
 #if !defined(ELASTICITY_COMPONENT_FEM_FORCEFIELD_CPP)
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #endif
 
 namespace elasticity

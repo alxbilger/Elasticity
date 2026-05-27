@@ -1,6 +1,6 @@
 #define ELASTICITY_COMPONENT_FEM_FORCEFIELD_CPP
 #include <Elasticity/component/FEMForceField.inl>
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 
 namespace elasticity
 {

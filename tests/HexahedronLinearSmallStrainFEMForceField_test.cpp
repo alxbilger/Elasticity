@@ -1,5 +1,5 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
-#include <Elasticity/finiteelement/FiniteElement[Hexahedron].h>
+#include <sofa/fem/FiniteElement[Hexahedron].h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>

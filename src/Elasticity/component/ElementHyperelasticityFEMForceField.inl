@@ -65,7 +65,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
         const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
 
         static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
-        static constexpr auto gradients = FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
+        static constexpr auto gradients = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
 
         for (sofa::Size q = 0; q < NumberOfQuadraturePoints; ++q)
         {
@@ -77,7 +77,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            const auto J_q = FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
+            const auto J_q = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
 
             const auto detJ_Q = precomputedData.detJacobian;
 
@@ -279,7 +279,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
         ElementStiffness& K = *elementStiffnessIt++;
 
         static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
-        static constexpr auto gradients = FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
+        static constexpr auto gradients = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
 
         for (sofa::Size q = 0; q < NumberOfQuadraturePoints; ++q)
         {
@@ -291,7 +291,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
 
             // jacobian of the mapping from the reference space to the physical space, evaluated at the
             // quadrature point
-            const auto J_q = FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
+            const auto J_q = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
 
             const auto detJ_Q = precomputedData.detJacobian;
 
@@ -375,7 +375,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
     const auto& elements = FiniteElement::getElementSequence(*l_topology);
     m_precomputedData.resize(elements.size());
 
-    static constexpr auto gradients = FiniteElementHelper<TElementType, TDataTypes>::gradientShapeFunctionAtQuadraturePoints();
+    static constexpr auto gradients = sofa::fem::FiniteElementHelper<TElementType, TDataTypes>::gradientShapeFunctionAtQuadraturePoints();
 
     for (std::size_t i = 0; i < elements.size(); ++i)
     {
@@ -388,7 +388,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
             const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[j];
 
             PrecomputedData& data = m_precomputedData[i][j];
-            data.jacobian = FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
+            data.jacobian = sofa::fem::FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
             data.jacobianInv = elasticity::inverse(data.jacobian);
             data.detJacobian = elasticity::absGeneralizedDeterminant(data.jacobian);
 

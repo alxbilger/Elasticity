@@ -7,7 +7,7 @@
 #include <Elasticity/component/FEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_LINEAR_SMALL_STRAIN_FEM_FORCE_FIELD_CPP)
-#include <Elasticity/finiteelement/FiniteElement[all].h>
+#include <sofa/fem/FiniteElement[all].h>
 #endif
 
 namespace elasticity
