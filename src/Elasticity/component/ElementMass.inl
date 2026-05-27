@@ -1,7 +1,6 @@
 #pragma once
 #include <Elasticity/component/ElementMass.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
-#include <Elasticity/impl/MatrixTools.h>
 
 namespace elasticity
 {
@@ -109,7 +108,7 @@ void ElementMass<DataTypes, ElementType>::updateMassCacheIfNeeded()
                 jacobian += sofa::type::dyad(elementNodesRestCoordinates[i], dN_dq_ref[i]);
             }
 
-            const auto detJ = elasticity::absGeneralizedDeterminant(jacobian);
+            const auto detJ = sofa::type::absGeneralizedDeterminant(jacobian);
             const Real coeff = static_cast<Real>(weight) * static_cast<Real>(detJ);
 
             ScalarMassMatrix& Bq = elementData[qIndex];
@@ -313,7 +312,7 @@ void ElementMass<DataTypes, ElementType>::addForce(const sofa::core::MechanicalP
                 jacobian += sofa::type::dyad(elementNodesCoordinates[i], dN_dq_ref[i]);
             }
 
-            const auto detJ = elasticity::absGeneralizedDeterminant(jacobian);
+            const auto detJ = sofa::type::absGeneralizedDeterminant(jacobian);
             const auto dV = weight * detJ;
 
             // density at quadrature point (interpolated)

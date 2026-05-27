@@ -54,7 +54,6 @@ set(HEADER_FILES
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/VecSoA.h
     src/Elasticity/impl/VonMisesStressContainer.h
-    src/Elasticity/impl/trait.h
 
     src/Elasticity/impl/rotations/HexahedronRotation.h
     src/Elasticity/impl/rotations/IdentityRotation.h

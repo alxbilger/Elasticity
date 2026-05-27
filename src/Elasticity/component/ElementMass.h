@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/impl/trait.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/trait.h>
 #include <sofa/core/behavior/Mass.h>
 #include <sofa/core/behavior/TopologyAccessor.h>
 
@@ -58,7 +58,7 @@ public:
 
 protected:
 
-    using trait = elasticity::trait<DataTypes, ElementType>;
+    using trait = sofa::component::solidmechanics::fem::elastic::trait<DataTypes, ElementType>;
     using FiniteElement = typename trait::FiniteElement;
 
     using Coord = sofa::Coord_t<DataTypes>;

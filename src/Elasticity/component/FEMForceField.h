@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/config.h>
-#include <Elasticity/impl/trait.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/trait.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/ComputeStrategy.h>
 #include <sofa/core/visual/DrawMesh.h>
 #include <sofa/simulation/task/ParallelForEach.h>
@@ -28,7 +28,7 @@ public:
         sofa::simulation::TaskSchedulerUser);
 
 private:
-    using trait = elasticity::trait<DataTypes, ElementType>;
+    using trait = sofa::component::solidmechanics::fem::elastic::trait<DataTypes, ElementType>;
     using ElementForce = typename trait::ElementForce;
 
 public:

@@ -2,7 +2,7 @@
 #include <Elasticity/config.h>
 #include <Elasticity/impl/MatSoA.h>
 #include <Elasticity/impl/VecSoA.h>
-#include <Elasticity/impl/trait.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/trait.h>
 #include <sofa/core/behavior/ForceField.h>
 #include <sofa/core/behavior/TopologyAccessor.h>
 
@@ -36,7 +36,7 @@ public:
 
 private:
 
-    using trait = elasticity::trait<DataTypes, ElementType>;
+    using trait = sofa::component::solidmechanics::fem::elastic::trait<DataTypes, ElementType>;
 
     VecSoA<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes> > m_elementDisplacement;
     MatSoA<trait::NumberOfDofsInElement, trait::NumberOfDofsInElement, sofa::Real_t<DataTypes> > m_elementStiffness;
