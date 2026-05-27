@@ -3,7 +3,7 @@
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/Strain.h>
-#include <Elasticity/impl/VecView.h>
+#include <sofa/type/VecView.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
@@ -137,7 +137,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            VecView<spatial_dimensions, Real> node_dx(element_dx, i * spatial_dimensions);
+            sofa::type::VecView<spatial_dimensions, Real> node_dx(element_dx, i * spatial_dimensions);
             node_dx = dxAccessor[element[i]];
         }
 
@@ -146,7 +146,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
 
         for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
         {
-            VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
+            sofa::type::VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
             dfAccessor[element[i]] += nodedForce.toVec();
         }
     }
