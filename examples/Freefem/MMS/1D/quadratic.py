@@ -27,6 +27,13 @@ class Quadratic(MMSCase1D):
     def source(self, xi, E):
         return 2.0 * E
 
+    def apply_bcs(self, Bar, E_eff, nx):
+        Bar.addObject("FixedProjectiveConstraint", indices=0)
+        Bar.addObject("ConstantForceField",
+                      name="NeumannTip",
+                      indices=nx - 1,
+                      forces=self.traction_bc(E_eff))
+
 
 mms = Quadratic()
 createScene = case_scene(mms)

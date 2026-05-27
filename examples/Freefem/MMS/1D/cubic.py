@@ -27,6 +27,13 @@ class Cubic(MMSCase1D):
     def source(self, xi, E):
         return E * (6.0 * xi - 2.0)
 
+    def apply_bcs(self, Bar, E_eff, nx):
+        Bar.addObject("FixedProjectiveConstraint", indices=0)
+        Bar.addObject("ConstantForceField",
+                      name="NeumannTip",
+                      indices=nx - 1,
+                      forces=self.traction_bc(E_eff))
+
 
 mms = Cubic()
 createScene = case_scene(mms)

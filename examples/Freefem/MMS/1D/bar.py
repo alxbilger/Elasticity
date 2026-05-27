@@ -13,11 +13,11 @@ import Sofa.Simulation
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fem import (
     line_quadrature,
-    assemble_nodal_forces,
-    l2_error,
-    h1_semi_error,
-    L2_QUADRATURE,
-    H1_QUADRATURE,
+    assemble_nodal_forces_1d,
+    l2_error_1d,
+    h1_semi_error_1d,
+    L2_QUADRATURE_1D,
+    H1_QUADRATURE_1D,
 )
 from bar_solution import BarSolution1D
 
@@ -56,7 +56,7 @@ class BodyForceAssembler(Sofa.Core.Controller):
     def onSimulationInitDoneEvent(self, event):
         nodes = self.dofs.rest_position.array().copy().flatten()
         edges = self.topology.edges.array().copy()
-        nodal_forces = assemble_nodal_forces(self.f_body, nodes, edges, self.quadrature)
+        nodal_forces = assemble_nodal_forces_1d(self.f_body, nodes, edges, self.quadrature)
         with self.body_force.forces.writeableArray() as forces:
             forces[:, 0] = nodal_forces
 
@@ -103,9 +103,9 @@ def build_bar_scene(root, mms, E_eff, nx):
                   newtonSolver="@newtonSolver",
                   linearSolver="@linearSolver")
 
-    Bar.addObject('EdgeSetTopologyContainer', name="topology"
-                  , edges="@../Grid/grid.edges"
-                  , position="@../Grid/grid.position")
+    Bar.addObject('EdgeSetTopologyContainer', name="topology",
+                  edges="@../Grid/grid.edges",
+                  position="@../Grid/grid.position")
 
     dofs = Bar.addObject('MechanicalObject',
                          name="dofs",
@@ -130,18 +130,14 @@ def build_bar_scene(root, mms, E_eff, nx):
         quadrature=mms.source_quadrature,
         name="bodyForceAssembler"))
 
-    Bar.addObject('FixedProjectiveConstraint', indices=0)
-    Bar.addObject('ConstantForceField',
-                  name="NeumannTip",
-                  indices=nx - 1,
-                  forces=mms.traction_bc(E_eff))
+    mms.apply_bcs(Bar, E_eff, nx)
 
 
 def case_scene(mms):
     """Return a `createScene(rootNode)` bound to this MMS case."""
     def createScene(rootNode):
         cfg = load_params()
-        build_bar_scene(rootNode, mms, cfg["E_eff"], cfg["nx"])
+        build_bar_scene(rootNode, mms, cfg["E_eff"], cfg["reference"]["nx"])
         return rootNode
     return createScene
 
@@ -211,8 +207,8 @@ def plot_solution(case, x, u_h, u_ex, label_ex):
 def run_reference_scene(mms):
     """Solve one MMS case at the reference mesh, write the solution table and plot."""
     cfg = load_params()
-    sol = solve_bar(mms, cfg["E_eff"], cfg["nx"])
-    l2  = l2_error(sol.x0, sol.edges, sol.u_h, mms.u_ex, L2_QUADRATURE)
-    h1  = h1_semi_error(sol.x0, sol.edges, sol.u_h, mms.du_ex, H1_QUADRATURE)
+    sol = solve_bar(mms, cfg["E_eff"], cfg["reference"]["nx"])
+    l2  = l2_error_1d(sol.x0, sol.edges, sol.u_h, mms.u_ex, L2_QUADRATURE_1D)
+    h1  = h1_semi_error_1d(sol.x0, sol.edges, sol.u_h, mms.du_ex, H1_QUADRATURE_1D)
     write_solution_table(mms.name, sol.x0, sol.u_h, mms.u_ex, {"L2": l2, "H1_semi": h1})
     plot_solution(mms.name, sol.x0, sol.u_h, mms.u_ex, mms.plot_label)

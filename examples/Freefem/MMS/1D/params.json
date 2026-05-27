@@ -1,11 +1,15 @@
 {
     "length": 2.0,
     "youngModulus": 1e6,
-    "nx": 10,
-    "nxConvergence": {
-        "quadratic":   [2, 4, 6, 8, 10, 12, 16],
-        "cubic":       [2, 4, 6, 8, 10, 12, 16],
-        "sinusoidal":  [2, 4, 6, 8, 10, 12, 16],
-        "exponential" :[2, 4, 6, 8, 10, 12, 16]
+    "reference": {
+        "nx": 10
+    },
+    "convergence": {
+        "nx_values": {
+            "quadratic":   [2, 4, 6, 8, 10, 12, 16, 32],
+            "cubic":       [2, 4, 6, 8, 10, 12, 16, 32],
+            "sinusoidal":  [2, 4, 6, 8, 10, 12, 16, 32],
+            "exponential": [2, 4, 6, 8, 10, 12, 16, 32]
+        }
     }
 }
