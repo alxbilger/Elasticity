@@ -8,8 +8,10 @@ namespace elasticity
 
 template <class DataTypes, class ElementType>
 FEMForceField<DataTypes, ElementType>::FEMForceField()
-    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeForceStrategy", std::string("The compute strategy used to compute the forces.\n" + ComputeStrategy::dataDescription()).c_str()))
-    , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", std::string("The compute strategy used to compute the forces derivatives.\n" + ComputeStrategy::dataDescription()).c_str()))
+    : d_computeForceStrategy(initData(&d_computeForceStrategy, "computeForceStrategy", std::string("The compute strategy used to compute the forces.\n" +
+              sofa::component::solidmechanics::fem::elastic::ComputeStrategy::dataDescription()).c_str()))
+    , d_computeForceDerivStrategy(initData(&d_computeForceDerivStrategy, "computeForceDerivStrategy", std::string("The compute strategy used to compute the forces derivatives.\n" +
+              sofa::component::solidmechanics::fem::elastic::ComputeStrategy::dataDescription()).c_str()))
     , d_elementSpace(initData(&d_elementSpace, static_cast<sofa::Real_t<DataTypes>>(0.125), "elementSpace", "When rendering, the space between elements"))
 {
     d_elementSpace.setGroup("Visualization");
@@ -185,12 +187,13 @@ void FEMForceField<DataTypes, ElementType>::dispatchElementForcesDerivToNodes(co
 
 template <class DataTypes, class ElementType>
 sofa::simulation::ForEachExecutionPolicy FEMForceField<DataTypes, ElementType>::getExecutionPolicy(
-    const sofa::Data<ComputeStrategy>& strategy) const
+    const sofa::Data<sofa::component::solidmechanics::fem::elastic::ComputeStrategy>& strategy) const
 {
     auto computeForceStrategyAccessor = sofa::helper::getReadAccessor(d_computeForceStrategy);
     const auto& computeForceStrategy = computeForceStrategyAccessor->key();
 
-    return (computeForceStrategy == parallelComputeStrategy)
+    return (computeForceStrategy ==
+            sofa::component::solidmechanics::fem::elastic::parallelComputeStrategy)
         ? sofa::simulation::ForEachExecutionPolicy::PARALLEL
         : sofa::simulation::ForEachExecutionPolicy::SEQUENTIAL;
 }

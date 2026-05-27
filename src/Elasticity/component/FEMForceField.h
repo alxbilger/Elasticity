@@ -1,7 +1,7 @@
 #pragma once
 #include <Elasticity/config.h>
 #include <Elasticity/impl/trait.h>
-#include <Elasticity/impl/ComputeStrategy.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/ComputeStrategy.h>
 #include <sofa/core/visual/DrawMesh.h>
 #include <sofa/simulation/task/ParallelForEach.h>
 #include <sofa/simulation/task/TaskSchedulerUser.h>
@@ -46,8 +46,8 @@ public:
 
     void draw(const sofa::core::visual::VisualParams*) override;
 
-    sofa::Data<ComputeStrategy> d_computeForceStrategy;
-    sofa::Data<ComputeStrategy> d_computeForceDerivStrategy;
+    sofa::Data<sofa::component::solidmechanics::fem::elastic::ComputeStrategy> d_computeForceStrategy;
+    sofa::Data<sofa::component::solidmechanics::fem::elastic::ComputeStrategy> d_computeForceDerivStrategy;
 
     sofa::Data<sofa::Real_t<DataTypes>> d_elementSpace;
 
@@ -98,7 +98,7 @@ protected:
         sofa::VecDeriv_t<DataTypes>& nodeForcesDeriv);
     /// @}
 
-    sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<ComputeStrategy>& strategy) const;
+    sofa::simulation::ForEachExecutionPolicy getExecutionPolicy(const sofa::Data<sofa::component::solidmechanics::fem::elastic::ComputeStrategy>& strategy) const;
 
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementForce;
     sofa::type::vector<sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>>> m_elementDForce;
