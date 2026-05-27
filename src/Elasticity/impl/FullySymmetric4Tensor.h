@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Elasticity/impl/KroneckerDelta.h>
-#include <Elasticity/impl/SymmetricTensor.h>
 #include <sofa/type/VoigtNotation.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
@@ -26,7 +25,8 @@ class FullySymmetric4Tensor
 {
 private:
     static constexpr sofa::Size spatial_dimensions = DataTypes::spatial_dimensions;
-    static constexpr sofa::Size NumberOfIndependentElements = symmetric_tensor::NumberOfIndependentElements<spatial_dimensions>;
+    static constexpr sofa::Size NumberOfIndependentElements =
+        sofa::type::NumberOfIndependentElements<spatial_dimensions>;
     using Real = sofa::Real_t<DataTypes>;
 
 public:

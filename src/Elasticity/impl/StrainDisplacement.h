@@ -1,8 +1,7 @@
 #pragma once
+#include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/type/Mat.h>
-
-#include <Elasticity/impl/SymmetricTensor.h>
 
 namespace elasticity
 {
@@ -73,7 +72,8 @@ template <class DataTypes, class ElementType>
 struct StrainDisplacement
 {
     using Real = sofa::Real_t<DataTypes>;
-    static constexpr auto nbLines = symmetric_tensor::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
+    static constexpr auto nbLines =
+        sofa::type::NumberOfIndependentElements<DataTypes::spatial_dimensions>;
     static constexpr auto nbColumns = ElementType::NumberOfNodes * DataTypes::spatial_dimensions;
 
     constexpr Real& operator()(sofa::Size i, sofa::Size j) noexcept

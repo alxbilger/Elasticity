@@ -9,8 +9,6 @@ set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
 
-    src/Elasticity/component/BaseElementLinearFEMForceField.h
-    src/Elasticity/component/BaseElementLinearFEMForceField.inl
     src/Elasticity/component/ElementHyperelasticityFEMForceField.h
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
     src/Elasticity/component/ElementMass.h
@@ -55,7 +53,6 @@ set(HEADER_FILES
     src/Elasticity/impl/MatSoA.h
     src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
-    src/Elasticity/impl/SymmetricTensor.h
     src/Elasticity/impl/VecSoA.h
     src/Elasticity/impl/VecView.h
     src/Elasticity/impl/VonMisesStressContainer.h
@@ -72,7 +69,6 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/component/BaseElementLinearFEMForceField.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
     src/Elasticity/component/ElementMass.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
