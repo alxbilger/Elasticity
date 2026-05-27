@@ -100,11 +100,12 @@ struct ElementHyperelasticityFEMForceField_stepTest :
         this->node->addObject(topology);
 
         //create an element with indices 0, 1, 2, ...
-        auto& elementSequence = const_cast<sofa::type::vector<typename FiniteElement<ElementType, DataTypes>::TopologyElement>&>(FiniteElement<ElementType, DataTypes>::getElementSequence(*topology));
+        auto& elementSequence = const_cast<sofa::type::vector<typename sofa::fem::FiniteElement<ElementType, DataTypes>::TopologyElement>&>(
+            sofa::fem::FiniteElement<ElementType, DataTypes>::getElementSequence(*topology));
         auto& element = elementSequence.emplace_back();
         std::iota(element.begin(), element.end(), 0);
 
-        constexpr auto& referenceElementNodes = FiniteElement<ElementType, DataTypes>::referenceElementNodes;
+        constexpr auto& referenceElementNodes = sofa::fem::FiniteElement<ElementType, DataTypes>::referenceElementNodes;
 
         auto x = this->dof->writeOnlyRestPositions();
         x.resize(ElementType::NumberOfNodes);

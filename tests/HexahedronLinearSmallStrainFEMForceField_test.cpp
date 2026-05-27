@@ -8,7 +8,7 @@ namespace elasticity
 {
 TEST(FiniteElement_Hexa, quadraturePoints)
 {
-    using FE = FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
+    using FE = sofa::fem::FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
     const auto q = FE::quadraturePoints();
     EXPECT_EQ(q.size(), 4);
 }
@@ -17,7 +17,7 @@ TEST(FiniteElement_Hexa, quadraturePoints)
 TEST(HexahedronLinearSmallStrainFEMForceField, jacobian)
 {
     using Force = ElementLinearSmallStrainFEMForceField<sofa::defaulttype::Vec3Types, sofa::geometry::Hexahedron>;
-    using FE = FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
+    using FE = sofa::fem::FiniteElement<sofa::geometry::Hexahedron, sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 8> hexaNodesCoordinates{{
         {-1_sreal, -1_sreal, -1_sreal},

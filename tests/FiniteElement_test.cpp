@@ -11,7 +11,7 @@ namespace elasticity
 template <class ElementType, class DataTypes>
 void testSumWeights(const sofa::Real_t<DataTypes> expected)
 {
-    using FE = FiniteElement<ElementType, DataTypes>;
+    using FE = sofa::fem::FiniteElement<ElementType, DataTypes>;
 
     SReal weightSum = 0;
     for (const auto& [q, w] : FE::quadraturePoints())
@@ -65,9 +65,9 @@ TEST(FiniteElement, hexa3dWeights)
 
 
 template <class ElementType, class DataTypes>
-void testGradientShapeFunctions(const sofa::type::Vec<FiniteElement<ElementType, DataTypes>::TopologicalDimension, sofa::Real_t<DataTypes>>& evaluationPoint)
+void testGradientShapeFunctions(const sofa::type::Vec<sofa::fem::FiniteElement<ElementType, DataTypes>::TopologicalDimension, sofa::Real_t<DataTypes>>& evaluationPoint)
 {
-    using FE = FiniteElement<ElementType, DataTypes>;
+    using FE = sofa::fem::FiniteElement<ElementType, DataTypes>;
     static constexpr sofa::type::Vec<FE::TopologicalDimension, sofa::Real_t<DataTypes>> zero;
 
     const auto N = FE::gradientShapeFunctions(evaluationPoint);

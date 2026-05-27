@@ -109,8 +109,15 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
     constexpr auto youngModulus = 1_sreal;
     constexpr auto poissonRatio = 0_sreal;
 
-    const auto [mu, lambda] = toLameParameters<sofa::defaulttype::Vec3Types>(youngModulus, poissonRatio);
-    const auto C = makeIsotropicElasticityTensor<sofa::defaulttype::Vec3Types>(mu, lambda).toVoigtMatSym();
+    sofa::component::solidmechanics::fem::elastic::LameLambda<SReal> lambda { 0 };
+    sofa::component::solidmechanics::fem::elastic::LameMu<SReal> mu { 0 };
+
+    sofa::component::solidmechanics::fem::elastic::toLameParameters<3, SReal>(
+        sofa::component::solidmechanics::fem::elastic::YoungModulus<SReal>(youngModulus),
+        sofa::component::solidmechanics::fem::elastic::PoissonRatio<SReal>(poissonRatio),
+        lambda, mu);
+
+    const auto C = makeIsotropicElasticityTensor<sofa::defaulttype::Vec3Types>(mu.get(), lambda.get()).toVoigtMatSym();
 
     for (std::size_t i = 0; i < 3; ++i)
     {
@@ -140,14 +147,14 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
 
 TEST(FiniteElement_Tetra, quadraturePoints)
 {
-    using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
+    using FE = sofa::fem::FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
     const auto q = FE::quadraturePoints();
     EXPECT_EQ(q.size(), 1);
 }
 
 TEST(TET4LinearSmallStrainFEMForceField, jacobian)
 {
-    using FE = FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
+    using FE = sofa::fem::FiniteElement<sofa::geometry::Tetrahedron, sofa::defaulttype::Vec3Types>;
 
     constexpr std::array<sofa::type::Vec3, 4> tetraNodesCoordinates{{
          {0_sreal, 0_sreal, 0_sreal},
