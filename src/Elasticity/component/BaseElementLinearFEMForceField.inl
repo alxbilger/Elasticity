@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.inl>
-#include <Elasticity/impl/LameParameters.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 #include <Elasticity/impl/VectorTools.h>
 
 #include <ranges>
@@ -67,7 +67,18 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
             const auto youngModulus = this->getYoungModulusInElement(elementId);
             const auto poissonRatio = this->getPoissonRatioInElement(elementId);
 
-            const auto [mu, lambda] = elasticity::toLameParameters<DataTypes>(youngModulus, poissonRatio);
+            using Real = sofa::Real_t<DataTypes>;
+
+            sofa::component::solidmechanics::fem::elastic::LameLambda<Real> lambdaStrong { 0 };
+            sofa::component::solidmechanics::fem::elastic::LameMu<Real> muStrong { 0 };
+
+            sofa::component::solidmechanics::fem::elastic::toLameParameters<DataTypes::spatial_dimensions, Real>(
+                sofa::component::solidmechanics::fem::elastic::YoungModulus<Real>(youngModulus),
+                sofa::component::solidmechanics::fem::elastic::PoissonRatio<Real>(poissonRatio),
+                lambdaStrong, muStrong);
+
+            Real lambda = lambdaStrong.get();
+            Real mu = muStrong.get();
 
             const auto elasticityTensor = makeIsotropicElasticityTensor<DataTypes>(mu, lambda);
 

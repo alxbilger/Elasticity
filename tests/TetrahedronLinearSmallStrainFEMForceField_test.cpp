@@ -1,6 +1,6 @@
 #include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
 #include <sofa/fem/FiniteElement[Tetrahedron].h>
-#include <Elasticity/impl/LameParameters.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 #include <Elasticity/impl/MatrixTools.h>
 #include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>

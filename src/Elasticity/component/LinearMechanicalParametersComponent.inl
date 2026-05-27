@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/impl/LameParameters.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 
 namespace elasticity
 {
@@ -24,8 +24,16 @@ LinearMechanicalParametersComponent<DataTypes>::LinearMechanicalParametersCompon
 template <class DataTypes>
 void LinearMechanicalParametersComponent<DataTypes>::setLameCoefficients()
 {
-    std::tie(m_lambda, m_mu) = elasticity::toLameParameters<DataTypes>(
-        this->d_youngModulus.getValue(), this->d_poissonRatio.getValue());
+    sofa::component::solidmechanics::fem::elastic::LameLambda<Real> lambdaStrong { 0 };
+    sofa::component::solidmechanics::fem::elastic::LameMu<Real> muStrong { 0 };
+
+    sofa::component::solidmechanics::fem::elastic::toLameParameters<DataTypes::spatial_dimensions, Real>(
+        sofa::component::solidmechanics::fem::elastic::YoungModulus<Real>(this->d_youngModulus.getValue()),
+        sofa::component::solidmechanics::fem::elastic::PoissonRatio<Real>(this->d_poissonRatio.getValue()),
+        lambdaStrong, muStrong);
+
+    m_lambda = lambdaStrong.get();
+    m_mu = muStrong.get();
 }
 
 }  // namespace elasticity
