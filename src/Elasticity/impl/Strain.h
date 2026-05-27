@@ -1,7 +1,8 @@
 #pragma once
 
 #include <sofa/type/Mat.h>
-#include <Elasticity/impl/MatrixTools.h>
+
+#include "IdentityMatrix.h"
 
 namespace elasticity
 {
@@ -186,11 +187,11 @@ protected:
     {
         if (m_deformationGradient.has_value())
         {
-            m_determinantF = elasticity::determinant(*m_deformationGradient);
+            m_determinantF = sofa::type::determinant(*m_deformationGradient);
         }
         else if (m_rightCauchyGreenTensor.has_value())
         {
-            m_determinantF = sqrt(elasticity::determinant(*m_rightCauchyGreenTensor));
+            m_determinantF = sqrt(sofa::type::determinant(*m_rightCauchyGreenTensor));
         }
         else
         {

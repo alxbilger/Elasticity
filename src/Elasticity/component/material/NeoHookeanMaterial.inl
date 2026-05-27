@@ -12,7 +12,7 @@ auto NeoHookeanMaterial<DataTypes>::secondPiolaKirchhoffStress(Strain<DataTypes>
     static constexpr auto& I = Strain<DataTypes>::identity;
     const auto& C = strain.getRightCauchyGreenTensor();
 
-    const DeformationGradient C_1 = elasticity::inverse(C);
+    const DeformationGradient C_1 = sofa::type::inverse(C);
     const Real J = strain.getDeterminantDeformationGradient();
 
     return m_mu * (I - C_1) + m_lambda * std::log(J) * C_1;
@@ -22,7 +22,7 @@ template <class DataTypes>
 auto NeoHookeanMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain) -> ElasticityTensor
 {
     const auto& C = strain.getRightCauchyGreenTensor();
-    const RightCauchyGreenTensor C_1 = elasticity::inverse(C);
+    const RightCauchyGreenTensor C_1 = sofa::type::inverse(C);
     const Real J = strain.getDeterminantDeformationGradient();
     const Real logJ = std::log(J);
 

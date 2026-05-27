@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
-#include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/Strain.h>
 #include <sofa/type/VecView.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
@@ -219,7 +218,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                const auto value = (-static_cast<Real>(kFact)) * static_cast<ScalarOrMatrix<LocalMatType>>(localMatrix);
+                const auto value = (-static_cast<Real>(kFact)) * static_cast<sofa::type::ScalarOrMatrix<LocalMatType>>(localMatrix);
                 matrix->add(
                    offset + element[n1] * spatial_dimensions,
                    offset + element[n2] * spatial_dimensions, value);
@@ -389,8 +388,8 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
 
             PrecomputedData& data = m_precomputedData[i][j];
             data.jacobian = sofa::fem::FiniteElementHelper<TElementType, TDataTypes>::jacobianFromReferenceToPhysical(elementNodesRestCoordinates, dN_dq_ref);
-            data.jacobianInv = elasticity::inverse(data.jacobian);
-            data.detJacobian = elasticity::absGeneralizedDeterminant(data.jacobian);
+            data.jacobianInv = sofa::type::inverse(data.jacobian);
+            data.detJacobian = sofa::type::absGeneralizedDeterminant(data.jacobian);
 
             for (sofa::Size n = 0; n < NumberOfNodesInElement; ++n)
             {

@@ -24,7 +24,7 @@ auto OgdenMaterial<DataTypes>::secondPiolaKirchhoffStress(Strain<DataTypes>& str
     using EigenMatrix = Eigen::Matrix<Real, spatial_dimensions, spatial_dimensions>;
 
     const auto& C = strain.getRightCauchyGreenTensor();
-    const auto C_1 = elasticity::inverse(C);
+    const auto C_1 = sofa::type::inverse(C);
 
     const auto J = strain.getDeterminantDeformationGradient();
     assert(J > 0);
@@ -99,7 +99,7 @@ auto OgdenMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& strain) -> El
     const Real kappa = m_kappa.getValue();
 
     const auto& C = strain.getRightCauchyGreenTensor();
-    const auto C_1 = elasticity::inverse(C);
+    const auto C_1 = sofa::type::inverse(C);
 
     const Real J = strain.getDeterminantDeformationGradient();
     assert(J > 0);

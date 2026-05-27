@@ -1,5 +1,5 @@
-#include <Elasticity/impl/MatrixTools.h>
 #include <gtest/gtest.h>
+#include <sofa/type/Mat.h>
 #include <sofa/topology/Tetrahedron.h>
 #include <sofa/topology/Triangle.h>
 #include <sofa/type/Quat.h>
@@ -13,8 +13,8 @@ TEST(MatrixTools, pseudoInverse)
     constexpr sofa::type::Mat<2, 2, SReal> A = {{-1, 3./2.}, {1., -1.}};
     constexpr sofa::type::Mat<2, 2, SReal> expectedInverse = {{2., 3.}, {2., 2.}};
 
-    const auto pseudoInverse = elasticity::leftPseudoInverse(A);
-    const auto inverse = elasticity::inverse(A);
+    const auto pseudoInverse = sofa::type::leftPseudoInverse(A);
+    const auto inverse = sofa::type::inverse(A);
 
     for (sofa::Size i = 0; i < 2; ++i)
     {

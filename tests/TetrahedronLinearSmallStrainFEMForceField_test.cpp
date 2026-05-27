@@ -1,4 +1,3 @@
-#include <Elasticity/impl/MatrixTools.h>
 #include <sofa/component/solidmechanics/fem/elastic/ElementLinearSmallStrainFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
