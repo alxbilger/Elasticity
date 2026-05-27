@@ -3,7 +3,7 @@
 #include <Elasticity/component/BaseElementLinearFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/BaseLinearElasticityFEMForceField.inl>
 #include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
-#include <Elasticity/impl/VectorTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 
 #include <ranges>
 
@@ -79,7 +79,7 @@ void BaseElementLinearFEMForceField<DataTypes, ElementType>::precomputeElementSt
 
             const auto elasticityTensor = sofa::component::solidmechanics::fem::elastic::makeIsotropicElasticityTensor<DataTypes::spatial_dimensions>(mu, lambda);
 
-            const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
+            const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> nodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
             elementStiffness[elementId] = sofa::component::solidmechanics::fem::elastic::integrate<DataTypes, ElementType, trait::matrixVectorProductType>(nodesCoordinates, elasticityTensor);
         });
 }

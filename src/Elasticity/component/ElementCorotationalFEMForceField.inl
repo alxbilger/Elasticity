@@ -1,7 +1,7 @@
 #pragma once
 #include <Elasticity/component/ElementCorotationalFEMForceField.h>
 #include <Elasticity/impl/VecView.h>
-#include <Elasticity/impl/VectorTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 
 #include <Elasticity/component/BaseElementLinearFEMForceField.inl>
@@ -72,9 +72,9 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeElementsFo
         const auto& element = elements[elementId];
 
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesCoordinates =
-            extractNodesVectorFromGlobalVector(element, nodePositions);
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodePositions);
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> restElementNodesCoordinates =
-            extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, restPositionAccessor.ref());
 
         auto& elementInitialRotationTransposed = this->m_initialRotationsTransposed[elementId];
         auto& elementRotation = this->m_rotations[elementId];
@@ -232,9 +232,9 @@ void ElementCorotationalFEMForceField<DataTypes, ElementType>::computeRotations(
             const auto& element = elements[elementId];
 
             const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesCoordinates =
-                extractNodesVectorFromGlobalVector(element, nodePositions);
+                sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodePositions);
             const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> restElementNodesCoordinates =
-                extractNodesVectorFromGlobalVector(element, nodeRestPositions);
+                sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodeRestPositions);
 
             m_rotationMethods.computeRotation(rotations[elementId], m_initialRotationsTransposed[elementId], elementNodesCoordinates, restElementNodesCoordinates);
         }

@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/component/ElementMass.h>
-#include <Elasticity/impl/VectorTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 #include <Elasticity/impl/MatrixTools.h>
 
 namespace elasticity
@@ -93,7 +93,7 @@ void ElementMass<DataTypes, ElementType>::updateMassCacheIfNeeded()
     for (const auto& element : elements)
     {
         const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates =
-            extractNodesVectorFromGlobalVector(element, restPositionsAccessor.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, restPositionsAccessor.ref());
 
         auto& elementData = m_elementQuadratureMass[elementId];
 
@@ -162,7 +162,7 @@ void ElementMass<DataTypes, ElementType>::addMDx(const sofa::core::MechanicalPar
         const auto& element = elements[elementId];
 
         const std::array<Real, NumberOfNodesInElement> elementNodesDensity =
-            extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
 
         const auto& elementData = m_elementQuadratureMass[elementId];
 
@@ -218,7 +218,7 @@ void ElementMass<DataTypes, ElementType>::addMToMatrix(sofa::linearalgebra::Base
         const auto& element = elements[elementId];
 
         const std::array<Real, NumberOfNodesInElement> elementNodesDensity =
-            extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
 
         const auto& elementData = m_elementQuadratureMass[elementId];
 
@@ -291,10 +291,10 @@ void ElementMass<DataTypes, ElementType>::addForce(const sofa::core::MechanicalP
         const auto& element = elements[elementId];
 
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesCoordinates =
-            extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
 
         const std::array<sofa::Real_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesDensity =
-            extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodalDensity.ref());
 
         // Integrate: f_i += ∫_Ω rho(x) * N_i(x) * g dΩ
         // with rho(x) interpolated from nodal densities: rho(x) = Σ_j N_j(x) * rho_j

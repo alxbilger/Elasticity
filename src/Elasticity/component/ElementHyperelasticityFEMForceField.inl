@@ -4,7 +4,7 @@
 #include <Elasticity/impl/MatrixTools.h>
 #include <Elasticity/impl/Strain.h>
 #include <Elasticity/impl/VecView.h>
-#include <Elasticity/impl/VectorTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
@@ -62,7 +62,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
     std::size_t elementIndex = 0;
     for (const auto& element : elements)
     {
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
 
         static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
         static constexpr auto gradients = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
@@ -274,7 +274,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
     for (const auto& element : elements)
     {
         SCOPED_TIMER_TR("Element");
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = extractNodesVectorFromGlobalVector(element, this->mstate->readPositions().ref());
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, this->mstate->readPositions().ref());
 
         ElementStiffness& K = *elementStiffnessIt++;
 
@@ -380,7 +380,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
     for (std::size_t i = 0; i < elements.size(); ++i)
     {
         const auto& element = elements[i];
-        const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = extractNodesVectorFromGlobalVector(element, restPosition);
+        const std::array<Coord, NumberOfNodesInElement> elementNodesRestCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, restPosition);
 
         for (std::size_t j = 0; j < NumberOfQuadraturePoints; ++j)
         {

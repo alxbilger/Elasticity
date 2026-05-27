@@ -66,7 +66,7 @@ void ElementLinearSmallStrainFEMForceField<DataTypes, ElementType>::computeEleme
         const auto& stiffnessMatrix = elementStiffness[elementId];
 
         const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesDx =
-            extractNodesVectorFromGlobalVector(element, nodeDx);
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, nodeDx);
 
         sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
         for (sofa::Size nodeId = 0; nodeId < trait::NumberOfNodesInElement; ++nodeId)
