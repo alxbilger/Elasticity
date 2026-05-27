@@ -1,6 +1,8 @@
-#include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <gtest/gtest.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/KroneckerDelta.h>
+#include <sofa/core/trait/DataTypes.h>
 #include <sofa/defaulttype/VecTypes.h>
+#include <sofa/type/FullySymmetric4Tensor.h>
 
 namespace elasticity
 {
@@ -9,9 +11,10 @@ template<class DataTypes>
 void generateThenAccess()
 {
     constexpr auto spatial_dimensions = DataTypes::spatial_dimensions;
-    const FullySymmetric4Tensor<DataTypes> t([](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
+    const sofa::type::FullySymmetric4Tensor<spatial_dimensions, sofa::Real_t<DataTypes>> t([](sofa::Index i, sofa::Index j, sofa::Index k, sofa::Index l)
     {
-        return kroneckerDelta<SReal>(i, j) * kroneckerDelta<SReal>(k, l);
+        return sofa::component::solidmechanics::fem::elastic::kroneckerDelta<SReal>(i, j) *
+                   sofa::component::solidmechanics::fem::elastic::kroneckerDelta<SReal>(k, l);
     });
 
     for (sofa::Index i = 0; i < spatial_dimensions; ++i)

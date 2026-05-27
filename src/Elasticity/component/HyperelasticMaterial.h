@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Elasticity/config.h>
-#include <Elasticity/impl/FullySymmetric4Tensor.h>
+#include <sofa/type/FullySymmetric4Tensor.h>
 #include <Elasticity/impl/MajorSymmetric4Tensor.h>
 #include <Elasticity/impl/Strain.h>
 #include <sofa/core/objectmodel/BaseObject.h>
@@ -28,7 +28,7 @@ protected:
     using DeformationGradient = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using RightCauchyGreenTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     using StressTensor = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
-    using ElasticityTensor = elasticity::FullySymmetric4Tensor<DataTypes>;
+    using ElasticityTensor = sofa::type::FullySymmetric4Tensor<spatial_dimensions, Real>;
     using TangentModulus = elasticity::MajorSymmetric4Tensor<DataTypes>;
 
 public:

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <Elasticity/component/material/StVenantKirchhoffMaterial.h>
-#include <Elasticity/component/PK2HyperelasticMaterial.inl>
+#include <sofa/component/solidmechanics/fem/elastic/impl/OrthotropicElasticityTensor.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
+
+#include <Elasticity/component/PK2HyperelasticMaterial.inl>
 
 namespace elasticity
 {
@@ -26,7 +28,10 @@ auto StVenantKirchhoffMaterial<DataTypes>::elasticityTensor(Strain<DataTypes>& s
     SCOPED_TIMER_TR("elasticityTensor");
     SOFA_UNUSED(strain);
 
-    return makeIsotropicElasticityTensor<DataTypes>(m_mu, m_lambda);
+    sofa::component::solidmechanics::fem::elastic::LameLambda<Real> lambda { m_lambda };
+    sofa::component::solidmechanics::fem::elastic::LameMu<Real> mu { m_mu };
+
+    return sofa::component::solidmechanics::fem::elastic::makeIsotropicElasticityTensor<spatial_dimensions>(mu, lambda);
 }
 
 }  // namespace elasticity
