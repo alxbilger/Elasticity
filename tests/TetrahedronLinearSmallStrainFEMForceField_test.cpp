@@ -1,11 +1,11 @@
-#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
-#include <sofa/fem/FiniteElement[Tetrahedron].h>
-#include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 #include <Elasticity/impl/MatrixTools.h>
+#include <sofa/component/solidmechanics/fem/elastic/ElementLinearSmallStrainFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>
+#include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 #include <sofa/component/solidmechanics/testing/ForceFieldTestCreation.h>
 #include <sofa/component/topology/container/constant/MeshTopology.h>
 #include <sofa/core/behavior/BaseForceField.h>
+#include <sofa/fem/FiniteElement[Tetrahedron].h>
 #include <sofa/testing/LinearCongruentialRandomGenerator.h>
 
 namespace elasticity
@@ -13,7 +13,7 @@ namespace elasticity
 
 template<class DataTypes>
 using TetrahedronLinearSmallStrainFEMForceField =
-    ElementLinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>;
+    sofa::component::solidmechanics::fem::elastic::ElementLinearSmallStrainFEMForceField<DataTypes, sofa::geometry::Tetrahedron>;
 
 /**
  * This test is based on the generic test valid on every force field.
@@ -117,7 +117,7 @@ TEST(TET4LinearSmallStrainFEMForceField, computeElasticityTensor)
         sofa::component::solidmechanics::fem::elastic::PoissonRatio<SReal>(poissonRatio),
         lambda, mu);
 
-    const auto C = makeIsotropicElasticityTensor<sofa::defaulttype::Vec3Types>(mu.get(), lambda.get()).toVoigtMatSym();
+    const auto C = sofa::component::solidmechanics::fem::elastic::makeIsotropicElasticityTensor<3>(mu, lambda).toVoigtMatSym();
 
     for (std::size_t i = 0; i < 3; ++i)
     {

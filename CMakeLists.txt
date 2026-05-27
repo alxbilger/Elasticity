@@ -15,8 +15,6 @@ set(HEADER_FILES
     src/Elasticity/component/ElementCorotationalFEMForceField.inl
     src/Elasticity/component/ElementHyperelasticityFEMForceField.h
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
-    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.h
-    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.inl
     src/Elasticity/component/ElementMass.h
     src/Elasticity/component/ElementMass.inl
     src/Elasticity/component/ElementPrefab.h
@@ -79,7 +77,6 @@ set(SOURCE_FILES
     src/Elasticity/component/BaseElementLinearFEMForceField.cpp
     src/Elasticity/component/ElementCorotationalFEMForceField.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
-    src/Elasticity/component/ElementLinearSmallStrainFEMForceField.cpp
     src/Elasticity/component/ElementMass.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp

@@ -1,6 +1,6 @@
 #pragma once
 #include <Elasticity/component/prefab/LinearSmallStrainFEMForceField.h>
-#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.inl>
+#include <sofa/component/solidmechanics/fem/elastic/ElementLinearSmallStrainFEMForceField.inl>
 #include <Elasticity/component/ElementPrefab.inl>
 
 namespace elasticity

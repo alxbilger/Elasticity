@@ -2,7 +2,7 @@
 
 #include <Elasticity/component/ElementPrefab.h>
 #include <Elasticity/component/LinearMechanicalParametersComponent.h>
-#include <Elasticity/component/ElementLinearSmallStrainFEMForceField.h>
+#include <sofa/component/solidmechanics/fem/elastic/ElementLinearSmallStrainFEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_PREFAB_LINEAR_SMALL_STRAIN_FEM_FORCEFIELD_CPP)
 #include <sofa/defaulttype/VecTypes.h>
@@ -13,7 +13,8 @@ namespace elasticity
 
 template <class DataTypes>
 using LinearPrefabParent =
-    ElementPrefab<ElementPrefabTrait<ElementLinearSmallStrainFEMForceField, DataTypes>>;
+    ElementPrefab<ElementPrefabTrait<
+    sofa::component::solidmechanics::fem::elastic::ElementLinearSmallStrainFEMForceField, DataTypes>>;
 
 /**
  * An intermediate class that instantiates other element-specific hyperelasticity components based on
