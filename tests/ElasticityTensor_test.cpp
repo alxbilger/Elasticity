@@ -1,5 +1,6 @@
 #include <Elasticity/impl/FullySymmetric4Tensor.h>
 #include <gtest/gtest.h>
+#include <sofa/defaulttype/VecTypes.h>
 
 namespace elasticity
 {
