@@ -2,7 +2,7 @@
 
 #include <Elasticity/impl/KroneckerDelta.h>
 #include <Elasticity/impl/SymmetricTensor.h>
-#include <Elasticity/impl/VoigtNotation.h>
+#include <sofa/type/VoigtNotation.h>
 #include <sofa/core/trait/DataTypes.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
 #include <sofa/type/MatSym.h>
@@ -49,10 +49,10 @@ public:
 
         for (sofa::Size a = 0; a < NumberOfIndependentElements; ++a)
         {
-            const auto [i, j] = toTensorIndices<DataTypes>(a);
+            const auto [i, j] = sofa::type::toTensorIndices<spatial_dimensions>(a);
             for (sofa::Size b = a; b < NumberOfIndependentElements; ++b) // the Voigt representation is symmetric, that is why b starts at a
             {
-                const auto [k, l] = toTensorIndices<DataTypes>(b);
+                const auto [k, l] = sofa::type::toTensorIndices<spatial_dimensions>(b);
                 m_matrix(a, b) = callable(i, j, k, l);
             }
         }
@@ -60,15 +60,15 @@ public:
 
     Real& operator()(sofa::Size i, sofa::Size j, sofa::Size k, sofa::Size l)
     {
-        const auto a = tensorToVoigtIndex<DataTypes>(i, j);
-        const auto b = tensorToVoigtIndex<DataTypes>(k, l);
+        const auto a = sofa::type::tensorToVoigtIndex<spatial_dimensions>(i, j);
+        const auto b = sofa::type::tensorToVoigtIndex<spatial_dimensions>(k, l);
         return m_matrix(a, b);
     }
 
     Real operator()(sofa::Size i, sofa::Size j, sofa::Size k, sofa::Size l) const
     {
-        const auto a = tensorToVoigtIndex<DataTypes>(i, j);
-        const auto b = tensorToVoigtIndex<DataTypes>(k, l);
+        const auto a = sofa::type::tensorToVoigtIndex<spatial_dimensions>(i, j);
+        const auto b = sofa::type::tensorToVoigtIndex<spatial_dimensions>(k, l);
         return m_matrix(a, b);
     }
 

@@ -66,7 +66,6 @@ set(HEADER_FILES
     src/Elasticity/impl/VecSoA.h
     src/Elasticity/impl/VecView.h
     src/Elasticity/impl/VectorTools.h
-    src/Elasticity/impl/VoigtNotation.h
     src/Elasticity/impl/VonMisesStressContainer.h
     src/Elasticity/impl/trait.h
 
