@@ -53,7 +53,6 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp
     src/Elasticity/component/HyperelasticMaterial.cpp
