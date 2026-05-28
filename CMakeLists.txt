@@ -11,8 +11,6 @@ set(HEADER_FILES
 
     src/Elasticity/component/ElementHyperelasticityFEMForceField.h
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
-    src/Elasticity/component/ElementMass.h
-    src/Elasticity/component/ElementMass.inl
     src/Elasticity/component/ElementPrefab.h
     src/Elasticity/component/ElementPrefab.inl
     src/Elasticity/component/HyperelasticMaterial.h
@@ -56,7 +54,6 @@ set(SOURCE_FILES
     src/Elasticity/init.cpp
 
     src/Elasticity/component/ElementHyperelasticityFEMForceField.inl
-    src/Elasticity/component/ElementMass.cpp
     src/Elasticity/component/ElementHyperelasticityFEMForceField.cpp
     src/Elasticity/component/ElementPrefab.cpp
     src/Elasticity/component/HyperelasticMaterial.cpp
