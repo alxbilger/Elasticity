@@ -11,15 +11,11 @@ import SofaRuntime
 
 # Make the parent MMS/ directory importable so we can pull in fem.py.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from fem import (
-    assemble_nodal_forces_2d,
-    assemble_traction_2d,
-    l2_error_2d,
-    h1_semi_error_2d,
-    quad_q1_rule,
-    tri_p1_rule,
-)
+from fem import quad_q1_rule, tri_p1_rule          # re-exported for case files
+from elements import element_quad, element_tri     # re-exported for case files
 from beam_solution import BeamSolution2D
+from output import write_solution_table
+from scene import NodalForceAssembler
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
@@ -52,173 +48,23 @@ def _dim_template(dim):
     return "Vec3d" if dim == "3d" else "Vec2d"
 
 
-def _boundary_edges(nx, ny):
-    """Return (bottom, top, left, right) edge lists for a structured nx×ny grid."""
-    bottom = [(i, i + 1)                                    for i in range(nx - 1)]
-    top    = [((ny - 1) * nx + i, (ny - 1) * nx + i + 1)    for i in range(nx - 1)]
-    left   = [(j * nx, (j + 1) * nx)                        for j in range(ny - 1)]
-    right  = [(j * nx + (nx - 1), (j + 1) * nx + (nx - 1))  for j in range(ny - 1)]
-    return bottom, top, left, right
-
-
-# ---------------------------------------------------------------------------
-# Element strategies
-#
-# Each element type is a thin class declaring:
-#   LABEL              : human-readable identifier (used in plot legends)
-#   ELEMENT_RULE       : an element rule (e.g. quad_q1_rule(2))
-#   add_topology(rootNode, Beam, nx, ny, L) : wire the SOFA topology and
-#       return the topology container that holds the connectivity.
-#       Uses RegularGridTopology under a sibling `Grid` child.
-#   read_connectivity(topology) : extract the connectivity array from the
-#       SOFA topology container, post-init.
-#   to_triangles(conn) : triangulation for matplotlib tricontourf.
-#
-# Assembly / error-norm logic lives once on _ElementBase. Connectivity is
-# supplied by the caller (the NodalForceAssembler controller reads it from
-# SOFA after init); the element class never holds its own copy.
-# ---------------------------------------------------------------------------
-
-class _ElementBase:
-    @classmethod
-    def compute_nodal_forces(cls, nodes_2d, conn, mms, L, E, nu, nx, ny, dim):
-        xy = nodes_2d[:, :2]
-
-        F = assemble_nodal_forces_2d(
-            lambda x, y: mms.source(x, y, E, nu, L, dim),
-            xy, conn, cls._source_rule(mms))
-
-        bottom, top, left, right = _boundary_edges(nx, ny)
-        sides = [(bottom, 0.0, -1.0),
-                 (top,    0.0, +1.0),
-                 (left,  -1.0,  0.0),
-                 (right, +1.0,  0.0)]
-        for edges, nrm_x, nrm_y in sides:
-            F += assemble_traction_2d(
-                lambda x, y, nx=nrm_x, ny=nrm_y:
-                    mms.traction(x, y, nx, ny, E, nu, L, dim),
-                xy, edges)
-        return F
-
-    @classmethod
-    def compute_l2(cls, sol, mms, L):
-        return l2_error_2d(
-            sol.nodes, sol.conn, np.column_stack([sol.ux, sol.uy]),
-            lambda x, y: mms.u_ex(x, y, L),
-            cls.ELEMENT_RULE)
-
-    @classmethod
-    def compute_h1(cls, sol, mms, L):
-        return h1_semi_error_2d(
-            sol.nodes, sol.conn, np.column_stack([sol.ux, sol.uy]),
-            lambda x, y: mms.grad_u_ex(x, y, L),
-            cls.ELEMENT_RULE)
-
-
-class _QuadElement(_ElementBase):
-    LABEL        = "Q1 quad"
-    ELEMENT_RULE = staticmethod(quad_q1_rule(2))   # used for L²/H¹ error norms
-
-    @staticmethod
-    def _source_rule(mms):
-        rule = mms.source_quadrature_quad
-        if rule is None:
-            raise ValueError(
-                f"{type(mms).__name__}.source_quadrature_quad must be set")
-        return rule
-
-    @staticmethod
-    def add_topology(Beam):
-        topology = Beam.addObject("QuadSetTopologyContainer", name="topology",
-                                  quads="@../Grid/grid.quads",
-                                  position="@../Grid/grid.position")
-        Beam.addObject("QuadSetTopologyModifier")
-        return topology
-
-    @staticmethod
-    def read_connectivity(topology):
-        return topology.quads.array().copy()
-
-    @staticmethod
-    def to_triangles(conn):
-        tris = []
-        for q in conn:
-            tris.append([q[0], q[1], q[2]])
-            tris.append([q[0], q[2], q[3]])
-        return np.array(tris)
-
-
-class _TriElement(_ElementBase):
-    LABEL        = "P1 tri"
-    ELEMENT_RULE = staticmethod(tri_p1_rule(3))    # used for L²/H¹ error norms
-
-    @staticmethod
-    def _source_rule(mms):
-        rule = mms.source_quadrature_tri
-        if rule is None:
-            raise ValueError(
-                f"{type(mms).__name__}.source_quadrature_tri must be set")
-        return rule
-
-    @staticmethod
-    def add_topology(Beam):
-        topology = Beam.addObject("TriangleSetTopologyContainer", name="topology")
-        Beam.addObject("Quad2TriangleTopologicalMapping",
-                       input="@../Grid/grid", output="@topology")
-        Beam.addObject("TriangleSetTopologyModifier")
-        return topology
-
-    @staticmethod
-    def read_connectivity(topology):
-        return topology.triangles.array().copy()
-
-    @staticmethod
-    def to_triangles(conn):
-        return conn
-
-
-# ---------------------------------------------------------------------------
-# Force assembly controller
-#
-# SOFA topology components (RegularGridTopology, QuadSetTopologyContainer,
-# Quad2TriangleTopologicalMapping, ...) are only populated after init runs,
-# not during Python scene-build time. This controller defers nodal-force
-# assembly to onSimulationInitDoneEvent, where it reads positions off the
-# MechanicalObject and connectivity off the SOFA topology, then fills the
-# ConstantForceField that was added with placeholder zeros.
-#
-# Mirrors the 1D pattern in `bar.py:BodyForceAssembler`.
-# ---------------------------------------------------------------------------
-
-class NodalForceAssembler(Sofa.Core.Controller):
-    def __init__(self, dofs, topology, force_field, element, mms,
-                 L, E, nu, nx, ny, dim, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dofs        = dofs
-        self.topology    = topology
-        self.force_field = force_field
-        self.element     = element
-        self.mms         = mms
-        self.L, self.E, self.nu     = L, E, nu
-        self.nx, self.ny, self.dim  = nx, ny, dim
-
-    def onSimulationInitDoneEvent(self, event):
-        nodes = self.dofs.rest_position.array().copy()
-        conn  = self.element.read_connectivity(self.topology)
-        F_xy  = self.element.compute_nodal_forces(
-            nodes, conn, self.mms,
-            self.L, self.E, self.nu, self.nx, self.ny, self.dim)
-        if self.dim == "3d":
-            F_full = np.hstack([F_xy, np.zeros((len(F_xy), 1))])
-        else:
-            F_full = F_xy
-        with self.force_field.forces.writeableArray() as forces:
-            forces[:] = F_full
-
-
 # ---------------------------------------------------------------------------
 # SOFA scene
 # ---------------------------------------------------------------------------
+
+def _beam_force_compute(element, mms, L, E, nu, nx, ny, dim):
+    """Return a `(nodes, topology) -> force array` for the shared NodalForceAssembler.
+
+    Pads the 2D force array with a zero z-column when the scene uses Vec3d.
+    """
+    def compute(nodes, topology):
+        conn  = element.read_connectivity(topology)
+        F_xy  = element.compute_nodal_forces(
+            nodes, conn, mms, L, E, nu, nx, ny, dim)
+        if dim == "3d":
+            return np.hstack([F_xy, np.zeros((len(F_xy), 1))])
+        return F_xy
+    return compute
 
 def build_beam_scene(rootNode, mms, element, L=1.0, E=1e6, nu=0.3,
                      nx=10, ny=10, with_visual=True, dim="2d"):
@@ -294,8 +140,7 @@ def build_beam_scene(rootNode, mms, element, L=1.0, E=1e6, nu=0.3,
 
     Beam.addObject(NodalForceAssembler(
         dofs=dofs, topology=topology, force_field=force_field,
-        element=element, mms=mms,
-        L=L, E=E, nu=nu, nx=nx, ny=ny, dim=dim,
+        compute_forces=_beam_force_compute(element, mms, L, E, nu, nx, ny, dim),
         name="nodalForceAssembler"))
 
     return dofs, topology
@@ -328,29 +173,6 @@ def solve_beam(elem, mms, L, E, nu, nx, ny, dim="2d"):
 # ---------------------------------------------------------------------------
 # Output helpers (mirror 1D bar.py)
 # ---------------------------------------------------------------------------
-
-def write_solution_table(stem, x, y, ux_h, uy_h, u_ex, error_dict):
-    """
-    Write per-node solution table and error summary to results/<stem>.txt.
-
-    u_ex       : callable (x, y) -> (ux_ex, uy_ex)
-    error_dict : ordered dict of {label: value} for error summary lines
-    """
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    path = os.path.join(RESULTS_DIR, f"{stem}.txt")
-    with open(path, "w") as f:
-        f.write(f"{'x':>10} | {'y':>10} | {'ux_h':>15} | {'uy_h':>15} | "
-                f"{'ux_ex':>15} | {'uy_ex':>15} | {'err_x':>15} | {'err_y':>15}\n")
-        f.write("-" * 124 + "\n")
-        for xi, yi, uxi, uyi in zip(x, y, ux_h, uy_h):
-            uxe, uye = u_ex(xi, yi)
-            f.write(f"{xi:10.4f} | {yi:10.4f} | {uxi:15.6e} | {uyi:15.6e} | "
-                    f"{uxe:15.6e} | {uye:15.6e} | "
-                    f"{abs(uxi - uxe):15.6e} | {abs(uyi - uye):15.6e}\n")
-        f.write("\n")
-        for label, val in error_dict.items():
-            f.write(f"{label:12s} = {val:.6e}\n")
-
 
 def plot_solution_profile(stem, sol, mms, L, nx, ny, label, dim, hyp, nu, l2, h1):
     """Save 1-D mid-height profile (ux, uy vs x) to results/<stem>.png."""
@@ -435,10 +257,10 @@ def run_reference_scene(elem, mms):
     stem  = f"{mms.name}_{tag}_{dim}_nu{nu}_nx{nx}"
 
     xy = sol.nodes[:, :2]
-    write_solution_table(f"solution_{stem}", xy[:, 0], xy[:, 1],
-                         sol.ux, sol.uy,
+    write_solution_table(f"solution_{stem}", xy,
+                         np.column_stack([sol.ux, sol.uy]),
                          lambda xi, yi: mms.u_ex(xi, yi, L),
-                         {"L2": l2, "H1_semi": h1})
+                         RESULTS_DIR, {"L2": l2, "H1_semi": h1})
     plot_solution_profile(f"solution_{stem}", sol, mms, L, nx, ny,
                           label, dim, hyp, nu, l2, h1)
     plot_solution_fields (f"fields2D_{stem}", sol, elem, mms, L, nx,
@@ -462,11 +284,3 @@ def case_scene(mms, element):
                          with_visual=True, dim=ref["dim"])
         return rootNode
     return createScene
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Element instances
-# ─────────────────────────────────────────────────────────────────────────────
-
-element_quad = _QuadElement()
-element_tri  = _TriElement()

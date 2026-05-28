@@ -1,6 +1,11 @@
 """Abstract base class for 2D MMS cases (Cartesian domain [0,L]^2)."""
 
-from abc import ABC, abstractmethod
+import os
+import sys
+from abc import abstractmethod
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mms_case import MMSCase
 
 
 def lame(E, nu, dim):
@@ -18,10 +23,7 @@ def lame(E, nu, dim):
     return lam, mu
 
 
-class MMSCase2D(ABC):
-    name       = None  # case identifier (must match the params.json key)
-    plot_label = None  # LaTeX label for the exact solution
-
+class MMSCase2D(MMSCase):
     # Body-force quadrature rules — must be set by each concrete case.
     # No framework fallback; assembly raises if either is unset.
     source_quadrature_quad = None   # element rule for Q1 quads (e.g. quad_q1_rule(2))

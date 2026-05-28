@@ -1,12 +1,38 @@
 """FEM toolbox: quadrature, assembly, error norms.
+
+Two parallel families of routines:
+
+* **1D scalar-integrand** path used by the 1D bar driver:
+  `line_quadrature`, `assemble_nodal_forces_1d`, `l2_error_1d`,
+  `h1_semi_error_1d`.
+
+* **Dim-agnostic vector path** used by the 2D and 3D drivers:
+  `quad_q1_rule`, `tri_p1_rule`, `hex_q1_rule` (element rules),
+  `edge_line_rule`, `quad_face_rule` (facet rules),
+  `assemble_nodal_forces`, `assemble_traction`,
+  `l2_error`, `h1_semi_error`.
+
+Element-rule protocol:
+
+    rule(xe) yields (coords, w, N, dN_phys)
+        xe       : (n_local, dim) physical node coordinates of one element
+        coords   : (dim,)         physical Gauss-point coordinates
+        w        : scalar         weight (already × detJ / triangle area)
+        N        : (n_local,)     shape values at the Gauss point
+        dN_phys  : (dim, n_local) physical-coord shape gradients, indexed
+                                  by (spatial axis, local node)
+
+Facet-rule protocol:
+
+    rule(xe) yields (coords, w, N)
+        same convention; no shape gradient (not needed on boundary).
 """
 import numpy as np
 
 # ---------------------------------------------------------------------------
-# Quadrature rules
+# Canonical 1D Gauss-Legendre table on [-1, 1]
 # ---------------------------------------------------------------------------
 
-# Canonical Gauss-Legendre points and weights on the reference segment [-1, 1].
 _GAUSS_LEGENDRE_1D = {
     1: (np.array([0.0]),
         np.array([2.0])),
@@ -14,6 +40,10 @@ _GAUSS_LEGENDRE_1D = {
         np.array([1.0, 1.0])),
 }
 
+
+# ---------------------------------------------------------------------------
+# 1D scalar-integrand quadrature  (consumed by the 1D bar driver only)
+# ---------------------------------------------------------------------------
 
 def line_quadrature(n_pts):
     """Return a Gauss-Legendre rule on a physical segment using `n_pts` points.
@@ -38,11 +68,11 @@ H1_QUADRATURE_1D = line_quadrature(2)
 
 
 # ---------------------------------------------------------------------------
-# 2D Q1 reference shape functions on [-1,1]^2.
-# Node ordering: (-1,-1), (+1,-1), (+1,+1), (-1,+1)
+# Reference-element shape functions
 # ---------------------------------------------------------------------------
 
 def _shape_q1(xi, eta):
+    """2D Q1 shape on [-1, 1]^2. Node order: (-,-), (+,-), (+,+), (-,+)."""
     N = 0.25 * np.array([
         (1 - xi) * (1 - eta),
         (1 + xi) * (1 - eta),
@@ -50,92 +80,14 @@ def _shape_q1(xi, eta):
         (1 - xi) * (1 + eta),
     ])
     dN_dxi  = 0.25 * np.array([-(1 - eta),  (1 - eta), (1 + eta), -(1 + eta)])
-    dN_deta = 0.25 * np.array([-(1 - xi),  -(1 + xi),  (1 + xi),  (1 - xi)])
+    dN_deta = 0.25 * np.array([-(1 - xi),  -(1 + xi),  (1 + xi),  (1 - xi) ])
     return N, dN_dxi, dN_deta
 
 
-# ---------------------------------------------------------------------------
-# 2D element rules
-#
-# An "element rule" is a callable rule(xe, ye) that yields one tuple
-#     (xg, yg, w, N, dN_dx, dN_dy)
-# per Gauss point of a single physical element, with:
-#   (xg, yg)        physical Gauss point
-#   w               weight including detJ (or triangle area)
-#   N               length-n_local shape values at the Gauss point
-#   dN_dx, dN_dy    length-n_local physical-coord shape gradients
-#
-# The same protocol is consumed by assemble_nodal_forces_2d, l2_error_2d,
-# and h1_semi_error_2d, so adding a new element type is one rule function.
-# ---------------------------------------------------------------------------
-
-def quad_q1_rule(n_pts=2):
-    """Element rule for Q1 quads: tensor-product Gauss-Legendre."""
-    if n_pts not in _GAUSS_LEGENDRE_1D:
-        raise ValueError(f"quad_q1_rule: {n_pts}-point rule not supported")
-    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
-
-    def rule(xe, ye):
-        for xi, wi in zip(xi_pts, w_pts):
-            for eta, wj in zip(xi_pts, w_pts):
-                N, dN_dxi, dN_deta = _shape_q1(xi, eta)
-                J = np.array([[dN_dxi  @ xe, dN_dxi  @ ye],
-                              [dN_deta @ xe, dN_deta @ ye]])
-                detJ = np.linalg.det(J)
-                Jinv = np.linalg.inv(J)
-                xg, yg = N @ xe, N @ ye
-                dN_dx = Jinv[0, 0] * dN_dxi + Jinv[1, 0] * dN_deta
-                dN_dy = Jinv[0, 1] * dN_dxi + Jinv[1, 1] * dN_deta
-                yield xg, yg, wi * wj * detJ, N, dN_dx, dN_dy
-    return rule
-
-
-# Reference-triangle quadrature, integrating over {(xi,eta): xi,eta>=0, xi+eta<=1}.
-# Weights sum to the reference area 1/2; the physical weight is w_ref * 2*area.
-_TRI_QUADRATURE = {
-    1: (np.array([[1/3, 1/3]]),
-        np.array([1/2])),
-    3: (np.array([[1/6, 1/6], [2/3, 1/6], [1/6, 2/3]]),
-        np.array([1/6, 1/6, 1/6])),
-}
-
-
-def tri_p1_rule(n_pts=1):
-    """Element rule for P1 triangles: 1-point (centroid) or 3-point Gauss.
-
-    Shape gradients are constant per triangle. Node order in (xe, ye) is the
-    canonical P1 ordering — corresponds to (N0, N1, N2) = (1-xi-eta, xi, eta).
-    """
-    if n_pts not in _TRI_QUADRATURE:
-        raise ValueError(f"tri_p1_rule: {n_pts}-point rule not supported")
-    pts, wts = _TRI_QUADRATURE[n_pts]
-
-    def rule(xe, ye):
-        x0, x1, x2 = xe
-        y0, y1, y2 = ye
-        # Signed double-area: positive for CCW orientation
-        A2    = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0)
-        area  = abs(A2) / 2.0
-        # Constant physical-coord gradients of the P1 shape functions
-        dN_dx = np.array([(y1 - y2) / A2, (y2 - y0) / A2, (y0 - y1) / A2])
-        dN_dy = np.array([(x2 - x1) / A2, (x0 - x2) / A2, (x1 - x0) / A2])
-        for (xi, eta), w_ref in zip(pts, wts):
-            N    = np.array([1.0 - xi - eta, xi, eta])
-            xg   = N[0] * x0 + N[1] * x1 + N[2] * x2
-            yg   = N[0] * y0 + N[1] * y1 + N[2] * y2
-            # w_ref integrates over reference area 1/2; scale by 2*area for physical
-            yield xg, yg, w_ref * 2.0 * area, N, dN_dx, dN_dy
-    return rule
-
-
-# ---------------------------------------------------------------------------
-# 3D Q1 reference shape functions on [-1,1]^3.
-# Node ordering matches SOFA's RegularGridTopology hex convention:
-#   0:(-,-,-) 1:(+,-,-) 2:(+,+,-) 3:(-,+,-)
-#   4:(-,-,+) 5:(+,-,+) 6:(+,+,+) 7:(-,+,+)
-# ---------------------------------------------------------------------------
-
 def _shape_hex_q1(xi, eta, zeta):
+    """3D Q1 hex shape on [-1, 1]^3. Node order matches SOFA RegularGridTopology:
+       0:(-,-,-) 1:(+,-,-) 2:(+,+,-) 3:(-,+,-)
+       4:(-,-,+) 5:(+,-,+) 6:(+,+,+) 7:(-,+,+)."""
     N = 0.125 * np.array([
         (1 - xi) * (1 - eta) * (1 - zeta),
         (1 + xi) * (1 - eta) * (1 - zeta),
@@ -167,41 +119,154 @@ def _shape_hex_q1(xi, eta, zeta):
     return N, dN_dxi, dN_deta, dN_dzeta
 
 
+# Reference-triangle quadrature, integrating over {(xi,eta): xi,eta>=0, xi+eta<=1}.
+# Weights sum to the reference area 1/2; the physical weight is w_ref * 2*area.
+_TRI_QUADRATURE = {
+    1: (np.array([[1/3, 1/3]]),
+        np.array([1/2])),
+    3: (np.array([[1/6, 1/6], [2/3, 1/6], [1/6, 2/3]]),
+        np.array([1/6, 1/6, 1/6])),
+}
+
+
 # ---------------------------------------------------------------------------
-# 3D element rules
-#
-# Same protocol as the 2D rules, lifted one dimension:
-#   rule(xe, ye, ze) yields (xg, yg, zg, w, N, dN_dx, dN_dy, dN_dz)
+# Element rules  (consume by assemble_nodal_forces, l2_error, h1_semi_error)
 # ---------------------------------------------------------------------------
 
+def quad_q1_rule(n_pts=2):
+    """Element rule for Q1 quads: tensor-product Gauss-Legendre on [-1,1]^2."""
+    if n_pts not in _GAUSS_LEGENDRE_1D:
+        raise ValueError(f"quad_q1_rule: {n_pts}-point rule not supported")
+    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
+
+    def rule(xe):
+        xe_arr = np.asarray(xe, float)            # (4, 2)
+        x_col, y_col = xe_arr[:, 0], xe_arr[:, 1]
+        for xi, wi in zip(xi_pts, w_pts):
+            for eta, wj in zip(xi_pts, w_pts):
+                N, dN_dxi, dN_deta = _shape_q1(xi, eta)
+                J = np.array([[dN_dxi  @ x_col, dN_dxi  @ y_col],
+                              [dN_deta @ x_col, dN_deta @ y_col]])
+                detJ   = np.linalg.det(J)
+                Jinv   = np.linalg.inv(J)
+                coords = np.array([N @ x_col, N @ y_col])
+                dN_dx  = Jinv[0, 0] * dN_dxi + Jinv[1, 0] * dN_deta
+                dN_dy  = Jinv[0, 1] * dN_dxi + Jinv[1, 1] * dN_deta
+                dN_phys = np.stack([dN_dx, dN_dy])      # (2, 4) [d, a]
+                yield coords, wi * wj * detJ, N, dN_phys
+    return rule
+
+
+def tri_p1_rule(n_pts=1):
+    """Element rule for P1 triangles: 1-point (centroid) or 3-point Gauss.
+
+    Shape gradients are constant per triangle. Node order in `xe` is the
+    canonical P1 ordering — corresponds to (N0, N1, N2) = (1-xi-eta, xi, eta).
+    """
+    if n_pts not in _TRI_QUADRATURE:
+        raise ValueError(f"tri_p1_rule: {n_pts}-point rule not supported")
+    pts, wts = _TRI_QUADRATURE[n_pts]
+
+    def rule(xe):
+        xe_arr = np.asarray(xe, float)            # (3, 2)
+        (x0, y0), (x1, y1), (x2, y2) = xe_arr
+        A2    = (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0)
+        area  = abs(A2) / 2.0
+        dN_dx = np.array([(y1 - y2) / A2, (y2 - y0) / A2, (y0 - y1) / A2])
+        dN_dy = np.array([(x2 - x1) / A2, (x0 - x2) / A2, (x1 - x0) / A2])
+        dN_phys = np.stack([dN_dx, dN_dy])        # (2, 3) [d, a]
+        for (xi, eta), w_ref in zip(pts, wts):
+            N      = np.array([1.0 - xi - eta, xi, eta])
+            coords = np.array([N @ xe_arr[:, 0], N @ xe_arr[:, 1]])
+            yield coords, w_ref * 2.0 * area, N, dN_phys
+    return rule
+
+
 def hex_q1_rule(n_pts=2):
-    """Element rule for Q1 hexes: tensor-product Gauss-Legendre over [-1,1]^3."""
+    """Element rule for Q1 hexes: tensor-product Gauss-Legendre on [-1,1]^3."""
     if n_pts not in _GAUSS_LEGENDRE_1D:
         raise ValueError(f"hex_q1_rule: {n_pts}-point rule not supported")
     xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
 
-    def rule(xe, ye, ze):
+    def rule(xe):
+        xe_arr = np.asarray(xe, float)            # (8, 3)
+        x_col, y_col, z_col = xe_arr[:, 0], xe_arr[:, 1], xe_arr[:, 2]
         for xi, wi in zip(xi_pts, w_pts):
             for eta, wj in zip(xi_pts, w_pts):
                 for zeta, wk in zip(xi_pts, w_pts):
                     N, dN_dxi, dN_deta, dN_dzeta = _shape_hex_q1(xi, eta, zeta)
                     J = np.array([
-                        [dN_dxi   @ xe, dN_dxi   @ ye, dN_dxi   @ ze],
-                        [dN_deta  @ xe, dN_deta  @ ye, dN_deta  @ ze],
-                        [dN_dzeta @ xe, dN_dzeta @ ye, dN_dzeta @ ze],
+                        [dN_dxi   @ x_col, dN_dxi   @ y_col, dN_dxi   @ z_col],
+                        [dN_deta  @ x_col, dN_deta  @ y_col, dN_deta  @ z_col],
+                        [dN_dzeta @ x_col, dN_dzeta @ y_col, dN_dzeta @ z_col],
                     ])
-                    detJ = np.linalg.det(J)
-                    Jinv = np.linalg.inv(J)
-                    xg, yg, zg = N @ xe, N @ ye, N @ ze
-                    dN_dx = Jinv[0, 0] * dN_dxi + Jinv[1, 0] * dN_deta + Jinv[2, 0] * dN_dzeta
-                    dN_dy = Jinv[0, 1] * dN_dxi + Jinv[1, 1] * dN_deta + Jinv[2, 1] * dN_dzeta
-                    dN_dz = Jinv[0, 2] * dN_dxi + Jinv[1, 2] * dN_deta + Jinv[2, 2] * dN_dzeta
-                    yield xg, yg, zg, wi * wj * wk * detJ, N, dN_dx, dN_dy, dN_dz
+                    detJ   = np.linalg.det(J)
+                    Jinv   = np.linalg.inv(J)
+                    coords = np.array([N @ x_col, N @ y_col, N @ z_col])
+                    dN_dx  = Jinv[0, 0] * dN_dxi + Jinv[1, 0] * dN_deta + Jinv[2, 0] * dN_dzeta
+                    dN_dy  = Jinv[0, 1] * dN_dxi + Jinv[1, 1] * dN_deta + Jinv[2, 1] * dN_dzeta
+                    dN_dz  = Jinv[0, 2] * dN_dxi + Jinv[1, 2] * dN_deta + Jinv[2, 2] * dN_dzeta
+                    dN_phys = np.stack([dN_dx, dN_dy, dN_dz])   # (3, 8) [d, a]
+                    yield coords, wi * wj * wk * detJ, N, dN_phys
     return rule
 
 
 # ---------------------------------------------------------------------------
-# FEM assembly
+# Facet rules  (consumed by assemble_traction)
+# ---------------------------------------------------------------------------
+
+def edge_line_rule(n_pts=2):
+    """Facet rule for a 2D boundary edge: linear shape, 1D Gauss-Legendre.
+
+    Yields per Gauss point along the edge: (coords (2,), w, N (2,)).
+    """
+    if n_pts not in _GAUSS_LEGENDRE_1D:
+        raise ValueError(f"edge_line_rule: {n_pts}-point rule not supported")
+    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
+
+    def rule(xe):
+        xe_arr = np.asarray(xe, float)            # (2, 2)
+        Le = np.linalg.norm(xe_arr[1] - xe_arr[0])
+        for xi, wi in zip(xi_pts, w_pts):
+            t = 0.5 * (xi + 1.0)
+            N = np.array([1.0 - t, t])
+            coords = N @ xe_arr                   # (2,)
+            yield coords, wi * Le / 2.0, N
+    return rule
+
+
+def quad_face_rule(n_pts=2):
+    """Facet rule for a 3D boundary quad face: bilinear shape, 2D Gauss.
+
+    Yields per Gauss point on the face: (coords (3,), w, N (4,)).
+    Quad orientation does not affect the magnitude `dA = ||t_xi × t_eta||`.
+    """
+    if n_pts not in _GAUSS_LEGENDRE_1D:
+        raise ValueError(f"quad_face_rule: {n_pts}-point rule not supported")
+    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
+
+    def rule(xe):
+        xe_arr = np.asarray(xe, float)            # (4, 3)
+        for xi, wi in zip(xi_pts, w_pts):
+            for eta, wj in zip(xi_pts, w_pts):
+                N = 0.25 * np.array([
+                    (1 - xi) * (1 - eta),
+                    (1 + xi) * (1 - eta),
+                    (1 + xi) * (1 + eta),
+                    (1 - xi) * (1 + eta),
+                ])
+                dN_dxi  = 0.25 * np.array([-(1 - eta),  (1 - eta), (1 + eta), -(1 + eta)])
+                dN_deta = 0.25 * np.array([-(1 - xi),  -(1 + xi),  (1 + xi),  (1 - xi) ])
+                t_xi   = dN_dxi  @ xe_arr         # (3,)
+                t_eta  = dN_deta @ xe_arr
+                dA     = np.linalg.norm(np.cross(t_xi, t_eta))
+                coords = N @ xe_arr               # (3,)
+                yield coords, wi * wj * dA, N
+    return rule
+
+
+# ---------------------------------------------------------------------------
+# 1D FEM assembly  (scalar-integrand path)
 # ---------------------------------------------------------------------------
 
 def assemble_nodal_forces_1d(f_body, nodes, edges, quadrature):
@@ -222,142 +287,68 @@ def assemble_nodal_forces_1d(f_body, nodes, edges, quadrature):
     return forces
 
 
-def assemble_traction_2d(traction, nodes, edges, n_pts=2):
+# ---------------------------------------------------------------------------
+# Dim-agnostic FEM assembly  (2D and 3D)
+# ---------------------------------------------------------------------------
+
+def assemble_nodal_forces(f_body, nodes, conn, element_rule):
     """
-    Assemble consistent nodal forces from a boundary traction along edges:
+    Assemble consistent nodal body forces, dim- and element-type agnostic.
 
-        F_a += integral_{edge} N_a(s) * traction(x(s), y(s)) ds
+        F_a = sum_e integral_{Omega_e} N_a(x) * f_body(x) dx
 
-    Linear edge shape functions in physical arc-length. The outward normal is
-    baked into `traction` by the caller (one lambda per boundary side).
-
-    traction : callable (x, y) -> (Tx, Ty)
-    nodes    : (N, 2) or (N, 3) array — only the first two columns used
-    edges    : iterable of (a, b) node-index pairs along the boundary
-    n_pts    : Gauss points per edge (default 2)
-    """
-    if n_pts not in _GAUSS_LEGENDRE_1D:
-        raise ValueError(f"assemble_traction_2d: {n_pts}-point rule not supported")
-    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
-
-    xy = np.asarray(nodes)[:, :2]
-    F  = np.zeros((len(xy), 2))
-    for a, b in edges:
-        x1, y1 = xy[a]
-        x2, y2 = xy[b]
-        Le = np.hypot(x2 - x1, y2 - y1)
-        for xi, wi in zip(xi_pts, w_pts):
-            t = 0.5 * (xi + 1.0)
-            xg = (1.0 - t) * x1 + t * x2
-            yg = (1.0 - t) * y1 + t * y2
-            Tx, Ty = traction(xg, yg)
-            N0, N1 = 1.0 - t, t
-            w = wi * Le / 2.0
-            F[a, 0] += N0 * Tx * w
-            F[a, 1] += N0 * Ty * w
-            F[b, 0] += N1 * Tx * w
-            F[b, 1] += N1 * Ty * w
-    return F
-
-
-def assemble_nodal_forces_2d(f_body, nodes, conn, element_rule):
-    """
-    Assemble consistent nodal forces on a 2D mesh, agnostic to element type.
-
-    F_a = sum_e integral_{Omega_e} N_a(x,y) * f_body(x,y) dx dy
-
-    f_body       : callable (x, y) -> (fx, fy)
-    nodes        : (N, 2) or (N, 3) array — only the first two columns used
+    f_body       : callable (*coords) -> dim-tuple of force components
+    nodes        : (N, dim) array
     conn         : iterable of node-index lists, one per element
-    element_rule : rule from quad_q1_rule(n_pts) / tri_p1_rule(n_pts)
+    element_rule : rule from quad_q1_rule / tri_p1_rule / hex_q1_rule
     """
-    xy = np.asarray(nodes)[:, :2]
-    F  = np.zeros((len(xy), 2))
+    nodes = np.asarray(nodes)
+    dim   = nodes.shape[1]
+    F     = np.zeros((len(nodes), dim))
     for elem in conn:
-        xe, ye = xy[elem, 0], xy[elem, 1]
-        for xg, yg, w, N, _, _ in element_rule(xe, ye):
-            fx, fy = f_body(xg, yg)
-            for a, node in enumerate(elem):
-                F[node, 0] += N[a] * fx * w
-                F[node, 1] += N[a] * fy * w
+        # np.asarray forces row-style fancy indexing even when `elem` is a
+        # Python tuple (which would otherwise trigger multi-axis indexing).
+        idx = np.asarray(elem)
+        xe  = nodes[idx]                          # (n_local, dim)
+        for coords, w, N, _ in element_rule(xe):
+            f_components = f_body(*coords)
+            for a, node in enumerate(idx):
+                for d in range(dim):
+                    F[node, d] += N[a] * f_components[d] * w
     return F
 
 
-def assemble_traction_3d(traction, nodes, quads, n_pts=2):
+def assemble_traction(traction, nodes, facets, facet_rule):
     """
-    Assemble consistent nodal forces from a boundary traction along quad faces:
+    Assemble consistent nodal forces from a boundary traction over facets.
 
-        F_a += integral_{face} N_a(s,t) * traction(x(s,t), y(s,t), z(s,t)) dA
+        F_a += integral_{facet} N_a(s) * traction(x(s)) dS
 
-    Bilinear quad shape functions on each face. The outward unit normal is
-    baked into `traction` by the caller (one lambda per boundary face) — same
-    pattern as `assemble_traction_2d`.
+    The outward unit normal is baked into `traction` by the caller (one
+    lambda per boundary face); the facet rule only supplies the surface area
+    element and shape values.
 
-    traction : callable (x, y, z) -> (Tx, Ty, Tz)
-    nodes    : (N, 3) array
-    quads    : iterable of (a, b, c, d) node-index 4-tuples on the boundary
-    n_pts    : Gauss points per face direction (default 2 → 2×2 = 4 pts)
+    traction   : callable (*coords) -> dim-tuple of force components
+    nodes      : (N, dim) array
+    facets     : iterable of node-index tuples (one per boundary facet)
+    facet_rule : rule from edge_line_rule (2D) / quad_face_rule (3D)
     """
-    if n_pts not in _GAUSS_LEGENDRE_1D:
-        raise ValueError(f"assemble_traction_3d: {n_pts}-point rule not supported")
-    xi_pts, w_pts = _GAUSS_LEGENDRE_1D[n_pts]
-
-    xyz = np.asarray(nodes)[:, :3]
-    F   = np.zeros((len(xyz), 3))
-    for quad in quads:
-        xe = xyz[quad, 0]
-        ye = xyz[quad, 1]
-        ze = xyz[quad, 2]
-        for xi, wi in zip(xi_pts, w_pts):
-            for eta, wj in zip(xi_pts, w_pts):
-                N = 0.25 * np.array([
-                    (1 - xi) * (1 - eta),
-                    (1 + xi) * (1 - eta),
-                    (1 + xi) * (1 + eta),
-                    (1 - xi) * (1 + eta),
-                ])
-                dN_dxi  = 0.25 * np.array([-(1 - eta),  (1 - eta), (1 + eta), -(1 + eta)])
-                dN_deta = 0.25 * np.array([-(1 - xi),  -(1 + xi),  (1 + xi),  (1 - xi) ])
-                # Surface area element from the cross product of the two tangent vectors
-                t_xi  = np.array([dN_dxi  @ xe, dN_dxi  @ ye, dN_dxi  @ ze])
-                t_eta = np.array([dN_deta @ xe, dN_deta @ ye, dN_deta @ ze])
-                dA = np.linalg.norm(np.cross(t_xi, t_eta))
-                xg, yg, zg = N @ xe, N @ ye, N @ ze
-                Tx, Ty, Tz = traction(xg, yg, zg)
-                w = wi * wj * dA
-                for a, node in enumerate(quad):
-                    F[node, 0] += N[a] * Tx * w
-                    F[node, 1] += N[a] * Ty * w
-                    F[node, 2] += N[a] * Tz * w
-    return F
-
-
-def assemble_nodal_forces_3d(f_body, nodes, conn, element_rule):
-    """
-    Assemble consistent nodal forces on a 3D mesh, agnostic to element type.
-
-    F_a = sum_e integral_{Omega_e} N_a(x,y,z) * f_body(x,y,z) dx dy dz
-
-    f_body       : callable (x, y, z) -> (fx, fy, fz)
-    nodes        : (N, 3) array
-    conn         : iterable of node-index lists, one per element
-    element_rule : rule from hex_q1_rule(n_pts)
-    """
-    xyz = np.asarray(nodes)[:, :3]
-    F   = np.zeros((len(xyz), 3))
-    for elem in conn:
-        xe, ye, ze = xyz[elem, 0], xyz[elem, 1], xyz[elem, 2]
-        for xg, yg, zg, w, N, _, _, _ in element_rule(xe, ye, ze):
-            fx, fy, fz = f_body(xg, yg, zg)
-            for a, node in enumerate(elem):
-                F[node, 0] += N[a] * fx * w
-                F[node, 1] += N[a] * fy * w
-                F[node, 2] += N[a] * fz * w
+    nodes = np.asarray(nodes)
+    dim   = nodes.shape[1]
+    F     = np.zeros((len(nodes), dim))
+    for facet in facets:
+        idx = np.asarray(facet)
+        xe  = nodes[idx]                          # (n_local, dim)
+        for coords, w, N in facet_rule(xe):
+            T = traction(*coords)
+            for a, node in enumerate(idx):
+                for d in range(dim):
+                    F[node, d] += N[a] * T[d] * w
     return F
 
 
 # ---------------------------------------------------------------------------
-# Error norms
+# 1D error norms
 # ---------------------------------------------------------------------------
 
 def l2_error_1d(nodes, edges, u_h, u_ex, quadrature):
@@ -384,126 +375,60 @@ def h1_semi_error_1d(nodes, edges, u_h, du_ex, quadrature):
     return np.sqrt(total)
 
 
-def l2_error_2d(nodes, conn, u_h, u_ex, element_rule):
+# ---------------------------------------------------------------------------
+# Dim-agnostic error norms (2D and 3D)
+# ---------------------------------------------------------------------------
+
+def l2_error(nodes, conn, u_h, u_ex, element_rule):
     """
-    Vector L2 error norm on a 2D mesh, element-type agnostic.
+    Vector L2 error norm, dim- and element-type agnostic.
 
-        sqrt( integral || u_h(x,y) - u_ex(x,y) ||^2 dx dy ) over the mesh
+        sqrt( integral || u_h(x) - u_ex(x) ||^2 dx ) over the mesh
 
-    nodes        : (N, 2) or (N, 3) array — only the first two columns used
+    nodes        : (N, dim) array
     conn         : iterable of node-index lists, one per element
-    u_h          : (N, 2) array of nodal displacements (ux, uy)
-    u_ex         : callable (x, y) -> (ux_ex, uy_ex)
-    element_rule : rule from quad_q1_rule / tri_p1_rule
+    u_h          : (N, dim) array of nodal displacements
+    u_ex         : callable (*coords) -> dim-tuple
+    element_rule : rule from quad_q1_rule / tri_p1_rule / hex_q1_rule
     """
-    xy = np.asarray(nodes)[:, :2]
-    u  = np.asarray(u_h)
+    nodes = np.asarray(nodes)
+    u     = np.asarray(u_h)
     total = 0.0
     for elem in conn:
-        xe, ye = xy[elem, 0], xy[elem, 1]
-        u_loc  = u[elem]                       # (n_local, 2)
-        for xg, yg, w, N, _, _ in element_rule(xe, ye):
-            u_h_g = N @ u_loc                  # (2,)
-            ux_ex, uy_ex = u_ex(xg, yg)
-            ex = u_h_g[0] - ux_ex
-            ey = u_h_g[1] - uy_ex
-            total += (ex * ex + ey * ey) * w
+        idx   = np.asarray(elem)
+        xe    = nodes[idx]                        # (n_local, dim)
+        u_loc = u[idx]                            # (n_local, dim)
+        for coords, w, N, _ in element_rule(xe):
+            u_h_g  = N @ u_loc                    # (dim,)
+            u_ex_g = np.asarray(u_ex(*coords))    # (dim,)
+            diff   = u_h_g - u_ex_g
+            total += float(np.dot(diff, diff)) * w
     return np.sqrt(total)
 
 
-def h1_semi_error_2d(nodes, conn, u_h, grad_u_ex, element_rule):
+def h1_semi_error(nodes, conn, u_h, grad_u_ex, element_rule):
     """
-    Vector H1 semi-norm error on a 2D mesh, element-type agnostic.
+    Vector H1 semi-norm error, dim- and element-type agnostic.
 
-        sqrt( integral || grad u_h - grad u_ex ||_F^2 dx dy ) over the mesh
+        sqrt( integral || grad u_h - grad u_ex ||_F^2 dx ) over the mesh
 
-    nodes        : (N, 2) or (N, 3) array — only the first two columns used
+    nodes        : (N, dim) array
     conn         : iterable of node-index lists, one per element
-    u_h          : (N, 2) array of nodal displacements (ux, uy)
-    grad_u_ex    : callable (x, y) -> 2x2 array
-                   [[dux/dx, dux/dy], [duy/dx, duy/dy]]
-    element_rule : rule from quad_q1_rule / tri_p1_rule
+    u_h          : (N, dim) array of nodal displacements
+    grad_u_ex    : callable (*coords) -> (dim, dim) array with [i, j] = du_i/dx_j
+    element_rule : rule from quad_q1_rule / tri_p1_rule / hex_q1_rule
     """
-    xy = np.asarray(nodes)[:, :2]
-    u  = np.asarray(u_h)
+    nodes = np.asarray(nodes)
+    u     = np.asarray(u_h)
     total = 0.0
     for elem in conn:
-        xe, ye = xy[elem, 0], xy[elem, 1]
-        u_loc  = u[elem]                       # (n_local, 2)
-        for xg, yg, w, _, dN_dx, dN_dy in element_rule(xe, ye):
-            dux_dx_h = dN_dx @ u_loc[:, 0]
-            dux_dy_h = dN_dy @ u_loc[:, 0]
-            duy_dx_h = dN_dx @ u_loc[:, 1]
-            duy_dy_h = dN_dy @ u_loc[:, 1]
-            G = grad_u_ex(xg, yg)
-            total += (
-                (dux_dx_h - G[0, 0])**2 + (dux_dy_h - G[0, 1])**2 +
-                (duy_dx_h - G[1, 0])**2 + (duy_dy_h - G[1, 1])**2
-            ) * w
-    return np.sqrt(total)
-
-
-def l2_error_3d(nodes, conn, u_h, u_ex, element_rule):
-    """
-    Vector L2 error norm on a 3D mesh, element-type agnostic.
-
-        sqrt( integral || u_h(x,y,z) - u_ex(x,y,z) ||^2 dx dy dz ) over the mesh
-
-    nodes        : (N, 3) array
-    conn         : iterable of node-index lists, one per element
-    u_h          : (N, 3) array of nodal displacements (ux, uy, uz)
-    u_ex         : callable (x, y, z) -> (ux_ex, uy_ex, uz_ex)
-    element_rule : rule from hex_q1_rule
-    """
-    xyz = np.asarray(nodes)[:, :3]
-    u   = np.asarray(u_h)
-    total = 0.0
-    for elem in conn:
-        xe, ye, ze = xyz[elem, 0], xyz[elem, 1], xyz[elem, 2]
-        u_loc = u[elem]                        # (n_local, 3)
-        for xg, yg, zg, w, N, _, _, _ in element_rule(xe, ye, ze):
-            u_h_g = N @ u_loc                  # (3,)
-            ux_ex, uy_ex, uz_ex = u_ex(xg, yg, zg)
-            ex = u_h_g[0] - ux_ex
-            ey = u_h_g[1] - uy_ex
-            ez = u_h_g[2] - uz_ex
-            total += (ex * ex + ey * ey + ez * ez) * w
-    return np.sqrt(total)
-
-
-def h1_semi_error_3d(nodes, conn, u_h, grad_u_ex, element_rule):
-    """
-    Vector H1 semi-norm error on a 3D mesh, element-type agnostic.
-
-        sqrt( integral || grad u_h - grad u_ex ||_F^2 dx dy dz ) over the mesh
-
-    nodes        : (N, 3) array
-    conn         : iterable of node-index lists, one per element
-    u_h          : (N, 3) array of nodal displacements (ux, uy, uz)
-    grad_u_ex    : callable (x, y, z) -> 3x3 array
-                   [[dux/dx, dux/dy, dux/dz], [duy/dx, ...], [duz/dx, ...]]
-    element_rule : rule from hex_q1_rule
-    """
-    xyz = np.asarray(nodes)[:, :3]
-    u   = np.asarray(u_h)
-    total = 0.0
-    for elem in conn:
-        xe, ye, ze = xyz[elem, 0], xyz[elem, 1], xyz[elem, 2]
-        u_loc = u[elem]                        # (n_local, 3)
-        for xg, yg, zg, w, _, dN_dx, dN_dy, dN_dz in element_rule(xe, ye, ze):
-            dux_dx_h = dN_dx @ u_loc[:, 0]
-            dux_dy_h = dN_dy @ u_loc[:, 0]
-            dux_dz_h = dN_dz @ u_loc[:, 0]
-            duy_dx_h = dN_dx @ u_loc[:, 1]
-            duy_dy_h = dN_dy @ u_loc[:, 1]
-            duy_dz_h = dN_dz @ u_loc[:, 1]
-            duz_dx_h = dN_dx @ u_loc[:, 2]
-            duz_dy_h = dN_dy @ u_loc[:, 2]
-            duz_dz_h = dN_dz @ u_loc[:, 2]
-            G = grad_u_ex(xg, yg, zg)
-            total += (
-                (dux_dx_h - G[0, 0])**2 + (dux_dy_h - G[0, 1])**2 + (dux_dz_h - G[0, 2])**2 +
-                (duy_dx_h - G[1, 0])**2 + (duy_dy_h - G[1, 1])**2 + (duy_dz_h - G[1, 2])**2 +
-                (duz_dx_h - G[2, 0])**2 + (duz_dy_h - G[2, 1])**2 + (duz_dz_h - G[2, 2])**2
-            ) * w
+        idx   = np.asarray(elem)
+        xe    = nodes[idx]                        # (n_local, dim)
+        u_loc = u[idx]                            # (n_local, dim)
+        for coords, w, _, dN_phys in element_rule(xe):
+            # grad_uh[i, d] = sum_a u_i[a] * dN_a/dx_d
+            grad_uh = (dN_phys @ u_loc).T         # (dim, dim) [i, d]
+            grad_ue = np.asarray(grad_u_ex(*coords))  # [i, j] = du_i/dx_j
+            diff    = grad_uh - grad_ue
+            total  += float(np.sum(diff * diff)) * w
     return np.sqrt(total)

@@ -1,11 +1,14 @@
 """Abstract base class for 1D MMS cases (non-dimensional, x ∈ [0,1])."""
 
-from abc import ABC, abstractmethod
+import os
+import sys
+from abc import abstractmethod
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from mms_case import MMSCase
 
 
-class MMSCase1D(ABC):
-    name              = None  # case identifier (must match the params.json key)
-    plot_label        = None  # LaTeX label for the exact solution
+class MMSCase1D(MMSCase):
     source_quadrature = None  # quadrature rule for body-force assembly only
 
     @abstractmethod

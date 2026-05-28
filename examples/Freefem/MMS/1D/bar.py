@@ -20,6 +20,8 @@ from fem import (
     H1_QUADRATURE_1D,
 )
 from bar_solution import BarSolution1D
+from output import write_solution_table
+from scene import NodalForceAssembler
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
@@ -42,23 +44,13 @@ def load_params(path=None):
 # SOFA runner
 # ---------------------------------------------------------------------------
 
-class BodyForceAssembler(Sofa.Core.Controller):
-    """Fill the BodyForce field after init from nodes/edges read off the topology."""
-
-    def __init__(self, dofs, topology, body_force, f_body, quadrature, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dofs       = dofs
-        self.topology   = topology
-        self.body_force = body_force
-        self.f_body     = f_body
-        self.quadrature = quadrature
-
-    def onSimulationInitDoneEvent(self, event):
-        nodes = self.dofs.rest_position.array().copy().flatten()
-        edges = self.topology.edges.array().copy()
-        nodal_forces = assemble_nodal_forces_1d(self.f_body, nodes, edges, self.quadrature)
-        with self.body_force.forces.writeableArray() as forces:
-            forces[:, 0] = nodal_forces
+def _bar_force_compute(f_body, quadrature):
+    """Return a `(nodes, topology) -> (nx, 1) force array` for the assembler."""
+    def compute(nodes, topology):
+        flat  = nodes.copy().flatten()
+        edges = topology.edges.array().copy()
+        return assemble_nodal_forces_1d(f_body, flat, edges, quadrature).reshape(-1, 1)
+    return compute
 
 
 def build_bar_scene(root, mms, E_eff, nx):
@@ -122,12 +114,13 @@ def build_bar_scene(root, mms, E_eff, nx):
                                indices=list(range(nx)),
                                forces=[[0.0]] * nx)
 
-    Bar.addObject(BodyForceAssembler(
+    Bar.addObject(NodalForceAssembler(
         dofs=dofs,
         topology=Bar.topology,
-        body_force=body_force,
-        f_body=lambda xi: mms.source(xi, E_eff),
-        quadrature=mms.source_quadrature,
+        force_field=body_force,
+        compute_forces=_bar_force_compute(
+            f_body=lambda xi: mms.source(xi, E_eff),
+            quadrature=mms.source_quadrature),
         name="bodyForceAssembler"))
 
     mms.apply_bcs(Bar, E_eff, nx)
@@ -160,26 +153,6 @@ def solve_bar(mms, E_eff, nx):
 # Output helpers
 # ---------------------------------------------------------------------------
 
-def write_solution_table(case, x, u_h, u_ex, error_dict):
-    """
-    Write per-node solution table and error summary to results/<case>_solution.txt.
-
-    u_ex : callable x -> float
-    error_dict : ordered dict of {label: value} for error summary lines
-    """
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    path = os.path.join(RESULTS_DIR, f"{case}_solution.txt")
-    with open(path, "w") as f:
-        f.write(f"{'x':>10} | {'u_h':>15} | {'u_ex':>15} | {'error':>15}\n")
-        f.write("-" * 60 + "\n")
-        for xi, ui in zip(x, u_h):
-            ue  = u_ex(xi)
-            f.write(f"{xi:10.4f} | {ui:15.6e} | {ue:15.6e} | {abs(ui - ue):15.6e}\n")
-        f.write("\n")
-        for label, val in error_dict.items():
-            f.write(f"{label:12s} = {val:.6e}\n")
-
-
 def plot_solution(case, x, u_h, u_ex, label_ex):
     """Save solution comparison plot to results/<case>_solution.png.
 
@@ -210,5 +183,6 @@ def run_reference_scene(mms):
     sol = solve_bar(mms, cfg["E_eff"], cfg["reference"]["nx"])
     l2  = l2_error_1d(sol.x0, sol.edges, sol.u_h, mms.u_ex, L2_QUADRATURE_1D)
     h1  = h1_semi_error_1d(sol.x0, sol.edges, sol.u_h, mms.du_ex, H1_QUADRATURE_1D)
-    write_solution_table(mms.name, sol.x0, sol.u_h, mms.u_ex, {"L2": l2, "H1_semi": h1})
+    write_solution_table(f"solution_{mms.name}", sol.x0, sol.u_h, mms.u_ex,
+                         RESULTS_DIR, {"L2": l2, "H1_semi": h1})
     plot_solution(mms.name, sol.x0, sol.u_h, mms.u_ex, mms.plot_label)
