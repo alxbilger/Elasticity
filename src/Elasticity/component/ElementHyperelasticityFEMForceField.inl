@@ -294,6 +294,12 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElemen
     }
 
     m_isHessianValid = false;
+
+    //reset force vector
+    for (auto& elF : f)
+    {
+        elF.clear();
+    }
 }
 
 template <class TDataTypes, class TElementType>
