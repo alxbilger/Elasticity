@@ -7,6 +7,7 @@
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
 #include <sofa/helper/ScopedAdvancedTimer.h>
+#include <sofa/component/solidmechanics/fem/elastic/FEMForceField.inl>
 
 namespace elasticity
 {
@@ -14,12 +15,7 @@ namespace elasticity
 template <class DataTypes, class ElementType>
 void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::init()
 {
-    sofa::core::behavior::ForceField<DataTypes>::init();
-
-    if (!this->isComponentStateInvalid())
-    {
-        this->validateTopology();
-    }
+    sofa::component::solidmechanics::fem::elastic::FEMForceField<DataTypes, ElementType>::init();
 
     if (!this->isComponentStateInvalid())
     {
@@ -28,126 +24,12 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::init()
 
     if (!this->isComponentStateInvalid())
     {
-        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
-    }
-}
-
-template <class DataTypes, class ElementType>
-void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& f, const DataVecCoord& x,
-    const DataVecDeriv& v)
-{
-    SOFA_UNUSED(mparams);
-    SOFA_UNUSED(v);
-
-    if (this->isComponentStateInvalid())
-        return;
-
-    auto forceAccessor = sofa::helper::getWriteOnlyAccessor(f);
-    auto positionAccessor = sofa::helper::getReadAccessor(x);
-
-    if (l_topology == nullptr) return;
-    if (l_material == nullptr) return;
-
-    m_coordinates = &positionAccessor.ref();
-
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
-
-    if (m_precomputedData.size() != elements.size())
-    {
         precomputeData();
     }
 
-    std::size_t elementIndex = 0;
-    for (const auto& element : elements)
+    if (!this->isComponentStateInvalid())
     {
-        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, positionAccessor.ref());
-
-        static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
-        static constexpr auto gradients = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
-
-        for (sofa::Size q = 0; q < NumberOfQuadraturePoints; ++q)
-        {
-            const auto& weight = quadraturePoints[q].second;
-            const PrecomputedData& precomputedData = m_precomputedData[elementIndex][q];
-
-            // gradient of shape functions in the reference element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[q];
-
-            // jacobian of the mapping from the reference space to the physical space, evaluated at the
-            // quadrature point
-            const auto J_q = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
-
-            const auto detJ_Q = precomputedData.detJacobian;
-
-            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
-
-            // gradient of the shape functions in the physical element evaluated at the quadrature point
-            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
-
-            // both ways to compute the deformation gradient are equivalent
-            const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
-            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
-
-            Strain<DataTypes> strain(deformationGradient, F);
-
-            const auto P = l_material->firstPiolaKirchhoffStress(strain);
-
-            for (sofa::Index i = 0; i < NumberOfNodesInElement; ++i)
-            {
-                forceAccessor[element[i]] += (-detJ_Q * weight) * P * dN_dQ[i];
-            }
-        }
-        ++elementIndex;
-    }
-
-    // invalidate the Hessian, so it will be computed the next time it is necessary
-    m_isHessianValid = false;
-}
-
-template <class DataTypes, class ElementType>
-void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::addDForce(
-    const sofa::core::MechanicalParams* mparams, DataVecDeriv& df, const DataVecDeriv& dx)
-{
-    if (l_topology == nullptr) return;
-    if (l_material == nullptr) return;
-
-    if (this->isComponentStateInvalid())
-        return;
-
-    auto dfAccessor = sofa::helper::getWriteAccessor(df);
-    auto dxAccessor = sofa::helper::getReadAccessor(dx);
-    dfAccessor.resize(dxAccessor.size());
-
-    if (!m_isHessianValid)
-    {
-        computeHessian(*m_coordinates);
-    }
-
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
-
-    const Real kFactor = static_cast<Real>(sofa::core::mechanicalparams::kFactorIncludingRayleighDamping(
-            mparams, this->rayleighStiffness.getValue()));
-
-    auto elementStiffnessIt = m_elementStiffness.begin();
-    for (const auto& element : elements)
-    {
-        sofa::type::Vec<NumberOfDofsInElement, Real> element_dx(sofa::type::NOINIT);
-
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        {
-            sofa::type::VecView<spatial_dimensions, Real> node_dx(element_dx, i * spatial_dimensions);
-            node_dx = dxAccessor[element[i]];
-        }
-
-        const auto& stiffnessMatrix = *elementStiffnessIt++;
-        auto dForce = (kFactor) * (stiffnessMatrix * element_dx);
-
-        for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        {
-            sofa::type::VecView<spatial_dimensions, Real> nodedForce(dForce, i * spatial_dimensions);
-            dfAccessor[element[i]] += nodedForce.toVec();
-        }
+        this->d_componentState.setValue(sofa::core::objectmodel::ComponentState::Valid);
     }
 }
 
@@ -168,7 +50,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffness
 
     sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real> localMatrix(sofa::type::NOINIT);
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
@@ -207,7 +89,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::addKToMatrix
     using LocalMatType = sofa::type::Mat<spatial_dimensions, spatial_dimensions, Real>;
     LocalMatType localMatrix{sofa::type::NOINIT};
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
     auto elementStiffnessIt = m_elementStiffness.begin();
     for (const auto& element : elements)
     {
@@ -252,12 +134,12 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::validateMateri
 template <class DataTypes, class ElementType>
 void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian(const VecCoord& coordinates)
 {
-    if (l_topology == nullptr) return;
+    if (this->l_topology == nullptr) return;
     if (l_material == nullptr) return;
 
     SCOPED_TIMER("ComputeHessian");
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
 
     if (m_precomputedData.size() != elements.size())
     {
@@ -312,7 +194,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
                 return l_material->materialTangentModulus(strain);
             }();
 
-            const auto factor = -detJ_Q * weight;
+            const auto factor = detJ_Q * weight;
 
             SCOPED_TIMER_VARNAME_TR(tensorTimer, "Tensor");
             for (sofa::Size element_i = 0; element_i < NumberOfNodesInElement; ++element_i)
@@ -366,12 +248,12 @@ auto ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeDeforma
 template <class TDataTypes, class TElementType>
 void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeData()
 {
-    if (l_topology == nullptr) return;
+    if (this->l_topology == nullptr) return;
 
     auto restPositionAccessor = this->mstate->readRestPositions();
     const auto& restPosition = restPositionAccessor.ref();
 
-    const auto& elements = FiniteElement::getElementSequence(*l_topology);
+    const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
     m_precomputedData.resize(elements.size());
 
     static constexpr auto gradients = sofa::fem::FiniteElementHelper<TElementType, TDataTypes>::gradientShapeFunctionAtQuadraturePoints();
@@ -396,6 +278,113 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
                 data.dN_dQ[n] = data.jacobianInv.multTranspose(dN_dq_ref[n]);
             }
         }
+    }
+}
+template <class TDataTypes, class TElementType>
+void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElementForce(
+    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& f,
+    const sofa::VecCoord_t<DataTypes>& x)
+{
+    m_coordinates = &x;
+
+    const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
+    if (m_precomputedData.size() != elements.size())
+    {
+        precomputeData();
+    }
+
+    m_isHessianValid = false;
+}
+
+template <class TDataTypes, class TElementType>
+void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeElementsForces(
+    const sofa::simulation::Range<std::size_t>& range, const sofa::core::MechanicalParams* mparams,
+    sofa::type::vector<ElementForce>& f, const sofa::VecCoord_t<TDataTypes>& x)
+{
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
+    auto restPositionAccessor = this->mstate->readRestPositions();
+
+    for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
+    {
+        const auto element = elements[elementId];
+        const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, x);
+
+        static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
+        static constexpr auto gradients = sofa::fem::FiniteElementHelper<TElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
+
+        for (sofa::Size q = 0; q < NumberOfQuadraturePoints; ++q)
+        {
+            const auto& weight = quadraturePoints[q].second;
+            const PrecomputedData& precomputedData = m_precomputedData[elementId][q];
+
+            // gradient of shape functions in the reference element evaluated at the quadrature point
+            const sofa::type::Mat<NumberOfNodesInElement, TopologicalDimension, Real>& dN_dq_ref = gradients[q];
+
+            // jacobian of the mapping from the reference space to the physical space, evaluated at the
+            // quadrature point
+            const auto J_q = sofa::fem::FiniteElementHelper<TElementType, DataTypes>::jacobianFromReferenceToPhysical(elementNodesCoordinates, dN_dq_ref);
+
+            const auto detJ_Q = precomputedData.detJacobian;
+
+            const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv = precomputedData.jacobianInv;
+
+            // gradient of the shape functions in the physical element evaluated at the quadrature point
+            const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
+
+            // both ways to compute the deformation gradient are equivalent
+            const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
+            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
+
+            Strain<DataTypes> strain(deformationGradient, F);
+
+            const auto P = l_material->firstPiolaKirchhoffStress(strain);
+            auto& elementForce = f[elementId];
+
+            for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
+            {
+                sofa::type::VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodeForce(elementForce, i * trait::spatial_dimensions);
+                nodeForce += (detJ_Q * weight) * P * dN_dQ[i];
+            }
+        }
+    }
+}
+
+template <class TDataTypes, class TElementType>
+void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElementForceDeriv(
+    const sofa::core::MechanicalParams* mparams)
+{
+    if (!m_isHessianValid)
+    {
+        computeHessian(*m_coordinates);
+    }
+}
+
+template <class TDataTypes, class TElementType>
+void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeElementsForcesDeriv(
+    const sofa::simulation::Range<std::size_t>& range, const sofa::core::MechanicalParams* mparams,
+    sofa::type::vector<ElementForce>& df, const sofa::VecDeriv_t<TDataTypes>& dx)
+{
+    const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
+
+    for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
+    {
+        const auto& element = elements[elementId];
+        const auto& stiffnessMatrix = m_elementStiffness[elementId];
+
+        const std::array<sofa::Coord_t<DataTypes>, trait::NumberOfNodesInElement> elementNodesDx =
+            sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, dx);
+
+        sofa::type::Vec<trait::NumberOfDofsInElement, sofa::Real_t<DataTypes>> element_dx(sofa::type::NOINIT);
+        for (sofa::Size nodeId = 0; nodeId < trait::NumberOfNodesInElement; ++nodeId)
+        {
+            const auto& nodeDx = elementNodesDx[nodeId];
+            for (sofa::Size dim = 0; dim < trait::spatial_dimensions; ++dim)
+            {
+                element_dx[nodeId * trait::spatial_dimensions + dim] = nodeDx[dim];
+            }
+        }
+
+        df[elementId] = stiffnessMatrix * element_dx;
     }
 }
 

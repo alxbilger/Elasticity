@@ -2,10 +2,8 @@
 
 #include <Elasticity/component/HyperelasticMaterial.h>
 #include <Elasticity/config.h>
-#include <sofa/fem/FiniteElement.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/ElementStiffnessMatrix.h>
-#include <sofa/core/behavior/ForceField.h>
-#include <sofa/core/behavior/TopologyAccessor.h>
+#include <sofa/component/solidmechanics/fem/elastic/FEMForceField.h>
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
 #include <sofa/fem/FiniteElement[all].h>
@@ -16,14 +14,12 @@ namespace elasticity
 
 template <class TDataTypes, class TElementType>
 class ElementHyperelasticityFEMForceField :
-    public sofa::core::behavior::TopologyAccessor,
-    public sofa::core::behavior::ForceField<TDataTypes>
+    public sofa::component::solidmechanics::fem::elastic::FEMForceField<TDataTypes, TElementType>
 {
 public:
-    SOFA_CLASS2(
+    SOFA_CLASS(
         SOFA_TEMPLATE2(ElementHyperelasticityFEMForceField, TDataTypes, TElementType),
-            sofa::core::behavior::TopologyAccessor,
-            sofa::core::behavior::ForceField<TDataTypes>);
+        SOFA_TEMPLATE2(sofa::component::solidmechanics::fem::elastic::FEMForceField, TDataTypes, TElementType));
 
     using DataTypes = TDataTypes;
 
@@ -56,18 +52,12 @@ private:
 public:
     void init() override;
 
-    void addForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& f,
-          const DataVecCoord& x, const DataVecDeriv& v) override;
-
-    void addDForce(const sofa::core::MechanicalParams* mparams, DataVecDeriv& df,
-                   const DataVecDeriv& dx) override;
-
     void buildStiffnessMatrix(sofa::core::behavior::StiffnessMatrix* matrix) override;
 
-    using sofa::core::behavior::ForceField<DataTypes>::getPotentialEnergy;
+    using Inherit1::getPotentialEnergy;
     SReal getPotentialEnergy(const sofa::core::MechanicalParams*, const DataVecCoord& x) const override;
 
-    using sofa::core::behavior::ForceField<DataTypes>::addKToMatrix;
+    using Inherit1::addKToMatrix;
     // almost deprecated, but here for compatibility with unit tests
     void addKToMatrix(sofa::linearalgebra::BaseMatrix* matrix, SReal kFact, unsigned& offset) override;
 
@@ -75,6 +65,9 @@ public:
         sofa::BaseLink::FLAG_STOREPATH | sofa::BaseLink::FLAG_STRONGLINK> l_material;
 
 protected:
+    using trait = sofa::component::solidmechanics::fem::elastic::trait<DataTypes, TElementType>;
+    using ElementForce = typename trait::ElementForce;
+
     void validateMaterial();
 
     bool m_isHessianValid;
@@ -119,6 +112,24 @@ protected:
     sofa::type::vector<std::array<PrecomputedData, NumberOfQuadraturePoints>> m_precomputedData;
 
     void precomputeData();
+
+    void beforeElementForce(const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<DataTypes>& x) override;
+
+    void computeElementsForces(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& f,
+        const sofa::VecCoord_t<TDataTypes>& x) override;
+
+    void beforeElementForceDeriv(const sofa::core::MechanicalParams* mparams) override;
+
+    void computeElementsForcesDeriv(
+        const sofa::simulation::Range<std::size_t>& range,
+        const sofa::core::MechanicalParams* mparams,
+        sofa::type::vector<ElementForce>& df,
+        const sofa::VecDeriv_t<TDataTypes>& dx) override;
 };
 
 #if !defined(ELASTICITY_COMPONENT_ELEMENT_HYPERLASTICITY_FEM_FORCE_FIELD_CPP)
