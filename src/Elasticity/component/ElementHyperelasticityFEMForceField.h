@@ -27,21 +27,6 @@ public:
 
     using DataTypes = TDataTypes;
 
-    /**
-     * The purpose of this function is to register the name of this class according to the provided
-     * pattern.
-     *
-     * Example: ElementHyperelasticityFEMForceField<Vec3Types, sofa::geometry::Edge> will produce
-     * the class name "EdgeHyperelasticityFEMForceField".
-     */
-    static const std::string GetCustomClassName()
-    {
-        return std::string(sofa::geometry::elementTypeToString(TElementType::Element_type)) +
-               "HyperelasticityFEMForceField";
-    }
-
-    static const std::string GetCustomTemplateName() { return TDataTypes::Name(); }
-
 private:
     using DataVecCoord = sofa::DataVecDeriv_t<TDataTypes>;
     using DataVecDeriv = sofa::DataVecDeriv_t<TDataTypes>;
