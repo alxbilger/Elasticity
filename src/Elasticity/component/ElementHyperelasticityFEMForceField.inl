@@ -2,7 +2,6 @@
 
 #include <Elasticity/component/ElementHyperelasticityFEMForceField.h>
 #include <Elasticity/impl/Strain.h>
-#include <sofa/type/VecView.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/VectorTools.h>
 #include <sofa/core/ObjectFactory.h>
 #include <sofa/core/behavior/BaseLocalForceFieldMatrix.h>
@@ -61,7 +60,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::buildStiffness
             for (sofa::Index n2 = 0; n2 < NumberOfNodesInElement; ++n2)
             {
                 stiffnessMatrix.getsub(spatial_dimensions * n1, spatial_dimensions * n2, localMatrix); //extract the submatrix corresponding to the coupling of nodes n1 and n2
-                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += localMatrix;
+                dfdx(element[n1] * spatial_dimensions, element[n2] * spatial_dimensions) += -localMatrix;
             }
         }
     }
@@ -346,10 +345,16 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeEleme
             const auto P = l_material->firstPiolaKirchhoffStress(strain);
             auto& elementForce = f[elementId];
 
+            sofa::type::Vec<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodeForce { sofa::type::NOINIT };
             for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
             {
-                sofa::type::VecView<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodeForce(elementForce, i * trait::spatial_dimensions);
+                elementForce.getsub(i * trait::spatial_dimensions, nodeForce);
+                // elementForce.setsub(i * trait::spatial_dimensions, nodeForce + (detJ_Q * weight) * P * dN_dQ[i]);
                 nodeForce += (detJ_Q * weight) * P * dN_dQ[i];
+                for (sofa::Size j = 0; j < trait::spatial_dimensions; ++j)
+                {
+                    elementForce[i * trait::spatial_dimensions + j] = nodeForce[j];
+                }
             }
         }
     }
