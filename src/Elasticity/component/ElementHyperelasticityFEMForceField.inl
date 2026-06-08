@@ -157,6 +157,7 @@ void ElementHyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian
         const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, this->mstate->readPositions().ref());
 
         ElementStiffness& K = *elementStiffnessIt++;
+        K.clear();
 
         static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
         static constexpr auto gradients = sofa::fem::FiniteElementHelper<ElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
@@ -307,15 +308,18 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeEleme
     sofa::type::vector<ElementForce>& f, const sofa::VecCoord_t<TDataTypes>& x)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
-    auto restPositionAccessor = this->mstate->readRestPositions();
+
+    static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
+    static constexpr auto gradients = sofa::fem::FiniteElementHelper<TElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
 
     for (std::size_t elementId = range.start; elementId < range.end; ++elementId)
     {
         const auto element = elements[elementId];
         const std::array<Coord, NumberOfNodesInElement> elementNodesCoordinates = sofa::component::solidmechanics::fem::elastic::extractNodesVectorFromGlobalVector(element, x);
 
-        static constexpr auto quadraturePoints = FiniteElement::quadraturePoints();
-        static constexpr auto gradients = sofa::fem::FiniteElementHelper<TElementType, DataTypes>::gradientShapeFunctionAtQuadraturePoints();
+        //access to the force vector in the element. This is the value to compute in this iteration
+        //force assembly at the DoF level is done in a later function.
+        auto& elementForce = f[elementId];
 
         for (sofa::Size q = 0; q < NumberOfQuadraturePoints; ++q)
         {
@@ -341,19 +345,14 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeEleme
             // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
             Strain<DataTypes> strain(deformationGradient, F);
-
             const auto P = l_material->firstPiolaKirchhoffStress(strain);
-            auto& elementForce = f[elementId];
 
-            sofa::type::Vec<trait::spatial_dimensions, sofa::Real_t<DataTypes>> nodeForce { sofa::type::NOINIT };
             for (sofa::Size i = 0; i < trait::NumberOfNodesInElement; ++i)
             {
-                elementForce.getsub(i * trait::spatial_dimensions, nodeForce);
-                // elementForce.setsub(i * trait::spatial_dimensions, nodeForce + (detJ_Q * weight) * P * dN_dQ[i]);
-                nodeForce += (detJ_Q * weight) * P * dN_dQ[i];
+                const auto f_q = (detJ_Q * weight) * P * dN_dQ[i];
                 for (sofa::Size j = 0; j < trait::spatial_dimensions; ++j)
                 {
-                    elementForce[i * trait::spatial_dimensions + j] = nodeForce[j];
+                    elementForce[i * trait::spatial_dimensions + j] += f_q[j];
                 }
             }
         }

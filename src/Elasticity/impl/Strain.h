@@ -245,7 +245,7 @@ protected:
     void computeInvariant3()
     {
         const auto J = getDeterminantDeformationGradient();
-        m_invariant1 = J * J;
+        m_invariant3 = J * J;
     }
 };
 
