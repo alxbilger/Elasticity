@@ -211,7 +211,7 @@ protected:
                 {
                     for (sofa::Size k = 0; k < spatial_dimensions; ++k)
                     {
-                        C(i, j) += F(i, k) * F(j, k);
+                        C(i, j) += F(k, i) * F(k, j);
                     }
                 }
             }
