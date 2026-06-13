@@ -282,7 +282,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeDa
 }
 template <class TDataTypes, class TElementType>
 void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElementForce(
-    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementForce>& f,
+    const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementGradient>& f,
     const sofa::VecCoord_t<DataTypes>& x)
 {
     m_coordinates = &x;
@@ -305,7 +305,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElemen
 template <class TDataTypes, class TElementType>
 void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeElementsForces(
     const sofa::simulation::Range<std::size_t>& range, const sofa::core::MechanicalParams* mparams,
-    sofa::type::vector<ElementForce>& f, const sofa::VecCoord_t<TDataTypes>& x)
+    sofa::type::vector<ElementGradient>& f, const sofa::VecCoord_t<TDataTypes>& x)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 
@@ -372,7 +372,7 @@ void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElemen
 template <class TDataTypes, class TElementType>
 void ElementHyperelasticityFEMForceField<TDataTypes, TElementType>::computeElementsForcesDeriv(
     const sofa::simulation::Range<std::size_t>& range, const sofa::core::MechanicalParams* mparams,
-    sofa::type::vector<ElementForce>& df, const sofa::VecDeriv_t<TDataTypes>& dx)
+    sofa::type::vector<ElementGradient>& df, const sofa::VecDeriv_t<TDataTypes>& dx)
 {
     const auto& elements = trait::FiniteElement::getElementSequence(*this->l_topology);
 

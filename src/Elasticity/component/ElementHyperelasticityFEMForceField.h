@@ -66,7 +66,7 @@ public:
 
 protected:
     using trait = sofa::component::solidmechanics::fem::elastic::trait<DataTypes, TElementType>;
-    using ElementForce = typename trait::ElementForce;
+    using ElementGradient = typename trait::ElementGradient;
 
     void validateMaterial();
 
@@ -114,13 +114,13 @@ protected:
     void precomputeData();
 
     void beforeElementForce(const sofa::core::MechanicalParams* mparams,
-        sofa::type::vector<ElementForce>& f,
+        sofa::type::vector<ElementGradient>& f,
         const sofa::VecCoord_t<DataTypes>& x) override;
 
     void computeElementsForces(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
-        sofa::type::vector<ElementForce>& f,
+        sofa::type::vector<ElementGradient>& f,
         const sofa::VecCoord_t<TDataTypes>& x) override;
 
     void beforeElementForceDeriv(const sofa::core::MechanicalParams* mparams) override;
@@ -128,7 +128,7 @@ protected:
     void computeElementsForcesDeriv(
         const sofa::simulation::Range<std::size_t>& range,
         const sofa::core::MechanicalParams* mparams,
-        sofa::type::vector<ElementForce>& df,
+        sofa::type::vector<ElementGradient>& df,
         const sofa::VecDeriv_t<TDataTypes>& dx) override;
 };
 
