@@ -77,3 +77,8 @@ endif()
 
 sofa_add_subdirectory(plugin extensions/CUDA Elasticity.CUDA)
 sofa_add_subdirectory(application benchmark/cpp ElasticityBenchmark)
+
+sofa_find_package(SofaPython3 QUIET)
+if(SofaPython3_FOUND)
+    add_subdirectory(extensions/Python)
+endif()

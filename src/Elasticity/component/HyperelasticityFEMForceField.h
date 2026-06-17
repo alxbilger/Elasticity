@@ -84,9 +84,6 @@ protected:
     DeformationGradient computeDeformationGradient(
         const sofa::type::Mat<spatial_dimensions, TopologicalDimension, Real>& J_q,
         const sofa::type::Mat<TopologicalDimension, spatial_dimensions, Real>& J_Q_inv);
-    DeformationGradient computeDeformationGradient2(
-        const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-        const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ);
 
     struct PrecomputedData
     {

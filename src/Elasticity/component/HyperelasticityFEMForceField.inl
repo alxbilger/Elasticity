@@ -181,9 +181,7 @@ void HyperelasticityFEMForceField<DataTypes, ElementType>::computeHessian(const 
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
 
-            // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
-            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
             Strain<DataTypes> strain(deformationGradient, F);
 
@@ -232,19 +230,6 @@ auto HyperelasticityFEMForceField<DataTypes, ElementType>::computeDeformationGra
     return J_q * J_Q_inv;
 }
 
-template <class DataTypes, class ElementType>
-auto HyperelasticityFEMForceField<DataTypes, ElementType>::computeDeformationGradient2(
-    const std::array<Coord, NumberOfNodesInElement>& elementNodesCoordinates,
-    const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ)  -> DeformationGradient
-{
-    DeformationGradient F;
-
-    for (sofa::Size i = 0; i < NumberOfNodesInElement; ++i)
-        F += sofa::type::dyad(elementNodesCoordinates[i], dN_dQ[i]);
-
-    return F;
-}
-
 template <class TDataTypes, class TElementType>
 void HyperelasticityFEMForceField<TDataTypes, TElementType>::precomputeData()
 {
@@ -285,6 +270,7 @@ void HyperelasticityFEMForceField<TDataTypes, TElementType>::beforeElementForce(
     const sofa::core::MechanicalParams* mparams, sofa::type::vector<ElementGradient>& f,
     const sofa::VecCoord_t<DataTypes>& x)
 {
+    //store coordinates to use it later when computing the Hessian
     m_coordinates = &x;
 
     const auto& elements = FiniteElement::getElementSequence(*this->l_topology);
@@ -340,9 +326,7 @@ void HyperelasticityFEMForceField<TDataTypes, TElementType>::computeElementsForc
             // gradient of the shape functions in the physical element evaluated at the quadrature point
             const sofa::type::Mat<NumberOfNodesInElement, spatial_dimensions, Real>& dN_dQ = precomputedData.dN_dQ;
 
-            // both ways to compute the deformation gradient are equivalent
             const DeformationGradient F = computeDeformationGradient(J_q, J_Q_inv);
-            // const DeformationGradient F = computeDeformationGradient2(elementNodesCoordinates, dN_dQ);
 
             Strain<DataTypes> strain(deformationGradient, F);
             const auto P = l_material->firstPiolaKirchhoffStress(strain);
