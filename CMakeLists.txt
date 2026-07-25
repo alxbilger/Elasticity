@@ -3,39 +3,17 @@ cmake_minimum_required(VERSION 3.12)
 project(Elasticity VERSION 1.0 LANGUAGES CXX)
 
 find_package(Sofa.Core REQUIRED)
-sofa_find_package(Sofa.Component.SolidMechanics.FEM.Elastic REQUIRED)
+sofa_find_package(Sofa.Component.SolidMechanics.FEM.HyperElastic REQUIRED)
 
 set(HEADER_FILES
     src/Elasticity/config.h.in
     src/Elasticity/init.h
 
-    src/Elasticity/component/HyperelasticityFEMForceField.h
-    src/Elasticity/component/HyperelasticityFEMForceField.inl
-    src/Elasticity/component/HyperelasticMaterial.h
-    src/Elasticity/component/HyperelasticMaterial.inl
-    src/Elasticity/component/LinearMechanicalParametersComponent.h
-    src/Elasticity/component/LinearMechanicalParametersComponent.inl
-    src/Elasticity/component/PK2HyperelasticMaterial.h
-    src/Elasticity/component/PK2HyperelasticMaterial.inl
     src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.h
     src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.inl
 
-    src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.h
-    src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.inl
-    src/Elasticity/component/material/MooneyRivlinMaterial.h
-    src/Elasticity/component/material/MooneyRivlinMaterial.inl
-    src/Elasticity/component/material/NeoHookeanMaterial.h
-    src/Elasticity/component/material/NeoHookeanMaterial.inl
-    src/Elasticity/component/material/OgdenMaterial.h
-    src/Elasticity/component/material/OgdenMaterial.inl
-    src/Elasticity/component/material/StVenantKirchhoffMaterial.h
-    src/Elasticity/component/material/StVenantKirchhoffMaterial.inl
-
-    src/Elasticity/impl/IdentityMatrix.h
     src/Elasticity/impl/IsotropicElasticityTensor.h
-    src/Elasticity/impl/MajorSymmetric4Tensor.h
     src/Elasticity/impl/MatSoA.h
-    src/Elasticity/impl/Strain.h
     src/Elasticity/impl/StrainDisplacement.h
     src/Elasticity/impl/VecSoA.h
     src/Elasticity/impl/VonMisesStressContainer.h
@@ -44,21 +22,12 @@ set(HEADER_FILES
 set(SOURCE_FILES
     src/Elasticity/init.cpp
 
-    src/Elasticity/component/HyperelasticityFEMForceField.cpp
-    src/Elasticity/component/HyperelasticMaterial.cpp
-    src/Elasticity/component/LinearMechanicalParametersComponent.cpp
-    src/Elasticity/component/PK2HyperelasticMaterial.cpp
     src/Elasticity/component/SoAElementLinearSmallStrainFEMForceField.cpp
 
-    src/Elasticity/component/material/IncompressibleMooneyRivlinMaterial.cpp
-    src/Elasticity/component/material/MooneyRivlinMaterial.cpp
-    src/Elasticity/component/material/OgdenMaterial.cpp
-    src/Elasticity/component/material/NeoHookeanMaterial.cpp
-    src/Elasticity/component/material/StVenantKirchhoffMaterial.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED README.md ${HEADER_FILES} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Core Sofa.Component.SolidMechanics.FEM.Elastic)
+target_link_libraries(${PROJECT_NAME} PUBLIC Sofa.Core Sofa.Component.SolidMechanics.FEM.HyperElastic)
 
 sofa_create_package_with_targets(
     PACKAGE_NAME ${PROJECT_NAME}
