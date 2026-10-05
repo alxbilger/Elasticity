@@ -1,4 +1,4 @@
-#include <sofa/component/solidmechanics/fem/elastic/LinearSmallStrainFEMForceField.h>
+//#include <sofa/component/solidmechanics/fem/elastic/LinearSmallStrainFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/TetrahedronFEMForceField.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/LameParameters.h>
 #include <sofa/component/solidmechanics/fem/elastic/impl/OrthotropicElasticityTensor.h>
