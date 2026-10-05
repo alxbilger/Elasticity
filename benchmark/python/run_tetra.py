@@ -16,7 +16,7 @@ SofaRuntime.importPlugin("Sofa.Component")
 def scene_beam_tetra_assembled_simulation(root, scale, tetrahedron_force_field, linear_solver):
     root.addObject('DefaultAnimationLoop')
     root.addObject('DefaultVisualManagerLoop')
-    root.addObject('EulerImplicitSolver', name="backward_euler", rayleighStiffness="0.1", rayleighMass="0.1")
+    root.addObject('EulerImplicitIntegrationScheme', name="backward_euler", rayleighStiffness="0.1", rayleighMass="0.1")
     linear_solver(root)
     root.addObject('RegularGridTopology', name="grid", min="-5 -5 0", max="5 5 40", n=[2 * scale, 2 * scale, 10 * scale],)
     root.addObject('MechanicalObject', template="Vec3", name="state", showObject="true")
